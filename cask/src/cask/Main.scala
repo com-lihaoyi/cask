@@ -8,7 +8,14 @@ import io.undertow.server.handlers.BlockingHandler
 import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.util.{Headers, HttpString}
 
-class Main(servers: Routes*){
+class MainRoutes extends BaseMain with Routes{
+  def servers = Seq(this)
+}
+class Main(servers0: Routes*) extends BaseMain{
+  def servers = servers0.toSeq
+}
+abstract class BaseMain{
+  def servers: Seq[Routes]
   val port: Int = 8080
   val host: String = "localhost"
   def main(args: Array[String]): Unit = {

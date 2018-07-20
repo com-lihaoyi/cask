@@ -1,6 +1,6 @@
 package test.cask
 
-object HelloRoutes extends cask.Routes{
+object HelloWorld extends cask.MainRoutes{
   @cask.get("/")
   def hello() = {
     "Hello World!"
@@ -8,5 +8,3 @@ object HelloRoutes extends cask.Routes{
 
   initialize()
 }
-
-object HelloWorld extends cask.Main(HelloRoutes)

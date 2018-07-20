@@ -83,7 +83,7 @@ object Routes{
   }
 }
 
-class Routes{
+trait Routes{
   private[this] var metadata0: Routes.Metadata[this.type] = null
   def caskMetadata =
     if (metadata0 != null) metadata0
