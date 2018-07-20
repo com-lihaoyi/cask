@@ -10,7 +10,12 @@ import java.nio.ByteBuffer
 import io.undertow.Undertow
 import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.util.{Headers, HttpString}
-class route(val path: String) extends StaticAnnotation
+trait RouteBase{
+  val path: String
+}
+class get(val path: String) extends StaticAnnotation with RouteBase
+class post(val path: String) extends StaticAnnotation with RouteBase
+class put(val path: String) extends StaticAnnotation with RouteBase
 
 class Main(servers: Routes*){
   val port: Int = 8080
@@ -107,7 +112,7 @@ object Response{
   }
 }
 object Routes{
-  case class RouteMetadata[T](metadata: route, entryPoint: EntryPoint[T])
+  case class RouteMetadata[T](metadata: RouteBase, entryPoint: EntryPoint[T])
   case class Metadata[T](value: RouteMetadata[T]*)
   object Metadata{
     implicit def initialize[T] = macro initializeImpl[T]
@@ -115,7 +120,7 @@ object Routes{
       import c.universe._
       val router = new cask.Router(c)
       val routes = c.weakTypeOf[T].members
-        .map(m => (m, m.annotations.filter(_.tree.tpe =:= c.weakTypeOf[route])))
+        .map(m => (m, m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[RouteBase])))
         .collect{case (m, Seq(a)) =>
           (
             m,

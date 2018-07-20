@@ -1,7 +1,9 @@
 package cask
 
 object Util {
-  def trimSplit(p: String) = p.dropWhile(_ == '/').reverse.dropWhile(_ == '/').reverse.split('/')
+  def trimSplit(p: String) =
+    p.dropWhile(_ == '/').reverse.dropWhile(_ == '/').reverse.split('/').filter(_.nonEmpty)
+
   def matchRoute(route: String, path: String): Option[Map[String, String]] = {
     val routeSegments = trimSplit(route)
     val pathSegments = trimSplit(path)

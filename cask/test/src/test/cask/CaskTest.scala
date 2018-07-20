@@ -1,19 +1,17 @@
 package test.cask
 
 object MyServer extends cask.Routes{
-
-
-  @cask.route("/user/:userName")
+  @cask.get("/user/:userName")
   def showUserProfile(userName: String) = {
     s"User $userName"
   }
 
-  @cask.route("/post/:postId")
+  @cask.post("/post/:postId")
   def showPost(postId: Int, query: String) = {
     s"Post $postId $query"
   }
 
-  @cask.route("/path/::subPath")
+  @cask.put("/path/::subPath")
   def showSubpath(subPath: String) = {
     s"Subpath $subPath"
   }
