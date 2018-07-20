@@ -1,10 +1,10 @@
 package cask
 import cask.Router.EntryPoint
-
 import java.io.OutputStream
 import java.nio.ByteBuffer
 
 import io.undertow.Undertow
+import io.undertow.server.handlers.BlockingHandler
 import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.util.{Headers, HttpString}
 
@@ -19,7 +19,7 @@ class Main(servers: Routes*){
 
     val server = Undertow.builder
       .addHttpListener(port, host)
-      .setHandler(new HttpHandler() {
+      .setHandler(new BlockingHandler(new HttpHandler() {
         def handleRequest(exchange: HttpServerExchange): Unit = {
           val routeOpt =
             allRoutes
@@ -82,7 +82,7 @@ class Main(servers: Routes*){
 
           }
         }
-      })
+      }))
       .build
     server.start()
   }

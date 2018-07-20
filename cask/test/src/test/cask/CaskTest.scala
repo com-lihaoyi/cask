@@ -1,6 +1,5 @@
 package test.cask
 
-import io.undertow.io.Receiver.{ErrorCallback, FullBytesCallback}
 import io.undertow.server.HttpServerExchange
 
 object MyServer extends cask.Routes{
@@ -16,22 +15,10 @@ object MyServer extends cask.Routes{
 
   @cask.get("/path/::subPath")
   def showSubpath(x: HttpServerExchange, subPath: String) = {
-    x.getRequestReceiver().receiveFullBytes((exchange, data) => {
-
-    }: FullBytesCallback,
-      (exchange, exception) => {
-
-      }: ErrorCallback
-    )
+    val length = x.getInputStream.readAllBytes().length
     println(x)
-    s"Subpath $subPath"
+    s"Subpath $subPath + $length"
   }
-
-//  @cask.post("/echo-size")
-//  def echoSize(x: HttpServerExchange, subPath: String) = {
-//    println(x)
-//    s"Subpath $subPath"
-//  }
 
   initialize()
 }
