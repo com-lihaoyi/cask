@@ -28,10 +28,10 @@ object ParamType{
 trait RouteBase{
   val path: String
 }
-class get(val path: String) extends StaticAnnotation with RouteBase
-class post(val path: String) extends StaticAnnotation with RouteBase
-class put(val path: String) extends StaticAnnotation with RouteBase
-class route(val path: String, val methods: Seq[String]) extends StaticAnnotation with RouteBase
+class get(val path: String, async: Boolean = false) extends StaticAnnotation with RouteBase
+class post(val path: String, async: Boolean = false) extends StaticAnnotation with RouteBase
+class put(val path: String, async: Boolean = false) extends StaticAnnotation with RouteBase
+class route(val path: String, val methods: Seq[String], async: Boolean = false) extends StaticAnnotation with RouteBase
 
 case class Response(data: Response.Data,
                     statusCode: Int = 200,
