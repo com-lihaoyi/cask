@@ -1,6 +1,6 @@
 package test.cask
 
-object HelloWorld extends cask.MainRoutes{
+object MinimalApplication extends cask.MainRoutes{
   @cask.get("/")
   def hello() = {
     "Hello World!"
