@@ -1,8 +1,9 @@
 package cask
 
 
-import language.experimental.macros
+import io.undertow.server.HttpServerExchange
 
+import language.experimental.macros
 import scala.annotation.StaticAnnotation
 import scala.collection.mutable
 import scala.reflect.macros.blackbox.Context
@@ -51,7 +52,7 @@ object Router{
                           typeString: String,
                           doc: Option[String],
                           default: Option[T => V])
-                         (implicit val reads: scopt.Read[V])
+                         (implicit val reads: ParamType[V])
 
   def stripDashes(s: String) = {
     if (s.startsWith("--")) s.drop(2)
@@ -71,9 +72,9 @@ object Router{
                            argSignatures: Seq[ArgSig[T, _]],
                            doc: Option[String],
                            varargs: Boolean,
-                           invoke0: (T, Map[String, String], Seq[String]) => Result[Any],
+                           invoke0: (T, HttpServerExchange, Map[String, Seq[String]], Seq[String]) => Result[Any],
                            overrides: Int){
-    def invoke(target: T, groupedArgs: Seq[(String, Option[String])]): Result[Any] = {
+    def invoke(target: T, exchange: HttpServerExchange, groupedArgs: Seq[(String, Option[String])]): Result[Any] = {
       var remainingArgSignatures = argSignatures.toList.filter(_.reads.arity > 0)
 
       val accumulatedKeywords = mutable.Map.empty[ArgSig[T, _], mutable.Buffer[String]]
@@ -128,31 +129,26 @@ object Router{
       } else {
         missing0.filter(x => incomplete != Some(x))
       }
-      val duplicates = accumulatedKeywords.toSeq.filter(_._2.length > 1)
 
       if (
         incomplete.nonEmpty ||
           missing.nonEmpty ||
-          duplicates.nonEmpty ||
           (leftoverArgs.nonEmpty && !varargs)
       ){
         Result.Error.MismatchedArguments(
           missing = missing,
           unknown = leftoverArgs,
-          duplicate = duplicates,
+          duplicate = Nil,
           incomplete = incomplete
 
         )
       } else {
         val mapping = accumulatedKeywords
-          .iterator
-          .collect{case (k, Seq(single)) => (k.name, single)}
+          .map{case (k, single) => (k.name, single)}
           .toMap
 
-        try invoke0(target, mapping, leftoverArgs)
-        catch{case e: Throwable =>
-          Result.Error.Exception(e)
-        }
+        try invoke0(target, exchange, mapping, leftoverArgs)
+        catch{case e: Throwable => Result.Error.Exception(e)}
       }
     }
   }
@@ -161,22 +157,11 @@ object Router{
     try Right(t)
     catch{ case e: Throwable => Left(error(e))}
   }
-  def readVarargs(arg: ArgSig[_, _],
-                  values: Seq[String],
-                  thunk: String => Any) = {
-    val attempts =
-      for(item <- values)
-        yield tryEither(thunk(item), Result.ParamError.Invalid(arg, item, _))
 
-
-    val bad = attempts.collect{ case Left(x) => x}
-    if (bad.nonEmpty) Left(bad)
-    else Right(attempts.collect{case Right(x) => x})
-  }
-  def read(dict: Map[String, String],
+  def read(dict: Map[String, Seq[String]],
            default: => Option[Any],
            arg: ArgSig[_, _],
-           thunk: String => Any): FailMaybe = {
+           thunk: Seq[String] => Any): FailMaybe = {
     arg.reads.arity match{
       case 0 =>
         tryEither(thunk(null), Result.ParamError.DefaultFailed(arg, _)).left.map(Seq(_))
@@ -238,7 +223,7 @@ object Router{
         * Something went wrong trying to de-serialize the input parameter;
         * the thrown exception is stored in [[ex]]
         */
-      case class Invalid(arg: ArgSig[_, _], value: String, ex: Throwable) extends ParamError
+      case class Invalid(arg: ArgSig[_, _], value: Seq[String], ex: Throwable) extends ParamError
       /**
         * Something went wrong trying to evaluate the default value
         * for this input parameter
@@ -261,14 +246,13 @@ object Router{
     }
   }
 
-  def makeReadCall(dict: Map[String, String],
+  def makeReadCall(dict: Map[String, Seq[String]],
+                   exchange: HttpServerExchange,
                    default: => Option[Any],
                    arg: ArgSig[_, _]) = {
-    read(dict, default, arg, arg.reads.reads(_))
+    read(dict, default, arg, arg.reads.read(exchange, _))
   }
-  def makeReadVarargsCall(arg: ArgSig[_, _], values: Seq[String]) = {
-    readVarargs(arg, values, arg.reads.reads(_))
-  }
+
 }
 
 
@@ -375,17 +359,14 @@ class Router [C <: Context](val c: C) {
       """
 
       val reader =
-        if(vararg) q"""
-          cask.Router.makeReadVarargsCall(
-            $argSig,
-            $extrasSymbol
+        if(vararg) c.abort(meth.pos, "Varargs are not supported in cask routes")
+        else q"""
+          cask.Router.makeReadCall(
+            $argListSymbol,
+            exchange,
+            $default,
+            $argSig
           )
-        """ else q"""
-        cask.Router.makeReadCall(
-          $argListSymbol,
-          $default,
-          $argSig
-        )
         """
       c.internal.setPos(reader, meth.pos)
       (reader, argSig, vararg)
@@ -412,7 +393,7 @@ class Router [C <: Context](val c: C) {
       case Some(s) => q"scala.Some($s)"
     }},
       ${varargs.contains(true)},
-      ($baseArgSym: $curCls, $argListSymbol: Map[String, String], $extrasSymbol: Seq[String]) =>
+      ($baseArgSym: $curCls, exchange: io.undertow.server.HttpServerExchange, $argListSymbol: Map[String, Seq[String]], $extrasSymbol: Seq[String]) =>
         cask.Router.validate(Seq(..$readArgs)) match{
           case cask.Router.Result.Success(List(..$argNames)) =>
             cask.Router.Result.Success(
