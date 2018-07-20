@@ -1,34 +1,24 @@
 package test.cask
 
+object MyServer extends cask.Routes{
 
-object MyServer extends cask.Server(){
 
-  def x = "/ext"
-  @cask.route("/user/:username" + (x * 2))
+  @cask.route("/user/:userName")
   def showUserProfile(userName: String) = {
-    //  show the user profile for that user
     s"User $userName"
   }
 
-  @cask.route("/post/:int")
-  def showPost(postId: Int) = {
-    // show the post with the given id, the id is an integer
-    s"Post $postId"
+  @cask.route("/post/:postId")
+  def showPost(postId: Int, query: String) = {
+    s"Post $postId $query"
   }
 
-  @cask.route("/path/:subPath")
-  def show_subpath(subPath: String) = {
-    // show the subpath after /path/
+  @cask.route("/path/::subPath")
+  def showSubpath(subPath: String) = {
     s"Subpath $subPath"
   }
 
   initialize()
-  println(routes.value)
 }
 
-object Main extends cask.Main(MyServer){
-  def main(args: Array[String]): Unit = {
-    MyServer
-  }
-}
-
+object Main extends cask.Main(MyServer)
