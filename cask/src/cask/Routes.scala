@@ -31,18 +31,18 @@ object Response{
 }
 
 object Routes{
-  case class RouteMetadata[T](metadata: EndpointAnnotation[_],
-                              entryPoint: EntryPoint[T, (HttpServerExchange, Seq[String])])
-  case class Metadata[T](value: RouteMetadata[T]*)
-  object Metadata{
+  case class EndpointMetadata[T](metadata: Endpoint[_],
+                                 entryPoint: EntryPoint[T, (HttpServerExchange, Seq[String])])
+  case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
+  object RoutesEndpointsMetadata{
     implicit def initialize[T] = macro initializeImpl[T]
-    implicit def initializeImpl[T: c.WeakTypeTag](c: Context): c.Expr[Metadata[T]] = {
+    implicit def initializeImpl[T: c.WeakTypeTag](c: Context): c.Expr[RoutesEndpointsMetadata[T]] = {
       import c.universe._
       val router = new cask.Router[c.type](c)
 
       val routeParts = for{
         m <- c.weakTypeOf[T].members
-        annot <- m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[EndpointAnnotation[_]])
+        annot <- m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[Endpoint[_]])
       } yield {
         val annotObject = q"new ${annot.tree.tpe}(..${annot.tree.children.tail})"
         val annotObjectSym = c.universe.TermName(c.freshName("annotObject"))
@@ -57,22 +57,22 @@ object Routes{
 
         q"""{
           val $annotObjectSym = $annotObject
-          cask.Routes.RouteMetadata($annotObjectSym, $route)
+          cask.Routes.EndpointMetadata($annotObjectSym, $route)
         }"""
       }
 
-      c.Expr[Metadata[T]](q"""cask.Routes.Metadata(..$routeParts)""")
+      c.Expr[RoutesEndpointsMetadata[T]](q"""cask.Routes.RoutesEndpointsMetadata(..$routeParts)""")
     }
   }
 }
 
 trait Routes{
-  private[this] var metadata0: Routes.Metadata[this.type] = null
+  private[this] var metadata0: Routes.RoutesEndpointsMetadata[this.type] = null
   def caskMetadata =
     if (metadata0 != null) metadata0
     else throw new Exception("Routes not yet initialize")
 
-  protected[this] def initialize()(implicit routes: Routes.Metadata[this.type]): Unit = {
+  protected[this] def initialize()(implicit routes: Routes.RoutesEndpointsMetadata[this.type]): Unit = {
     metadata0 = routes
   }
 }

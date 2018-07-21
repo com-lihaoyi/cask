@@ -3,7 +3,7 @@ import cask.Router.EntryPoint
 import java.io.OutputStream
 import java.nio.ByteBuffer
 
-import cask.Routes.Metadata
+import cask.Routes.RoutesEndpointsMetadata
 import io.undertow.Undertow
 import io.undertow.server.handlers.BlockingHandler
 import io.undertow.server.{HttpHandler, HttpServerExchange}
@@ -22,10 +22,10 @@ abstract class BaseMain{
 
   lazy val routeList = for{
     routes <- allRoutes
-    route <- routes.caskMetadata.value.map(x => x: Routes.RouteMetadata[_])
+    route <- routes.caskMetadata.value.map(x => x: Routes.EndpointMetadata[_])
   } yield (routes, route)
 
-  lazy val routeTrie = DispatchTrie.construct[(Routes, Routes.RouteMetadata[_])](0,
+  lazy val routeTrie = DispatchTrie.construct[(Routes, Routes.EndpointMetadata[_])](0,
     for((route, metadata) <- routeList)
     yield (Util.splitPath(metadata.metadata.path): IndexedSeq[String], (route, metadata), metadata.metadata.subpath)
   )

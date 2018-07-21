@@ -1,7 +1,5 @@
 package test.cask
 
-import cask.Subpath
-
 object VariableRoutes extends cask.MainRoutes{
   @cask.get("/user/:userName")
   def showUserProfile(userName: String) = {
@@ -14,7 +12,7 @@ object VariableRoutes extends cask.MainRoutes{
   }
 
   @cask.get("/path", subpath = true)
-  def showSubpath(subPath: Subpath) = {
+  def showSubpath(subPath: cask.Subpath) = {
     s"Subpath ${subPath.value}"
   }
 

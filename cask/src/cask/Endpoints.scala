@@ -4,7 +4,7 @@ import cask.Router.EntryPoint
 import io.undertow.server.HttpServerExchange
 import collection.JavaConverters._
 
-trait EndpointAnnotation[R]{
+trait Endpoint[R]{
   val path: String
   def subpath: Boolean = false
   def wrapMethodOutput(t: R): Any
@@ -16,7 +16,7 @@ trait EndpointAnnotation[R]{
              routes: Routes,
              entryPoint: EntryPoint[Routes, (HttpServerExchange, Seq[String])]): Router.Result[Response]
 }
-trait RouteBase extends EndpointAnnotation[Response]{
+trait WebEndpoint extends Endpoint[Response]{
   def wrapMethodOutput(t: Response) = t
   def handle(exchange: HttpServerExchange,
              remaining: Seq[String],
@@ -34,11 +34,11 @@ trait RouteBase extends EndpointAnnotation[Response]{
               .asInstanceOf[Router.Result[Response]]
   }
 }
-class get(val path: String, override val subpath: Boolean = false) extends RouteBase
-class post(val path: String, override val subpath: Boolean = false) extends RouteBase
-class put(val path: String, override val subpath: Boolean = false) extends RouteBase
-class route(val path: String, val methods: Seq[String], override val subpath: Boolean = false) extends RouteBase
-class static(val path: String) extends EndpointAnnotation[String] {
+class get(val path: String, override val subpath: Boolean = false) extends WebEndpoint
+class post(val path: String, override val subpath: Boolean = false) extends WebEndpoint
+class put(val path: String, override val subpath: Boolean = false) extends WebEndpoint
+class route(val path: String, val methods: Seq[String], override val subpath: Boolean = false) extends WebEndpoint
+class static(val path: String) extends Endpoint[String] {
   override def subpath = true
   def wrapOutput(t: String) = t
 
