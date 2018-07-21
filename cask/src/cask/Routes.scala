@@ -6,6 +6,7 @@ import cask.Router.EntryPoint
 import io.undertow.server.HttpServerExchange
 
 import scala.reflect.macros.blackbox.Context
+import java.io.InputStream
 
 
 case class Response(data: Response.Data,
@@ -23,11 +24,14 @@ object Response{
     implicit class BytesData(b: Array[Byte]) extends Data{
       def write(out: OutputStream) = out.write(b)
     }
+    implicit class StreamData(b: InputStream) extends Data{
+      def write(out: OutputStream) = b.transferTo(out)
+    }
   }
 }
 
 object Routes{
-  case class RouteMetadata[T](metadata: RouteBase,
+  case class RouteMetadata[T](metadata: EndpointAnnotation[_],
                               entryPoint: EntryPoint[T, HttpServerExchange])
   case class Metadata[T](value: RouteMetadata[T]*)
   object Metadata{
@@ -38,7 +42,7 @@ object Routes{
 
       val routeParts = for{
         m <- c.weakTypeOf[T].members
-        annot <- m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[AnnotationBase])
+        annot <- m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[EndpointAnnotation[_]])
       } yield {
         val annotObject = q"new ${annot.tree.tpe}(..${annot.tree.children.tail})"
         val annotObjectSym = c.universe.TermName(c.freshName("annotObject"))

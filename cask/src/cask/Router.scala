@@ -42,6 +42,7 @@ object Router{
     else if (s.startsWith("-")) s.drop(1)
     else s
   }
+
   /**
     * What is known about a single endpoint for our routes. It has a [[name]],
     * [[argSignatures]] for each argument, and a macro-generated [[invoke0]]
@@ -52,10 +53,10 @@ object Router{
     * calling a Scala method.
     */
   case class EntryPoint[T, C](name: String,
-                                                       argSignatures: Seq[ArgSig[T, _, C]],
-                                                       doc: Option[String],
-                                                       varargs: Boolean,
-                                                       invoke0: (T, C, Map[String, Seq[String]], Seq[String]) => Result[Any]){
+                              argSignatures: Seq[ArgSig[T, _, C]],
+                              doc: Option[String],
+                              varargs: Boolean,
+                              invoke0: (T, C, Map[String, Seq[String]], Seq[String]) => Result[Any]){
       def invoke(target: T, ctx: C, groupedArgs: Seq[(String, Option[String])]): Result[Any] = {
       var remainingArgSignatures = argSignatures.toList.filter(_.reads.arity > 0)
 
@@ -373,6 +374,9 @@ class Router [C <: Context](val c: C) {
     }.unzip
 
 
+    val methCall =
+      if (meth.paramLists.isEmpty) q"$baseArgSym.${meth.name.toTermName}"
+      else q"$baseArgSym.${meth.name.toTermName}(..$argNameCasts)"
     val res = q"""
     cask.Router.EntryPoint[$curCls, $ctx](
       ${meth.name.toString},
@@ -386,7 +390,7 @@ class Router [C <: Context](val c: C) {
         cask.Router.validate(Seq(..$readArgs)) match{
           case cask.Router.Result.Success(List(..$argNames)) =>
             cask.Router.Result.Success(
-              ${wrapOutput(q"$baseArgSym.${meth.name.toTermName}(..$argNameCasts)")}
+              ${wrapOutput(methCall)}
             )
           case x: cask.Router.Result.Error => x
         }

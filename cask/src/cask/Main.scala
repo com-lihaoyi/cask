@@ -3,6 +3,7 @@ import cask.Router.EntryPoint
 import java.io.OutputStream
 import java.nio.ByteBuffer
 
+import cask.Routes.Metadata
 import io.undertow.Undertow
 import io.undertow.server.handlers.BlockingHandler
 import io.undertow.server.{HttpHandler, HttpServerExchange}
@@ -24,9 +25,9 @@ abstract class BaseMain{
     route <- routes.caskMetadata.value.map(x => x: Routes.RouteMetadata[_])
   } yield (routes, route)
 
-  lazy val routeTrie = DispatchTrie.construct[(Routes, Router.EntryPoint[_, HttpServerExchange])](0,
+  lazy val routeTrie = DispatchTrie.construct[(Routes, Routes.RouteMetadata[_])](0,
     for((route, metadata) <- routeList)
-    yield (Util.splitPath(metadata.metadata.path): IndexedSeq[String], (route, metadata.entryPoint))
+    yield (Util.splitPath(metadata.metadata.path): IndexedSeq[String], (route, metadata))
   )
 
   def handleError(statusCode: Int): Response = {
@@ -49,18 +50,11 @@ abstract class BaseMain{
     def handleRequest(exchange: HttpServerExchange): Unit = {
       routeTrie.lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
         case None => writeResponse(exchange, handleError(404))
-        case Some(((routes, entrypoint), bindings)) =>
-          import collection.JavaConverters._
-          val allBindings =
-            bindings.toSeq ++
-              exchange.getQueryParameters
-                .asScala
-                .toSeq
-                .flatMap{case (k, vs) => vs.asScala.map((k, _))}
-
-          val result = entrypoint
-            .asInstanceOf[EntryPoint[routes.type, HttpServerExchange]]
-            .invoke(routes, exchange, allBindings.map{case (k, v) => (k, Some(v))})
+        case Some(((routes, metadata), bindings)) =>
+          val result = metadata.metadata.handle(
+            exchange, bindings, routes,
+            metadata.entryPoint.asInstanceOf[EntryPoint[Routes, HttpServerExchange]]
+          )
 
           result match{
             case Router.Result.Success(response: Response) => writeResponse(exchange, response)
