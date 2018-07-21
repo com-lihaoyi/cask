@@ -41,7 +41,7 @@ abstract class BaseMain{
     response.headers.foreach{case (k, v) =>
       exchange.getResponseHeaders.put(new HttpString(k), v)
     }
-    response.cookies.foreach(exchange.setResponseCookie)
+    response.cookies.foreach(c => exchange.setResponseCookie(Cookie.toUndertow(c)))
 
     exchange.setStatusCode(response.statusCode)
     response.data.write(exchange.getOutputStream)

@@ -1,19 +1,25 @@
 package test.cask
 
-import io.undertow.server.handlers.CookieImpl
-
 object Cookies extends cask.MainRoutes{
-  @cask.get("/read-cookies")
+  @cask.get("/read-cookie")
   def readCookies(cookies: cask.Cookies) = {
-    val username = cookies.value.get("username")
-    username.map(_.getValue).toString
+    val username = cookies.value.get("my-username")
+    username.map(_.value).toString
   }
 
-  @cask.get("store-cookies")
+  @cask.get("/store-cookie")
   def storeCookies() = {
     cask.Response(
       "Cookies Set!",
-      cookies = Seq(new CookieImpl("username", "the username"))
+      cookies = Seq(cask.Cookie("my-username", "the username"))
+    )
+  }
+
+  @cask.get("/delete-cookie")
+  def deleteCookie() = {
+    cask.Response(
+      "Cookies Deleted!",
+      cookies = Seq(cask.Cookie("my-username", "the username", expires = java.time.Instant.EPOCH))
     )
   }
 

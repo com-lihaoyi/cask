@@ -8,9 +8,6 @@ import io.undertow.server.HttpServerExchange
 import scala.reflect.macros.blackbox.Context
 import java.io.InputStream
 
-import io.undertow.server.handlers.Cookie
-
-
 case class Response(data: Response.Data,
                     statusCode: Int = 200,
                     headers: Seq[(String, String)] = Nil,
