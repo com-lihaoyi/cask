@@ -38,7 +38,7 @@ object Routes{
 
       val routeParts = for{
         m <- c.weakTypeOf[T].members
-        annot <- m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[RouteBase])
+        annot <- m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[AnnotationBase])
       } yield {
         val annotObject = q"new ${annot.tree.tpe}(..${annot.tree.children.tail})"
         val annotObjectSym = c.universe.TermName(c.freshName("annotObject"))

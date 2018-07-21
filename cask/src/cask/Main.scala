@@ -9,41 +9,35 @@ import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.util.{Headers, HttpString}
 
 class MainRoutes extends BaseMain with Routes{
-  def servers = Seq(this)
+  def allRoutes = Seq(this)
 }
 class Main(servers0: Routes*) extends BaseMain{
-  def servers = servers0.toSeq
+  def allRoutes = servers0.toSeq
 }
 abstract class BaseMain{
-  def servers: Seq[Routes]
+  def allRoutes: Seq[Routes]
   val port: Int = 8080
   val host: String = "localhost"
 
-  val allRoutes = for{
-    server <- servers
-    route <- server.caskMetadata.value.map(x => x: Routes.RouteMetadata[_])
-  } yield (server, route)
+  lazy val routeList = for{
+    routes <- allRoutes
+    route <- routes.caskMetadata.value.map(x => x: Routes.RouteMetadata[_])
+  } yield (routes, route)
 
-  val defaultHandler = new HttpHandler() {
+  lazy val routeTrie = DispatchTrie.construct[(Routes, Router.EntryPoint[_, HttpServerExchange])](0,
+    for((route, metadata) <- routeList)
+    yield (Util.splitPath(metadata.metadata.path): IndexedSeq[String], (route, metadata.entryPoint))
+  )
+
+  lazy val defaultHandler = new HttpHandler() {
     def handleRequest(exchange: HttpServerExchange): Unit = {
-      val routeOpt =
-        allRoutes
-          .iterator
-          .map { case (s: Routes, r: Routes.RouteMetadata[_]) =>
-            Util.matchRoute(r.metadata.path, exchange.getRequestPath).map((s, r, _))
-          }
-          .flatten
-          .toStream
-          .headOption
-
-
-      routeOpt match{
+      routeTrie.lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
         case None =>
 
           exchange.setStatusCode(404)
           exchange.getResponseHeaders.put(Headers.CONTENT_TYPE, "text/plain")
           exchange.getResponseSender.send("404 Not Found")
-        case Some((server, route, bindings)) =>
+        case Some(((routes, entrypoint), bindings)) =>
           import collection.JavaConverters._
           val allBindings =
             bindings.toSeq ++
@@ -52,9 +46,9 @@ abstract class BaseMain{
                 .toSeq
                 .flatMap{case (k, vs) => vs.asScala.map((k, _))}
 
-          val result = route.entryPoint
-            .asInstanceOf[EntryPoint[server.type, HttpServerExchange]]
-            .invoke(server, exchange, allBindings.map{case (k, v) => (k, Some(v))})
+          val result = entrypoint
+            .asInstanceOf[EntryPoint[routes.type, HttpServerExchange]]
+            .invoke(routes, exchange, allBindings.map{case (k, v) => (k, Some(v))})
 
           result match{
             case Router.Result.Success(response: Response) =>
