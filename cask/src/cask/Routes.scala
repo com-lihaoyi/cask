@@ -32,7 +32,7 @@ object Response{
 
 object Routes{
   case class RouteMetadata[T](metadata: EndpointAnnotation[_],
-                              entryPoint: EntryPoint[T, HttpServerExchange])
+                              entryPoint: EntryPoint[T, (HttpServerExchange, Seq[String])])
   case class Metadata[T](value: RouteMetadata[T]*)
   object Metadata{
     implicit def initialize[T] = macro initializeImpl[T]
@@ -50,7 +50,7 @@ object Routes{
           m.asInstanceOf[MethodSymbol],
           weakTypeOf[T],
           (t: router.c.universe.Tree) => q"$annotObjectSym.wrapMethodOutput($t)",
-          c.weakTypeOf[io.undertow.server.HttpServerExchange],
+          c.weakTypeOf[(io.undertow.server.HttpServerExchange, Seq[String])],
           q"$annotObjectSym.parseMethodInput"
         )
 

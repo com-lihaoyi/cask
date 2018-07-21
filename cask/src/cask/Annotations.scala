@@ -6,20 +6,23 @@ import collection.JavaConverters._
 
 trait EndpointAnnotation[R]{
   val path: String
+  def subpath: Boolean = false
   def wrapMethodOutput(t: R): Any
   def parseMethodInput[T](implicit p: ParamReader[T]) = p
 
   def handle(exchange: HttpServerExchange,
+             remaining: Seq[String],
              bindings: Map[String, String],
              routes: Routes,
-             entryPoint: EntryPoint[Routes, HttpServerExchange]): Router.Result[Response]
+             entryPoint: EntryPoint[Routes, (HttpServerExchange, Seq[String])]): Router.Result[Response]
 }
 trait RouteBase extends EndpointAnnotation[Response]{
   def wrapMethodOutput(t: Response) = t
   def handle(exchange: HttpServerExchange,
+             remaining: Seq[String],
              bindings: Map[String, String],
              routes: Routes,
-             entryPoint: EntryPoint[Routes, HttpServerExchange]): Router.Result[Response] = {
+             entryPoint: EntryPoint[Routes, (HttpServerExchange, Seq[String])]): Router.Result[Response] = {
     val allBindings =
       bindings.toSeq ++
         exchange.getQueryParameters
@@ -27,39 +30,37 @@ trait RouteBase extends EndpointAnnotation[Response]{
           .toSeq
           .flatMap{case (k, vs) => vs.asScala.map((k, _))}
 
-    entryPoint.invoke(routes, exchange, allBindings.map{case (k, v) => (k, Some(v))})
+    entryPoint.invoke(routes, (exchange, remaining), allBindings.map{case (k, v) => (k, Some(v))})
               .asInstanceOf[Router.Result[Response]]
   }
 }
-class get(val path: String) extends RouteBase
-class post(val path: String) extends RouteBase
-class put(val path: String) extends RouteBase
-class route(val path: String, val methods: Seq[String]) extends RouteBase
+class get(val path: String, override val subpath: Boolean = false) extends RouteBase
+class post(val path: String, override val subpath: Boolean = false) extends RouteBase
+class put(val path: String, override val subpath: Boolean = false) extends RouteBase
+class route(val path: String, val methods: Seq[String], override val subpath: Boolean = false) extends RouteBase
 class static(val path: String) extends EndpointAnnotation[String] {
+  override def subpath = true
   def wrapOutput(t: String) = t
 
   def wrapMethodOutput(t: String) = t
 
   def handle(exchange: HttpServerExchange,
+             remaining: Seq[String],
              bindings: Map[String, String],
              routes: Routes,
-             entryPoint: EntryPoint[Routes, HttpServerExchange]): Router.Result[Response] = {
-    entryPoint.invoke(routes, exchange, Nil).asInstanceOf[Router.Result[String]] match{
+             entryPoint: EntryPoint[Routes, (HttpServerExchange, Seq[String])]): Router.Result[Response] = {
+    entryPoint.invoke(routes, (exchange, remaining), Nil).asInstanceOf[Router.Result[String]] match{
       case Router.Result.Success(s) =>
-        println("XXX STATIC")
         val relPath = java.nio.file.Paths.get(
-          s + Util.splitPath(exchange.getRequestPath).drop(Util.splitPath(path).length).mkString("/")
+          s + "/" + remaining.mkString("/")
         )
-        println("Y")
         if (java.nio.file.Files.exists(relPath) && java.nio.file.Files.isRegularFile(relPath)){
           Router.Result.Success(Response(java.nio.file.Files.newInputStream(relPath)))
         }else{
           Router.Result.Success(Response("", 404))
         }
 
-      case e: Router.Result.Error =>
-        println("XXX")
-        e
+      case e: Router.Result.Error => e
 
     }
 

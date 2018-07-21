@@ -27,7 +27,7 @@ abstract class BaseMain{
 
   lazy val routeTrie = DispatchTrie.construct[(Routes, Routes.RouteMetadata[_])](0,
     for((route, metadata) <- routeList)
-    yield (Util.splitPath(metadata.metadata.path): IndexedSeq[String], (route, metadata))
+    yield (Util.splitPath(metadata.metadata.path): IndexedSeq[String], (route, metadata), metadata.metadata.subpath)
   )
 
   def handleError(statusCode: Int): Response = {
@@ -50,10 +50,10 @@ abstract class BaseMain{
     def handleRequest(exchange: HttpServerExchange): Unit = {
       routeTrie.lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
         case None => writeResponse(exchange, handleError(404))
-        case Some(((routes, metadata), bindings)) =>
+        case Some(((routes, metadata), bindings, remaining)) =>
           val result = metadata.metadata.handle(
-            exchange, bindings, routes,
-            metadata.entryPoint.asInstanceOf[EntryPoint[Routes, HttpServerExchange]]
+            exchange, remaining, bindings, routes,
+            metadata.entryPoint.asInstanceOf[EntryPoint[Routes, (HttpServerExchange, Seq[String])]]
           )
 
           result match{

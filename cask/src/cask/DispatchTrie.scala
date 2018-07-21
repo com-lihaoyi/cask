@@ -1,18 +1,19 @@
 package cask
 import collection.mutable
 object DispatchTrie{
-  def construct[T](index: Int, inputs: Seq[(IndexedSeq[String], T)]): DispatchTrie[T] = {
-    val continuations = mutable.Map.empty[String, mutable.Buffer[(IndexedSeq[String], T)]]
+  def construct[T](index: Int,
+                   inputs: Seq[(IndexedSeq[String], T, Boolean)]): DispatchTrie[T] = {
+    val continuations = mutable.Map.empty[String, mutable.Buffer[(IndexedSeq[String], T, Boolean)]]
 
-    val terminals = mutable.Buffer.empty[(IndexedSeq[String], T)]
+    val terminals = mutable.Buffer.empty[(IndexedSeq[String], T, Boolean)]
 
-    for((path, endPoint) <- inputs) {
+    for((path, endPoint, allowSubpath) <- inputs) {
       if (path.length < index) () // do nothing
       else if (path.length == index) {
-        terminals.append(path -> endPoint)
+        terminals.append((path, endPoint, allowSubpath))
       } else if (path.length > index){
         val buf = continuations.getOrElseUpdate(path(index), mutable.Buffer.empty)
-        buf.append(path -> endPoint)
+        buf.append((path, endPoint, allowSubpath))
       }
     }
 
@@ -25,31 +26,37 @@ object DispatchTrie{
     } else if(wildcards.size >= 1 && continuations.size > 1) {
       throw new Exception(
         "Routes overlap with wildcards: " +
-        (wildcards ++ continuations).flatMap(_._2).map(_._1.mkString("/"))
+          (wildcards ++ continuations).flatMap(_._2).map(_._1.mkString("/"))
+      )
+    }else if (terminals.headOption.exists(_._3) && continuations.size == 1){
+      throw new Exception(
+        "Routes overlap with subpath capture: " +
+          (wildcards ++ continuations).flatMap(_._2).map(_._1.mkString("/"))
       )
     }else{
       DispatchTrie[T](
-        current = terminals.headOption.map(_._2),
+        current = terminals.headOption.map(x => x._2 -> x._3),
         children = continuations.map{ case (k, vs) =>
           if (!k.startsWith("::")) (k, construct(index + 1, vs))
-          else (k, DispatchTrie(Some(vs.head._2), Map()))
+          else (k, DispatchTrie(Some(vs.head._2 -> vs.head._3), Map()))
         }.toMap
       )
     }
   }
 }
 
-case class DispatchTrie[T](current: Option[T],
+case class DispatchTrie[T](current: Option[(T, Boolean)],
                            children: Map[String, DispatchTrie[T]]){
-  final def lookup(input: List[String],
-                            bindings: Map[String, String])
-                            : Option[(T, Map[String, String])] = {
-    input match{
-      case Nil => current.map(_ -> bindings)
+  final def lookup(remainingInput: List[String],
+                   bindings: Map[String, String])
+                   : Option[(T, Map[String, String], Seq[String])] = {
+    remainingInput match{
+      case Nil =>
+        current.map(x => (x._1, bindings, Nil))
+      case head :: rest if current.exists(_._2) =>
+        current.map(x => (x._1, bindings, head :: rest))
       case head :: rest =>
-        if (children.size == 1 && children.keys.head.startsWith("::")){
-          children.values.head.lookup(Nil, bindings + (children.keys.head.drop(2) -> input.mkString("/")))
-        }else if (children.size == 1 && children.keys.head.startsWith(":")){
+        if (children.size == 1 && children.keys.head.startsWith(":")){
           children.values.head.lookup(rest, bindings + (children.keys.head.drop(1) -> head))
         }else{
           children.get(head) match{
@@ -60,5 +67,4 @@ case class DispatchTrie[T](current: Option[T],
 
     }
   }
-
 }
