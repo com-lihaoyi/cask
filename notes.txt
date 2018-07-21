@@ -1,0 +1,32 @@
+Web Framework
+- Build tool
+    Y Mill
+- Routing
+    ? Custom
+        Y Basics
+        X Composition
+- HTML Templating
+    Y Scalatags
+    Y Twirl
+- JSON
+    Y uJson
+- Filesystem
+    Y Ammonite
+- SQL
+    Y Quill?
+- Migrations
+    ?
+- HTTP Client
+    Y Requests-Scala
+- Modules
+    X Traits mixed into Main
+- Dev Environment
+    X Custom
+--- PUNT ---
+Async
+Forms
+Client-side Support
+    - Packaging/Resource pipelines can be handled by Mill
+Sending Emails
+User Management
+Sending Emails

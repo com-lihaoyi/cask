@@ -1,6 +1,8 @@
 package cask
 
 import io.undertow.server.HttpServerExchange
+import io.undertow.server.handlers.Cookie
+import io.undertow.server.handlers.form.{FormData, FormParserFactory}
 
 abstract class ParamReader[T]
   extends Router.ArgReader[T, (HttpServerExchange, Seq[String])]{
@@ -33,6 +35,14 @@ object ParamReader{
 
   implicit object HttpExchangeParam extends NilParam[HttpServerExchange]((server, remaining) => server)
   implicit object SubpathParam extends NilParam[Subpath]((server, remaining) => new Subpath(remaining))
+  implicit object CookieParam extends NilParam[Cookies]((server, remaining) => {
+    import collection.JavaConverters._
+    new Cookies(server.getRequestCookies.asScala.toMap)
+  })
+  implicit object FormDataParam extends NilParam[FormData]((server, remaining) =>
+    FormParserFactory.builder().build().createParser(server).parseBlocking()
+  )
 }
 
 class Subpath(val value: Seq[String])
+class Cookies(val value: Map[String, Cookie])

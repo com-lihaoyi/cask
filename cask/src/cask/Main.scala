@@ -41,6 +41,7 @@ abstract class BaseMain{
     response.headers.foreach{case (k, v) =>
       exchange.getResponseHeaders.put(new HttpString(k), v)
     }
+    response.cookies.foreach(exchange.setResponseCookie)
 
     exchange.setStatusCode(response.statusCode)
     response.data.write(exchange.getOutputStream)
@@ -58,7 +59,13 @@ abstract class BaseMain{
 
           result match{
             case Router.Result.Success(response: Response) => writeResponse(exchange, response)
-            case err: Router.Result.Error => writeResponse(exchange, handleError(400))
+            case Router.Result.Error.Exception(e) =>
+              println(e)
+              e.printStackTrace()
+              writeResponse(exchange, handleError(500))
+            case err: Router.Result.Error =>
+              println(err)
+              writeResponse(exchange, handleError(400))
           }
 
 
