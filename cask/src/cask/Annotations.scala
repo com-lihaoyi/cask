@@ -15,7 +15,6 @@ class get(val path: String) extends StaticAnnotation with RouteBase
 class post(val path: String) extends StaticAnnotation with RouteBase
 class put(val path: String) extends StaticAnnotation with RouteBase
 class route(val path: String, val methods: Seq[String]) extends StaticAnnotation with RouteBase
-
 class static(val path: String) extends StaticAnnotation{
   def wrapOutput(t: String) = t
 }

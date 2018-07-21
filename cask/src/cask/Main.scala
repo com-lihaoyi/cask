@@ -29,14 +29,26 @@ abstract class BaseMain{
     yield (Util.splitPath(metadata.metadata.path): IndexedSeq[String], (route, metadata.entryPoint))
   )
 
+  def handleError(statusCode: Int): Response = {
+    Response(
+      s"Error $statusCode: ${Status.codesToStatus(statusCode).reason}",
+      statusCode = statusCode
+    )
+  }
+
+  def writeResponse(exchange: HttpServerExchange, response: Response) = {
+    response.headers.foreach{case (k, v) =>
+      exchange.getResponseHeaders.put(new HttpString(k), v)
+    }
+
+    exchange.setStatusCode(response.statusCode)
+    response.data.write(exchange.getOutputStream)
+  }
+
   lazy val defaultHandler = new HttpHandler() {
     def handleRequest(exchange: HttpServerExchange): Unit = {
       routeTrie.lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
-        case None =>
-
-          exchange.setStatusCode(404)
-          exchange.getResponseHeaders.put(Headers.CONTENT_TYPE, "text/plain")
-          exchange.getResponseSender.send("404 Not Found")
+        case None => writeResponse(exchange, handleError(404))
         case Some(((routes, entrypoint), bindings)) =>
           import collection.JavaConverters._
           val allBindings =
@@ -51,31 +63,8 @@ abstract class BaseMain{
             .invoke(routes, exchange, allBindings.map{case (k, v) => (k, Some(v))})
 
           result match{
-            case Router.Result.Success(response: Response) =>
-              response.headers.foreach{case (k, v) =>
-                exchange.getResponseHeaders.put(new HttpString(k), v)
-              }
-
-              exchange.setStatusCode(response.statusCode)
-
-
-              response.data.write(
-                new OutputStream {
-                  def write(b: Int) = {
-                    exchange.getResponseSender.send(ByteBuffer.wrap(Array(b.toByte)))
-                  }
-                  override def write(b: Array[Byte]) = {
-                    exchange.getResponseSender.send(ByteBuffer.wrap(b))
-                  }
-                  override def write(b: Array[Byte], off: Int, len: Int) = {
-                    exchange.getResponseSender.send(ByteBuffer.wrap(b.slice(off, off + len)))
-                  }
-                }
-              )
-            case err: Router.Result.Error =>
-              exchange.setStatusCode(400)
-              exchange.getResponseHeaders.put(Headers.CONTENT_TYPE, "text/plain")
-              exchange.getResponseSender.send("400 Not Found " + result)
+            case Router.Result.Success(response: Response) => writeResponse(exchange, response)
+            case err: Router.Result.Error => writeResponse(exchange, handleError(400))
           }
 
 
