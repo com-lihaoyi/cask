@@ -55,7 +55,7 @@ abstract class BaseMain{
                   .flatMap{case (k, vs) => vs.asScala.map((k, _))}
 
               val result = route.entryPoint
-                .asInstanceOf[EntryPoint[server.type]]
+                .asInstanceOf[EntryPoint[server.type, HttpServerExchange]]
                 .invoke(server, exchange, allBindings.map{case (k, v) => (k, Some(v))})
 
               result match{

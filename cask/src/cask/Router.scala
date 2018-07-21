@@ -16,31 +16,7 @@ import scala.reflect.macros.blackbox.Context
   * the Scala compiler and greatly reduces the startup time of cached scripts.
   */
 object Router{
-  /**
-    * Allows you to query how many things are overriden by the enclosing owner.
-    */
-  case class Overrides(value: Int)
-  object Overrides{
-    def apply()(implicit c: Overrides) = c.value
-    implicit def generate: Overrides = macro impl
-    def impl(c: Context): c.Tree = {
-      import c.universe._
-      q"new _root_.cask.Router.Overrides(${c.internal.enclosingOwner.overrides.length})"
-    }
-  }
-
   class doc(s: String) extends StaticAnnotation
-  class main extends StaticAnnotation
-  def generateRoutes[T]: Seq[Router.EntryPoint[T]] = macro generateRoutesImpl[T]
-  def generateRoutesImpl[T: c.WeakTypeTag](c: Context): c.Expr[Seq[EntryPoint[T]]] = {
-    import c.universe._
-    val r = new Router(c)
-    val allRoutes = r.getAllRoutesForClass(
-      weakTypeOf[T].asInstanceOf[r.c.Type]
-    ).asInstanceOf[Iterable[c.Tree]]
-
-    c.Expr[Seq[EntryPoint[T]]](q"_root_.scala.Seq(..$allRoutes)")
-  }
 
   /**
     * Models what is known by the router about a single argument: that it has
@@ -48,11 +24,18 @@ object Router{
     * (just for logging and reading, not a replacement for a `TypeTag`) and
     * possible a function that can compute its default value
     */
-  case class ArgSig[T, V](name: String,
-                          typeString: String,
-                          doc: Option[String],
-                          default: Option[T => V])
-                         (implicit val reads: ParamType[V])
+  case class ArgSig[-T, +V, -C](name: String,
+                                typeString: String,
+                                doc: Option[String],
+                                default: Option[T => V])
+                               (implicit val reads: ArgReader[V, C])
+
+  type AnyArgReader = ArgReader[Any, Nothing]
+
+  trait ArgReader[+T, -C]{
+    def arity: Int
+    def read(ctx: C, input: Seq[String]): T
+  }
 
   def stripDashes(s: String) = {
     if (s.startsWith("--")) s.drop(2)
@@ -68,16 +51,15 @@ object Router{
     * instead, which provides a nicer API to call it that mimmicks the API of
     * calling a Scala method.
     */
-  case class EntryPoint[T](name: String,
-                           argSignatures: Seq[ArgSig[T, _]],
-                           doc: Option[String],
-                           varargs: Boolean,
-                           invoke0: (T, HttpServerExchange, Map[String, Seq[String]], Seq[String]) => Result[Any],
-                           overrides: Int){
-    def invoke(target: T, exchange: HttpServerExchange, groupedArgs: Seq[(String, Option[String])]): Result[Any] = {
+  case class EntryPoint[T, C](name: String,
+                                                       argSignatures: Seq[ArgSig[T, _, C]],
+                                                       doc: Option[String],
+                                                       varargs: Boolean,
+                                                       invoke0: (T, C, Map[String, Seq[String]], Seq[String]) => Result[Any]){
+      def invoke(target: T, ctx: C, groupedArgs: Seq[(String, Option[String])]): Result[Any] = {
       var remainingArgSignatures = argSignatures.toList.filter(_.reads.arity > 0)
 
-      val accumulatedKeywords = mutable.Map.empty[ArgSig[T, _], mutable.Buffer[String]]
+      val accumulatedKeywords = mutable.Map.empty[ArgSig[T, _, C], mutable.Buffer[String]]
       val keywordableArgs = if (varargs) argSignatures.dropRight(1) else argSignatures
 
       for(arg <- keywordableArgs) accumulatedKeywords(arg) = mutable.Buffer.empty
@@ -86,7 +68,7 @@ object Router{
 
       val lookupArgSig = Map(argSignatures.map(x => (x.name, x)):_*)
 
-      var incomplete: Option[ArgSig[T, _]] = None
+      var incomplete: Option[ArgSig[T, _, C]] = None
 
       for(group <- groupedArgs){
 
@@ -147,7 +129,7 @@ object Router{
           .map{case (k, single) => (k.name, single)}
           .toMap
 
-        try invoke0(target, exchange, mapping, leftoverArgs)
+        try invoke0(target, ctx, mapping, leftoverArgs)
         catch{case e: Throwable => Result.Error.Exception(e)}
       }
     }
@@ -158,9 +140,10 @@ object Router{
     catch{ case e: Throwable => Left(error(e))}
   }
 
-  def read(dict: Map[String, Seq[String]],
+  def read[C]
+          (dict: Map[String, Seq[String]],
            default: => Option[Any],
-           arg: ArgSig[_, _],
+           arg: ArgSig[_, _, C],
            thunk: Seq[String] => Any): FailMaybe = {
     arg.reads.arity match{
       case 0 =>
@@ -194,7 +177,10 @@ object Router{
       * Invoking the [[EntryPoint]] was not successful
       */
     sealed trait Error extends Result[Nothing]
+
+
     object Error{
+
 
       /**
         * Invoking the [[EntryPoint]] failed with an exception while executing
@@ -206,10 +192,10 @@ object Router{
         * Invoking the [[EntryPoint]] failed because the arguments provided
         * did not line up with the arguments expected
         */
-      case class MismatchedArguments(missing: Seq[ArgSig[_, _]],
+      case class MismatchedArguments(missing: Seq[ArgSig[_, _, _]],
                                      unknown: Seq[String],
-                                     duplicate: Seq[(ArgSig[_, _], Seq[String])],
-                                     incomplete: Option[ArgSig[_, _]]) extends Error
+                                     duplicate: Seq[(ArgSig[_, _, _], Seq[String])],
+                                     incomplete: Option[ArgSig[_, _, _]]) extends Error
       /**
         * Invoking the [[EntryPoint]] failed because there were problems
         * deserializing/parsing individual arguments
@@ -223,12 +209,12 @@ object Router{
         * Something went wrong trying to de-serialize the input parameter;
         * the thrown exception is stored in [[ex]]
         */
-      case class Invalid(arg: ArgSig[_, _], value: Seq[String], ex: Throwable) extends ParamError
+      case class Invalid(arg: ArgSig[_, _, _], value: Seq[String], ex: Throwable) extends ParamError
       /**
         * Something went wrong trying to evaluate the default value
         * for this input parameter
         */
-      case class DefaultFailed(arg: ArgSig[_, _], ex: Throwable) extends ParamError
+      case class DefaultFailed(arg: ArgSig[_, _, _], ex: Throwable) extends ParamError
     }
   }
 
@@ -246,11 +232,12 @@ object Router{
     }
   }
 
-  def makeReadCall(dict: Map[String, Seq[String]],
-                   exchange: HttpServerExchange,
+  def makeReadCall[C]
+                  (dict: Map[String, Seq[String]],
+                   ctx: C,
                    default: => Option[Any],
-                   arg: ArgSig[_, _]) = {
-    read(dict, default, arg, arg.reads.read(exchange, _))
+                   arg: ArgSig[_, _, C]) = {
+    read(dict, default, arg, arg.reads.read(ctx, _))
   }
 
 }
@@ -282,9 +269,11 @@ class Router [C <: Context](val c: C) {
     }
   }
 
-
-
-  def extractMethod(meth: MethodSymbol, curCls: c.universe.Type): c.universe.Tree = {
+  def extractMethod(meth: MethodSymbol,
+                    curCls: c.universe.Type,
+                    wrapOutput: c.Tree => c.Tree,
+                    ctx: c.Type,
+                    argReader: c.Tree): c.universe.Tree = {
     val baseArgSym = TermName(c.freshName())
     val flattenedArgLists = meth.paramss.flatten
     def hasDefault(i: Int) = {
@@ -350,12 +339,12 @@ class Router [C <: Context](val c: C) {
       }
 
       val argSig = q"""
-        cask.Router.ArgSig[$curCls, $docUnwrappedType](
+        cask.Router.ArgSig[$curCls, $docUnwrappedType, $ctx](
           ${arg.name.toString},
           ${docUnwrappedType.toString + (if(vararg) "*" else "")},
           $docTree,
           $defaultOpt
-        )
+        )($argReader[$docUnwrappedType])
       """
 
       val reader =
@@ -363,7 +352,7 @@ class Router [C <: Context](val c: C) {
         else q"""
           cask.Router.makeReadCall(
             $argListSymbol,
-            exchange,
+            ctx,
             $default,
             $argSig
           )
@@ -385,7 +374,7 @@ class Router [C <: Context](val c: C) {
 
 
     val res = q"""
-    cask.Router.EntryPoint[$curCls](
+    cask.Router.EntryPoint[$curCls, $ctx](
       ${meth.name.toString},
       scala.Seq(..$argSigs),
       ${methodDoc match{
@@ -393,15 +382,14 @@ class Router [C <: Context](val c: C) {
       case Some(s) => q"scala.Some($s)"
     }},
       ${varargs.contains(true)},
-      ($baseArgSym: $curCls, exchange: io.undertow.server.HttpServerExchange, $argListSymbol: Map[String, Seq[String]], $extrasSymbol: Seq[String]) =>
+      ($baseArgSym: $curCls, ctx: $ctx, $argListSymbol: Map[String, Seq[String]], $extrasSymbol: Seq[String]) =>
         cask.Router.validate(Seq(..$readArgs)) match{
           case cask.Router.Result.Success(List(..$argNames)) =>
             cask.Router.Result.Success(
-              $baseArgSym.${meth.name.toTermName}(..$argNameCasts): cask.Response
+              ${wrapOutput(q"$baseArgSym.${meth.name.toTermName}(..$argNameCasts)")}
             )
           case x: cask.Router.Result.Error => x
-        },
-      cask.Router.Overrides()
+        }
     )
     """
 
@@ -412,17 +400,4 @@ class Router [C <: Context](val c: C) {
     res
   }
 
-  def hasMainAnnotation(t: MethodSymbol) = {
-    t.annotations.exists(_.tpe =:= typeOf[Router.main])
-  }
-  def getAllRoutesForClass(curCls: Type,
-                           pred: MethodSymbol => Boolean = hasMainAnnotation)
-  : Iterable[c.universe.Tree] = {
-    for{
-      t <- getValsOrMeths(curCls)
-      if pred(t)
-    } yield {
-      extractMethod(t, curCls)
-    }
-  }
 }
