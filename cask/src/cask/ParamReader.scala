@@ -2,25 +2,37 @@ package cask
 
 import io.undertow.server.HttpServerExchange
 
-class ParamReader[T](val arity: Int,
-                     val read0: (HttpServerExchange, Seq[String], Seq[String]) => T)
+abstract class ParamReader[T]
   extends Router.ArgReader[T, (HttpServerExchange, Seq[String])]{
-  def read(ctx: (HttpServerExchange, Seq[String]), v: Seq[String]): T = read0(ctx._1, v, ctx._2)
+  def arity: Int
+  def read(ctx: (HttpServerExchange, Seq[String]), v: Seq[String]): T
 }
 object ParamReader{
-  implicit object StringParam extends ParamReader[String](1, (h, x, r) => x.head)
-  implicit object BooleanParam extends ParamReader[Boolean](1, (h, x, r) => x.head.toBoolean)
-  implicit object ByteParam extends ParamReader[Byte](1, (h, x, r) => x.head.toByte)
-  implicit object ShortParam extends ParamReader[Short](1, (h, x, r) => x.head.toShort)
-  implicit object IntParam extends ParamReader[Int](1, (h, x, r) => x.head.toInt)
-  implicit object LongParam extends ParamReader[Long](1, (h, x, r) => x.head.toLong)
-  implicit object DoubleParam extends ParamReader[Double](1, (h, x, r) => x.head.toDouble)
-  implicit object FloatParam extends ParamReader[Float](1, (h, x, r) => x.head.toFloat)
-  implicit def SeqParam[T: ParamReader] =
-    new ParamReader[Seq[T]](1, (h, s, r) => s.map(x => implicitly[ParamReader[T]].read((h, r), Seq(x))))
+  class SimpleParam[T](f: String => T) extends ParamReader[T]{
+    def arity = 1
+    def read(ctx: (HttpServerExchange, Seq[String]), v: Seq[String]): T = f(v.head)
+  }
+  class NilParam[T](f: (HttpServerExchange, Seq[String]) => T) extends ParamReader[T]{
+    def arity = 0
+    def read(ctx: (HttpServerExchange, Seq[String]), v: Seq[String]): T = f(ctx._1, ctx._2)
+  }
+  implicit object StringParam extends SimpleParam[String](x => x)
+  implicit object BooleanParam extends SimpleParam[Boolean](_.toBoolean)
+  implicit object ByteParam extends SimpleParam[Byte](_.toByte)
+  implicit object ShortParam extends SimpleParam[Short](_.toShort)
+  implicit object IntParam extends SimpleParam[Int](_.toInt)
+  implicit object LongParam extends SimpleParam[Long](_.toLong)
+  implicit object DoubleParam extends SimpleParam[Double](_.toDouble)
+  implicit object FloatParam extends SimpleParam[Float](_.toFloat)
+  implicit def SeqParam[T: ParamReader] = new ParamReader[Seq[T]]{
+    def arity = 1
+    def read(ctx: (HttpServerExchange, Seq[String]), v: Seq[String]): Seq[T] = {
+      v.map(x => implicitly[ParamReader[T]].read(ctx, Seq(x)))
+    }
+  }
 
-  implicit object HttpExchangeParam extends ParamReader[HttpServerExchange](0, (h, x, r) => h)
-  implicit object SubpathParam extends ParamReader[Subpath](0, (h, x, r) => new Subpath(r))
+  implicit object HttpExchangeParam extends NilParam[HttpServerExchange]((server, remaining) => server)
+  implicit object SubpathParam extends NilParam[Subpath]((server, remaining) => new Subpath(remaining))
 }
 
 class Subpath(val value: Seq[String])
