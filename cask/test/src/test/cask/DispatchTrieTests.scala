@@ -2,7 +2,7 @@ package test.cask
 import cask.DispatchTrie
 import utest._
 
-object CaskTest extends TestSuite {
+object DispatchTrieTests extends TestSuite {
   val tests = Tests{
 
     'hello - {

@@ -8,6 +8,7 @@ object cask extends ScalaModule{
     ivy"com.github.scopt::scopt:3.5.0"
   )
   object test extends Tests{
+    def forkArgs = Seq("--illegal-access=deny")
     def ivyDeps = Agg(ivy"com.lihaoyi::utest::0.6.3")
     def testFrameworks = Seq("utest.runner.Framework")
   }

@@ -388,7 +388,7 @@ class Router [C <: Context](val c: C) {
       ${varargs.contains(true)},
       ($baseArgSym: $curCls, ctx: $ctx, $argListSymbol: Map[String, Seq[String]], $extrasSymbol: Seq[String]) =>
         cask.Router.validate(Seq(..$readArgs)) match{
-          case cask.Router.Result.Success(List(..$argNames)) =>
+          case cask.Router.Result.Success(Seq(..$argNames)) =>
             cask.Router.Result.Success(
               ${wrapOutput(methCall)}
             )
