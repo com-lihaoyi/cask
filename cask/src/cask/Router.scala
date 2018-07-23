@@ -24,17 +24,15 @@ object Router{
     * (just for logging and reading, not a replacement for a `TypeTag`) and
     * possible a function that can compute its default value
     */
-  case class ArgSig[-T, +V, -C](name: String,
-                                typeString: String,
-                                doc: Option[String],
-                                default: Option[T => V])
-                               (implicit val reads: ArgReader[V, C])
+  case class ArgSig[I, -T, +V, -C](name: String,
+                                   typeString: String,
+                                   doc: Option[String],
+                                   default: Option[T => V])
+                                  (implicit val reads: ArgReader[I, V, C])
 
-  type AnyArgReader = ArgReader[Any, Nothing]
-
-  trait ArgReader[+T, -C]{
+  trait ArgReader[I, +T, -C]{
     def arity: Int
-    def read(ctx: C, input: Seq[String]): T
+    def read(ctx: C, input: I): T
   }
 
   def stripDashes(s: String) = {
@@ -52,87 +50,14 @@ object Router{
     * instead, which provides a nicer API to call it that mimmicks the API of
     * calling a Scala method.
     */
-  case class EntryPoint[T, C](name: String,
-                              argSignatures: Seq[ArgSig[T, _, C]],
-                              doc: Option[String],
-                              varargs: Boolean,
-                              invoke0: (T, C, Map[String, Seq[String]], Seq[String]) => Result[Any]){
-      def invoke(target: T, ctx: C, groupedArgs: Seq[(String, Option[String])]): Result[Any] = {
-      var remainingArgSignatures = argSignatures.toList.filter(_.reads.arity > 0)
-
-      val accumulatedKeywords = mutable.Map.empty[ArgSig[T, _, C], mutable.Buffer[String]]
-      val keywordableArgs = if (varargs) argSignatures.dropRight(1) else argSignatures
-
-      for(arg <- keywordableArgs) accumulatedKeywords(arg) = mutable.Buffer.empty
-
-      val leftoverArgs = mutable.Buffer.empty[String]
-
-      val lookupArgSig = Map(argSignatures.map(x => (x.name, x)):_*)
-
-      var incomplete: Option[ArgSig[T, _, C]] = None
-
-      for(group <- groupedArgs){
-
-        group match{
-          case (value, None) =>
-            if (value(0) == '-' && !varargs){
-              lookupArgSig.get(stripDashes(value)) match{
-                case None => leftoverArgs.append(value)
-                case Some(sig) => incomplete = Some(sig)
-              }
-
-            } else remainingArgSignatures match {
-              case Nil => leftoverArgs.append(value)
-              case last :: Nil if varargs => leftoverArgs.append(value)
-              case next :: rest =>
-                accumulatedKeywords(next).append(value)
-                remainingArgSignatures = rest
-            }
-          case (rawKey, Some(value)) =>
-            val key = stripDashes(rawKey)
-            lookupArgSig.get(key) match{
-              case Some(x) if accumulatedKeywords.contains(x) =>
-                if (accumulatedKeywords(x).nonEmpty && varargs){
-                  leftoverArgs.append(rawKey, value)
-                }else{
-                  accumulatedKeywords(x).append(value)
-                  remainingArgSignatures = remainingArgSignatures.filter(_.name != key)
-                }
-              case _ =>
-                leftoverArgs.append(rawKey, value)
-            }
-        }
-      }
-
-      val missing0 = remainingArgSignatures
-        .filter(_.default.isEmpty)
-
-      val missing = if(varargs) {
-        missing0.filter(_ != argSignatures.last)
-      } else {
-        missing0.filter(x => incomplete != Some(x))
-      }
-
-      if (
-        incomplete.nonEmpty ||
-          missing.nonEmpty ||
-          (leftoverArgs.nonEmpty && !varargs)
-      ){
-        Result.Error.MismatchedArguments(
-          missing = missing,
-          unknown = leftoverArgs,
-          duplicate = Nil,
-          incomplete = incomplete
-
-        )
-      } else {
-        val mapping = accumulatedKeywords
-          .map{case (k, single) => (k.name, single)}
-          .toMap
-
-        try invoke0(target, ctx, mapping, leftoverArgs)
-        catch{case e: Throwable => Result.Error.Exception(e)}
-      }
+  case class EntryPoint[I, T, C](name: String,
+                                 argSignatures: Seq[ArgSig[I, T, _, C]],
+                                 doc: Option[String],
+                                 varargs: Boolean,
+                                 invoke0: (T, C, Map[String, I]) => Result[Any]){
+    def invoke(target: T, ctx: C, args: Map[String, I]): Result[Any] = {
+      try invoke0(target, ctx, args)
+      catch{case e: Throwable => Result.Error.Exception(e)}
     }
   }
 
@@ -141,14 +66,15 @@ object Router{
     catch{ case e: Throwable => Left(error(e))}
   }
 
-  def read[C]
-          (dict: Map[String, Seq[String]],
+  def read[I, C]
+          (dict: Map[String, I],
            default: => Option[Any],
-           arg: ArgSig[_, _, C],
-           thunk: Seq[String] => Any): FailMaybe = {
+           arg: ArgSig[I, _, _, C],
+           thunk: I => Any): FailMaybe = {
     arg.reads.arity match{
       case 0 =>
-        tryEither(thunk(null), Result.ParamError.DefaultFailed(arg, _)).left.map(Seq(_))
+        tryEither(
+          thunk(null.asInstanceOf[I]), Result.ParamError.DefaultFailed(arg, _)).left.map(Seq(_))
       case 1 =>
         dict.get(arg.name) match{
           case None =>
@@ -193,10 +119,10 @@ object Router{
         * Invoking the [[EntryPoint]] failed because the arguments provided
         * did not line up with the arguments expected
         */
-      case class MismatchedArguments(missing: Seq[ArgSig[_, _, _]],
+      case class MismatchedArguments(missing: Seq[ArgSig[_, _, _, _]],
                                      unknown: Seq[String],
-                                     duplicate: Seq[(ArgSig[_, _, _], Seq[String])],
-                                     incomplete: Option[ArgSig[_, _, _]]) extends Error
+                                     duplicate: Seq[(ArgSig[_, _, _, _], Seq[String])],
+                                     incomplete: Option[ArgSig[_, _, _, _]]) extends Error
       /**
         * Invoking the [[EntryPoint]] failed because there were problems
         * deserializing/parsing individual arguments
@@ -210,12 +136,12 @@ object Router{
         * Something went wrong trying to de-serialize the input parameter;
         * the thrown exception is stored in [[ex]]
         */
-      case class Invalid(arg: ArgSig[_, _, _], value: Seq[String], ex: Throwable) extends ParamError
+      case class Invalid(arg: ArgSig[_, _, _, _], value: Any, ex: Throwable) extends ParamError
       /**
         * Something went wrong trying to evaluate the default value
         * for this input parameter
         */
-      case class DefaultFailed(arg: ArgSig[_, _, _], ex: Throwable) extends ParamError
+      case class DefaultFailed(arg: ArgSig[_, _, _, _], ex: Throwable) extends ParamError
     }
   }
 
@@ -233,18 +159,18 @@ object Router{
     }
   }
 
-  def makeReadCall[C]
-                  (dict: Map[String, Seq[String]],
+  def makeReadCall[I, C]
+                  (dict: Map[String, I],
                    ctx: C,
                    default: => Option[Any],
-                   arg: ArgSig[_, _, C]) = {
-    read(dict, default, arg, arg.reads.read(ctx, _))
+                   arg: ArgSig[I, _, _, C]) = {
+    read[I, C](dict, default, arg, arg.reads.read(ctx, _))
   }
 
 }
 
 
-class Router [C <: Context](val c: C) {
+class Router[C <: Context](val c: C) {
   import c.universe._
   def getValsOrMeths(curCls: Type): Iterable[MethodSymbol] = {
     def isAMemberOfAnyRef(member: Symbol) = {
@@ -274,7 +200,8 @@ class Router [C <: Context](val c: C) {
                     curCls: c.universe.Type,
                     wrapOutput: c.Tree => c.Tree,
                     ctx: c.Type,
-                    argReader: c.Tree): c.universe.Tree = {
+                    argReader: c.Tree,
+                    annotDeserializeType: c.Tree): c.universe.Tree = {
     val baseArgSym = TermName(c.freshName())
     val flattenedArgLists = meth.paramss.flatten
     def hasDefault(i: Int) = {
@@ -340,7 +267,7 @@ class Router [C <: Context](val c: C) {
       }
 
       val argSig = q"""
-        cask.Router.ArgSig[$curCls, $docUnwrappedType, $ctx](
+        cask.Router.ArgSig[$annotDeserializeType, $curCls, $docUnwrappedType, $ctx](
           ${arg.name.toString},
           ${docUnwrappedType.toString + (if(vararg) "*" else "")},
           $docTree,
@@ -378,15 +305,15 @@ class Router [C <: Context](val c: C) {
       if (meth.paramLists.isEmpty) q"$baseArgSym.${meth.name.toTermName}"
       else q"$baseArgSym.${meth.name.toTermName}(..$argNameCasts)"
     val res = q"""
-    cask.Router.EntryPoint[$curCls, $ctx](
+    cask.Router.EntryPoint[$annotDeserializeType, $curCls, $ctx](
       ${meth.name.toString},
       scala.Seq(..$argSigs),
       ${methodDoc match{
-      case None => q"scala.None"
-      case Some(s) => q"scala.Some($s)"
-    }},
+        case None => q"scala.None"
+        case Some(s) => q"scala.Some($s)"
+      }},
       ${varargs.contains(true)},
-      ($baseArgSym: $curCls, ctx: $ctx, $argListSymbol: Map[String, Seq[String]], $extrasSymbol: Seq[String]) =>
+      ($baseArgSym: $curCls, ctx: $ctx, $argListSymbol: Map[String, $annotDeserializeType]) =>
         cask.Router.validate(Seq(..$readArgs)) match{
           case cask.Router.Result.Success(Seq(..$argNames)) =>
             cask.Router.Result.Success(
@@ -394,7 +321,7 @@ class Router [C <: Context](val c: C) {
             )
           case x: cask.Router.Result.Error => x
         }
-    )
+    ).asInstanceOf[cask.Router.EntryPoint[Any, $curCls, $ctx]]
     """
 
     c.internal.transform(res){(t, a) =>

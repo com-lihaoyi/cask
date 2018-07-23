@@ -46,6 +46,7 @@ object Status {
     420 -> EnhanceYourCalm,
     429 -> TooManyRequests,
     451 -> UnavailableForLegalReasons,
+    500 -> InternalServerError,
     501 -> NotImplemented,
     502 -> BadGateway,
     503 -> ServiceUnavailable,

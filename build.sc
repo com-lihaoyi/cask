@@ -5,7 +5,8 @@ object cask extends ScalaModule{
   def ivyDeps = Agg(
     ivy"org.scala-lang:scala-reflect:$scalaVersion",
     ivy"io.undertow:undertow-core:2.0.11.Final",
-    ivy"com.github.scopt::scopt:3.5.0"
+    ivy"com.github.scopt::scopt:3.5.0",
+    ivy"com.lihaoyi::upickle:0.6.6"
   )
   object test extends Tests{
     def forkArgs = Seq("--illegal-access=deny")

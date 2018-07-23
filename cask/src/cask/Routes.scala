@@ -1,17 +1,28 @@
 package cask
 import language.experimental.macros
-import java.io.OutputStream
+import java.io.{InputStream, OutputStream, OutputStreamWriter, StringWriter}
 
 import cask.Router.EntryPoint
 import io.undertow.server.HttpServerExchange
 
 import scala.reflect.macros.blackbox.Context
-import java.io.InputStream
+
+case class Request(cookies: Map[String, Cookie],
+                   data: InputStream,
+                   queryParams: Map[String, Seq[String]],
+                   headers: Map[String, Seq[String]])
 
 case class Response(data: Response.Data,
                     statusCode: Int = 200,
                     headers: Seq[(String, String)] = Nil,
-                    cookies: Seq[Cookie] = Nil)
+                    cookies: Seq[Cookie] = Nil) extends BaseResponse
+
+trait BaseResponse{
+  def data: Response.Data
+  def statusCode: Int
+  def headers: Seq[(String, String)]
+  def cookies: Seq[Cookie]
+}
 object Response{
   implicit def dataResponse[T](t: T)(implicit c: T => Data) = Response(t)
   trait Data{
@@ -27,12 +38,18 @@ object Response{
     implicit class StreamData(b: InputStream) extends Data{
       def write(out: OutputStream) = b.transferTo(out)
     }
+    implicit def JsonResponse[T: upickle.default.Writer](t: T) = new Data{
+      def write(out: OutputStream) = implicitly[upickle.default.Writer[T]].write(
+        new ujson.BaseRenderer(new OutputStreamWriter(out)),
+        t
+      )
+    }
   }
 }
 
 object Routes{
   case class EndpointMetadata[T](metadata: Endpoint[_],
-                                 entryPoint: EntryPoint[T, (HttpServerExchange, Seq[String])])
+                                 entryPoint: EntryPoint[_, T, (HttpServerExchange, Seq[String])])
   case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
   object RoutesEndpointsMetadata{
     implicit def initialize[T] = macro initializeImpl[T]
@@ -51,13 +68,17 @@ object Routes{
           weakTypeOf[T],
           (t: router.c.universe.Tree) => q"$annotObjectSym.wrapMethodOutput($t)",
           c.weakTypeOf[(io.undertow.server.HttpServerExchange, Seq[String])],
-          q"$annotObjectSym.parseMethodInput"
+          q"$annotObjectSym.parseMethodInput",
+          tq"$annotObjectSym.InputType"
         )
 
 
         q"""{
           val $annotObjectSym = $annotObject
-          cask.Routes.EndpointMetadata($annotObjectSym, $route)
+          cask.Routes.EndpointMetadata(
+            $annotObjectSym,
+            $route
+          )
         }"""
       }
 

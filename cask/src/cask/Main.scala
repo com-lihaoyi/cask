@@ -37,7 +37,7 @@ abstract class BaseMain{
     )
   }
 
-  def writeResponse(exchange: HttpServerExchange, response: Response) = {
+  def writeResponse(exchange: HttpServerExchange, response: BaseResponse) = {
     response.headers.foreach{case (k, v) =>
       exchange.getResponseHeaders.put(new HttpString(k), v)
     }
@@ -54,11 +54,11 @@ abstract class BaseMain{
         case Some(((routes, metadata), bindings, remaining)) =>
           val result = metadata.metadata.handle(
             exchange, remaining, bindings, routes,
-            metadata.entryPoint.asInstanceOf[EntryPoint[Routes, (HttpServerExchange, Seq[String])]]
+            metadata.entryPoint.asInstanceOf[EntryPoint[metadata.metadata.InputType, cask.Routes, (HttpServerExchange, Seq[String])]]
           )
 
           result match{
-            case Router.Result.Success(response: Response) => writeResponse(exchange, response)
+            case Router.Result.Success(response) => writeResponse(exchange, response)
             case Router.Result.Error.Exception(e) =>
               println(e)
               e.printStackTrace()

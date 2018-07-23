@@ -2,35 +2,37 @@ package cask
 
 import cask.Router.EntryPoint
 import io.undertow.server.HttpServerExchange
+
 import collection.JavaConverters._
 
 trait Endpoint[R]{
+  type InputType
   val path: String
   def subpath: Boolean = false
   def wrapMethodOutput(t: R): Any
-  def parseMethodInput[T](implicit p: ParamReader[T]) = p
-
   def handle(exchange: HttpServerExchange,
              remaining: Seq[String],
              bindings: Map[String, String],
              routes: Routes,
-             entryPoint: EntryPoint[Routes, (HttpServerExchange, Seq[String])]): Router.Result[Response]
+             entryPoint: EntryPoint[InputType, Routes, (HttpServerExchange, Seq[String])]): Router.Result[BaseResponse]
 }
 trait WebEndpoint extends Endpoint[Response]{
+  type InputType = Seq[String]
   def wrapMethodOutput(t: Response) = t
+  def parseMethodInput[T](implicit p: QueryParamReader[T]) = p
   def handle(exchange: HttpServerExchange,
              remaining: Seq[String],
              bindings: Map[String, String],
              routes: Routes,
-             entryPoint: EntryPoint[Routes, (HttpServerExchange, Seq[String])]): Router.Result[Response] = {
+             entryPoint: EntryPoint[Seq[String], Routes, (HttpServerExchange, Seq[String])]): Router.Result[Response] = {
     val allBindings =
-      bindings.toSeq ++
-        exchange.getQueryParameters
-          .asScala
-          .toSeq
-          .flatMap{case (k, vs) => vs.asScala.map((k, _))}
+      bindings.map{case (k, v) => (k, Seq(v))} ++
+      exchange.getQueryParameters
+        .asScala
+        .toSeq
+        .map{case (k, vs) => (k, vs.asScala.toSeq)}
 
-    entryPoint.invoke(routes, (exchange, remaining), allBindings.map{case (k, v) => (k, Some(v))})
+    entryPoint.invoke(routes, (exchange, remaining), allBindings)
               .asInstanceOf[Router.Result[Response]]
   }
 }
@@ -39,17 +41,18 @@ class post(val path: String, override val subpath: Boolean = false) extends WebE
 class put(val path: String, override val subpath: Boolean = false) extends WebEndpoint
 class route(val path: String, val methods: Seq[String], override val subpath: Boolean = false) extends WebEndpoint
 class static(val path: String) extends Endpoint[String] {
+  type InputType = Seq[String]
   override def subpath = true
   def wrapOutput(t: String) = t
-
+  def parseMethodInput[T](implicit p: QueryParamReader[T]) = p
   def wrapMethodOutput(t: String) = t
 
   def handle(exchange: HttpServerExchange,
              remaining: Seq[String],
              bindings: Map[String, String],
              routes: Routes,
-             entryPoint: EntryPoint[Routes, (HttpServerExchange, Seq[String])]): Router.Result[Response] = {
-    entryPoint.invoke(routes, (exchange, remaining), Nil).asInstanceOf[Router.Result[String]] match{
+             entryPoint: EntryPoint[Seq[String], Routes, (HttpServerExchange, Seq[String])]): Router.Result[Response] = {
+    entryPoint.invoke(routes, (exchange, remaining), Map()).asInstanceOf[Router.Result[String]] match{
       case Router.Result.Success(s) =>
         val relPath = java.nio.file.Paths.get(
           s + "/" + remaining.mkString("/")
