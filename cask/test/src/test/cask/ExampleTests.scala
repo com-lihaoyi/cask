@@ -41,7 +41,7 @@ object ExampleTests extends TestSuite{
       requests.get(host + "/user").statusCode ==> 404
 
 
-      requests.get(host + "/post/123?query=xyz&query=abc") ==>
+      requests.get(host + "/post/123?query=xyz&query=abc").text() ==>
         "Post 123 ArrayBuffer(xyz, abc)"
 
       requests.get(host + "/post/123").text() ==>
@@ -57,6 +57,17 @@ object ExampleTests extends TestSuite{
 
       requests.get(host + "/path/one/two/three").text() ==>
         "Subpath List(one, two, three)"
+    }
+
+    'StaticFiles - test(StaticFiles){ host =>
+      requests.get(host + "/static/example.txt").text() ==>
+        "the quick brown fox jumps over the lazy dog"
+    }
+
+    'RedirectAbort - test(RedirectAbort){ host =>
+      val resp = requests.get(host + "/")
+      resp.statusCode ==> 401
+      resp.history.get.statusCode ==> 301
     }
   }
 }

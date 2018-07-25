@@ -55,11 +55,11 @@ case class Abort(code: Int) extends BaseResponse {
 
 case class Static(path: String) extends BaseResponse {
   val relPath = java.nio.file.Paths.get(path)
-  val (data0: BaseResponse.Data, statusCode0) =
+  val (data0, statusCode0) =
     if (java.nio.file.Files.exists(relPath) && java.nio.file.Files.isRegularFile(relPath)){
-      (java.nio.file.Files.newInputStream(relPath), 200)
+      (java.nio.file.Files.newInputStream(relPath): BaseResponse.Data, 200)
     }else{
-      ("", 404)
+      ("": BaseResponse.Data, 404)
     }
   override def data = data0
 
