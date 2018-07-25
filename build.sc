@@ -6,7 +6,8 @@ object cask extends ScalaModule{
     ivy"org.scala-lang:scala-reflect:$scalaVersion",
     ivy"io.undertow:undertow-core:2.0.11.Final",
     ivy"com.github.scopt::scopt:3.5.0",
-    ivy"com.lihaoyi::upickle:0.6.6"
+    ivy"com.lihaoyi::upickle:0.6.6",
+    ivy"com.lihaoyi::scalatags:0.6.7"
   )
   def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.1.7")
   def scalacOptions = Seq("-P:acyclic:force")
@@ -14,7 +15,10 @@ object cask extends ScalaModule{
 
   object test extends Tests{
     def forkArgs = Seq("--illegal-access=deny")
-    def ivyDeps = Agg(ivy"com.lihaoyi::utest::0.6.3")
     def testFrameworks = Seq("utest.runner.Framework")
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest::0.6.3",
+      ivy"com.lihaoyi::requests::0.1.2"
+    )
   }
 }

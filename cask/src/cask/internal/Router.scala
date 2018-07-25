@@ -66,26 +66,6 @@ object Router{
     catch{ case e: Throwable => Left(error(e))}
   }
 
-  def read[I, C](dict: Map[String, I],
-                 default: => Option[Any],
-                 arg: ArgSig[I, _, _, C],
-                 thunk: (String, I) => Any): FailMaybe = {
-    arg.reads.arity match{
-      case 0 =>
-        tryEither(
-          thunk(arg.name, null.asInstanceOf[I]), Result.ParamError.DefaultFailed(arg, _)).left.map(Seq(_))
-      case 1 =>
-        dict.get(arg.name) match{
-          case None =>
-            tryEither(default.get, Result.ParamError.DefaultFailed(arg, _)).left.map(Seq(_))
-
-          case Some(x) =>
-            tryEither(thunk(arg.name, x), Result.ParamError.Invalid(arg, x, _)).left.map(Seq(_))
-        }
-    }
-
-  }
-
   /**
     * Represents what comes out of an attempt to invoke an [[EntryPoint]].
     * Could succeed with a value, but could fail in many different ways.
@@ -162,7 +142,20 @@ object Router{
                          ctx: C,
                          default: => Option[Any],
                          arg: ArgSig[I, _, _, C]) = {
-    read[I, C](dict, default, arg, arg.reads.read(ctx, _, _))
+    arg.reads.arity match{
+      case 0 =>
+        tryEither(
+          arg.reads.read(ctx, arg.name, null.asInstanceOf[I]), Result.ParamError.DefaultFailed(arg, _)).left.map(Seq(_))
+      case 1 =>
+        dict.get(arg.name) match{
+          case None =>
+            tryEither(default.get, Result.ParamError.DefaultFailed(arg, _)).left.map(Seq(_))
+
+          case Some(x) =>
+            tryEither(arg.reads.read(ctx, arg.name, x), Result.ParamError.Invalid(arg, x, _)).left.map(Seq(_))
+        }
+    }
+
   }
 
 }
