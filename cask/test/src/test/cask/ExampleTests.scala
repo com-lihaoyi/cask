@@ -22,15 +22,11 @@ object ExampleTests extends TestSuite{
       success.text() ==> "Hello World!"
       success.statusCode ==> 200
 
-      val failure = requests.get(host + "/doesnt-exist")
-      failure.text() ==> "Error 404: Not Found"
-      failure.statusCode ==> 404
+      requests.get(host + "/doesnt-exist").statusCode ==> 404
 
-      val successInfo = requests.get(host + "/request-info?my-query-param=my-query-value")
-      assert(
-        successInfo.text().contains("my-query-param"),
-        successInfo.text().contains("my-query-value")
-      )
+      requests.post(host + "/do-thing", data = "hello").text() ==> "olleh"
+
+      requests.get(host + "/do-thing").statusCode ==> 404
     }
     'VariableRoutes - test(VariableRoutes){ host =>
       val noIndexPage = requests.get(host)
