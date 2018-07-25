@@ -35,10 +35,9 @@ object Routes{
 
       val routeParts = for{
         m <- c.weakTypeOf[T].members
-        val annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[Decorator])
+        val annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[Decorator]).reverse
         if annotations.nonEmpty
       } yield {
-
         val annotObjects =
           for(annot <- annotations)
           yield q"new ${annot.tree.tpe}(..${annot.tree.children.tail})"
@@ -48,7 +47,7 @@ object Routes{
         val route = router.extractMethod(
           m.asInstanceOf[MethodSymbol],
           weakTypeOf[T],
-          (t: router.c.universe.Tree) => q"${annotObjectSyms.last}.wrapMethodOutput(ctx, $t)",
+          (t: router.c.universe.Tree) => q"${annotObjectSyms.head}.wrapMethodOutput(ctx, $t)",
           c.weakTypeOf[ParamContext],
           annotObjectSyms.map(annotObjectSym => q"$annotObjectSym.parseMethodInput"),
           annotObjectSyms.map(annotObjectSym => tq"$annotObjectSym.InputType")
@@ -62,8 +61,8 @@ object Routes{
         val res = q"""{
           ..$declarations
           cask.main.Routes.EndpointMetadata(
-            Seq(..${annotObjectSyms.dropRight(1)}),
-            ${annotObjectSyms.last},
+            Seq(..${annotObjectSyms.drop(1)}),
+            ${annotObjectSyms.head},
             $route
           )
         }"""

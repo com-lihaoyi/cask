@@ -268,7 +268,7 @@ class Router[C <: Context](val c: C) {
           q"""
           cask.internal.Router.ArgSig[$annotDeserializeType, $curCls, $docUnwrappedType, $ctx](
             ${arg.name.toString},
-            ${docUnwrappedType.toString + (if (vararg) "*" else "")},
+            ${docUnwrappedType.toString},
             $docTree,
             $defaultOpt
           )($argReader[$docUnwrappedType])
@@ -333,6 +333,7 @@ class Router[C <: Context](val c: C) {
       c.internal.setPos(t, meth.pos)
       a.default(t)
     }
+
     res
   }
 

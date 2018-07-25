@@ -10,9 +10,9 @@ object Decorator extends cask.MainRoutes{
     def handle(ctx: ParamContext) = Map("extra" -> 31337)
 
     def parseMethodInput[T] = new ArgReader[Int, T, ParamContext] {
-      def arity = 0
+      def arity = 1
 
-      def read(ctx: ParamContext, label: String, input: Int) = 0.asInstanceOf[T]
+      def read(ctx: ParamContext, label: String, input: Int) = input.asInstanceOf[T]
     }
   }
 

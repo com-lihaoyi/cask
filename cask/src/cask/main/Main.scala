@@ -63,6 +63,7 @@ abstract class BaseMain{
             Seq(metadata.endpoint.handle(ParamContext(exchange, remaining)) ++
                 bindings.mapValues(metadata.endpoint.wrapPathSegment)) ++
             metadata.decorators.map(e => e.handle(ParamContext(exchange, remaining)))
+
           val result = metadata.entryPoint
             .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
             .invoke(routes, ParamContext(exchange, remaining), providers)
