@@ -1,11 +1,7 @@
 package cask.internal
 
-
-import io.undertow.server.HttpServerExchange
-
 import language.experimental.macros
 import scala.annotation.StaticAnnotation
-import scala.collection.mutable
 import scala.reflect.macros.blackbox.Context
 
 /**
@@ -56,8 +52,14 @@ object Router{
                                  varargs: Boolean,
                                  invoke0: (T, C, Map[String, I]) => Result[Any]){
     def invoke(target: T, ctx: C, args: Map[String, I]): Result[Any] = {
-      try invoke0(target, ctx, args)
-      catch{case e: Throwable => Result.Error.Exception(e)}
+      val unknown = args.keySet -- argSignatures.map(_.name).toSet
+      val missing = argSignatures.filter(as => as.reads.arity != 0 && !args.contains(as.name) && as.default.isEmpty)
+
+      if (missing.nonEmpty || unknown.nonEmpty) Result.Error.MismatchedArguments(missing, unknown.toSeq)
+      else {
+        try invoke0(target, ctx, args)
+        catch{case e: Throwable => Result.Error.Exception(e)}
+      }
     }
   }
 
@@ -99,9 +101,7 @@ object Router{
         * did not line up with the arguments expected
         */
       case class MismatchedArguments(missing: Seq[ArgSig[_, _, _, _]],
-                                     unknown: Seq[String],
-                                     duplicate: Seq[(ArgSig[_, _, _, _], Seq[String])],
-                                     incomplete: Option[ArgSig[_, _, _, _]]) extends Error
+                                     unknown: Seq[String]) extends Error
       /**
         * Invoking the [[EntryPoint]] failed because there were problems
         * deserializing/parsing individual arguments
@@ -115,7 +115,7 @@ object Router{
         * Something went wrong trying to de-serialize the input parameter;
         * the thrown exception is stored in [[ex]]
         */
-      case class Invalid(arg: ArgSig[_, _, _, _], value: Any, ex: Throwable) extends ParamError
+      case class Invalid(arg: ArgSig[_, _, _, _], value: String, ex: Throwable) extends ParamError
       /**
         * Something went wrong trying to evaluate the default value
         * for this input parameter
@@ -152,7 +152,7 @@ object Router{
             tryEither(default.get, Result.ParamError.DefaultFailed(arg, _)).left.map(Seq(_))
 
           case Some(x) =>
-            tryEither(arg.reads.read(ctx, arg.name, x), Result.ParamError.Invalid(arg, x, _)).left.map(Seq(_))
+            tryEither(arg.reads.read(ctx, arg.name, x), Result.ParamError.Invalid(arg, x.toString, _)).left.map(Seq(_))
         }
     }
 

@@ -14,6 +14,7 @@ object ExampleTests extends TestSuite{
     server.stop()
     res
   }
+
   val tests = Tests{
     'MinimalApplication - test(MinimalApplication){ host =>
       val success = requests.get(host)
@@ -30,25 +31,32 @@ object ExampleTests extends TestSuite{
         successInfo.text().contains("my-query-param"),
         successInfo.text().contains("my-query-value")
       )
-      successInfo.statusCode ==> 200
     }
     'VariableRoutes - test(VariableRoutes){ host =>
       val noIndexPage = requests.get(host)
       noIndexPage.statusCode ==> 404
 
-      val userPage = requests.get(host + "/user/lihaoyi")
-      userPage.text() ==> "User lihaoyi"
-      userPage.statusCode ==> 200
+      requests.get(host + "/user/lihaoyi").text() ==> "User lihaoyi"
 
-      val badUserPage = requests.get(host + "/user")
-      badUserPage.statusCode ==> 404
+      requests.get(host + "/user").statusCode ==> 404
 
-      val postPage = requests.get(host + "/post/123?query=xyz&query=abc")
-      postPage.text() ==> "Post 123 ArrayBuffer(xyz, abc)"
-      userPage.statusCode ==> 200
 
-      val badPostPage = requests.get(host + "/post/123")
-      badPostPage.text()
+      requests.get(host + "/post/123?query=xyz&query=abc") ==>
+        "Post 123 ArrayBuffer(xyz, abc)"
+
+      requests.get(host + "/post/123").text() ==>
+        """Missing argument: (query: Seq[String])
+          |
+          |Arguments provided did not match expected signature:
+          |
+          |showPost
+          |  postId  Int
+          |  query  Seq[String]
+          |
+          |""".stripMargin
+
+      requests.get(host + "/path/one/two/three").text() ==>
+        "Subpath List(one, two, three)"
     }
   }
 }
