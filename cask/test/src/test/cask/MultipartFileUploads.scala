@@ -8,7 +8,7 @@ object MultipartFileUploads extends cask.MainRoutes{
   @cask.post("/upload")
   def uploadFile(exchange: HttpServerExchange, formData: FormData) = {
     val file = formData.getFirst("image")
-    file.getPath.toString
+    file.getFileName
   }
 
   initialize()

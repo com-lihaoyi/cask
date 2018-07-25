@@ -69,5 +69,15 @@ object ExampleTests extends TestSuite{
       resp.statusCode ==> 401
       resp.history.get.statusCode ==> 301
     }
+
+    'MultipartFileUploads - test(MultipartFileUploads){ host =>
+      val resp = requests.get(
+        host + "/upload",
+        data = requests.MultiPart(
+          requests.MultiItem("image", "...", "my-best-image.txt")
+        )
+      )
+      resp.text() ==> "my-best-image.txt"
+    }
   }
 }
