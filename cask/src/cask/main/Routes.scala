@@ -12,6 +12,7 @@ object Routes{
   trait Endpoint[R]{
     type InputType
     val path: String
+    val methods: Seq[String]
     def subpath: Boolean = false
     def wrapMethodOutput(t: R): Any
     def handle(ctx: ParamContext,
@@ -20,7 +21,7 @@ object Routes{
                entryPoint: EntryPoint[InputType, Routes, cask.model.ParamContext]): Router.Result[BaseResponse]
   }
 
-  case class EndpointMetadata[T](metadata: Endpoint[_],
+  case class EndpointMetadata[T](endpoint: Endpoint[_],
                                  entryPoint: EntryPoint[_, T, ParamContext])
   case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
   object RoutesEndpointsMetadata{

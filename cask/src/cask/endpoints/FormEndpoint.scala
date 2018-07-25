@@ -36,6 +36,7 @@ object FormReader{
   }
 }
 class postForm(val path: String, override val subpath: Boolean = false) extends Routes.Endpoint[Response]{
+  val methods = Seq("post")
   type InputType = Seq[FormValue]
   def wrapMethodOutput(t: Response) = t
   def parseMethodInput[T](implicit p: FormReader[T]) = p

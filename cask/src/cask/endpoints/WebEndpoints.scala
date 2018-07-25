@@ -27,9 +27,15 @@ trait WebEndpoint extends Routes.Endpoint[BaseResponse]{
       .asInstanceOf[Router.Result[BaseResponse]]
   }
 }
-class get(val path: String, override val subpath: Boolean = false) extends WebEndpoint
-class post(val path: String, override val subpath: Boolean = false) extends WebEndpoint
-class put(val path: String, override val subpath: Boolean = false) extends WebEndpoint
+class get(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
+  val methods = Seq("get")
+}
+class post(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
+  val methods = Seq("post")
+}
+class put(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
+  val methods = Seq("put")
+}
 class route(val path: String, val methods: Seq[String], override val subpath: Boolean = false) extends WebEndpoint
 
 abstract class QueryParamReader[T]

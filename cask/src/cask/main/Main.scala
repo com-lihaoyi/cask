@@ -25,10 +25,14 @@ abstract class BaseMain{
     route <- routes.caskMetadata.value.map(x => x: Routes.EndpointMetadata[_])
   } yield (routes, route)
 
-  lazy val routeTrie = DispatchTrie.construct[(Routes, Routes.EndpointMetadata[_])](0,
-    for((route, metadata) <- routeList)
-      yield (Util.splitPath(metadata.metadata.path): IndexedSeq[String], (route, metadata), metadata.metadata.subpath)
-  )
+
+  lazy val routeTries = Seq("get", "put", "post")
+    .map { method =>
+      method -> DispatchTrie.construct[(Routes, Routes.EndpointMetadata[_])](0,
+        for ((route, metadata) <- routeList if metadata.endpoint.methods.contains(method))
+          yield (Util.splitPath(metadata.endpoint.path): IndexedSeq[String], (route, metadata), metadata.endpoint.subpath)
+      )
+    }.toMap
 
   def handleError(statusCode: Int): Response = {
     Response(
@@ -154,13 +158,13 @@ abstract class BaseMain{
   }
   lazy val defaultHandler = new HttpHandler() {
     def handleRequest(exchange: HttpServerExchange): Unit = {
-      routeTrie.lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
+      routeTries(exchange.getRequestMethod.toString.toLowerCase()).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
         case None => writeResponse(exchange, handleError(404))
         case Some(((routes, metadata), bindings, remaining)) =>
-          val result = metadata.metadata.handle(
+          val result = metadata.endpoint.handle(
             ParamContext(exchange, remaining), bindings, routes,
             metadata.entryPoint.asInstanceOf[
-              EntryPoint[metadata.metadata.InputType, cask.main.Routes, cask.model.ParamContext]
+              EntryPoint[metadata.endpoint.InputType, cask.main.Routes, cask.model.ParamContext]
             ]
           )
 
