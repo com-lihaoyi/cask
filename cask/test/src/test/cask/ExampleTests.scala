@@ -71,13 +71,24 @@ object ExampleTests extends TestSuite{
     }
 
     'MultipartFileUploads - test(MultipartFileUploads){ host =>
-      val resp = requests.get(
+      val resp = requests.post(
         host + "/upload",
         data = requests.MultiPart(
           requests.MultiItem("image", "...", "my-best-image.txt")
         )
       )
       resp.text() ==> "my-best-image.txt"
+    }
+    'FormJsonPost - test(FormJsonPost){ host =>
+      requests.post(host + "/json", data = """{"value1": true, "value2": [1, 2]""") ==>
+        "OK true [1, 2]"
+
+      requests.post(
+        host + "/form",
+        data = Seq("value1" -> "hello", "value2" -> "1", "value2" -> "2")
+      ) ==>
+      "OK hello 1 2"
+
     }
   }
 }
