@@ -308,7 +308,7 @@ class Router[C <: Context](val c: C) {
     val argNames = argData.map(_._3)
     val readArgs = argData.map(_._4)
     var methodCall: c.Tree = q"$baseArgSym.${meth.name.toTermName}"
-    for(argNameCast <- argNameCasts) methodCall = q"$baseArgSym.${meth.name.toTermName}(..$argNameCast)"
+    for(argNameCast <- argNameCasts) methodCall = q"$methodCall(..$argNameCast)"
 
     val res = q"""
     cask.internal.Router.EntryPoint[$curCls, $ctx](

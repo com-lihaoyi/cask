@@ -31,8 +31,8 @@ abstract class BaseMain{
   lazy val routeTries = Seq("get", "put", "post")
     .map { method =>
       method -> DispatchTrie.construct[(Routes, Routes.EndpointMetadata[_])](0,
-        for ((route, metadata) <- routeList if metadata.endpoints.exists(_.methods.contains(method)))
-        yield (Util.splitPath(metadata.endpoints.last.path): IndexedSeq[String], (route, metadata), metadata.endpoints.last.subpath)
+        for ((route, metadata) <- routeList if metadata.endpoint.methods.contains(method))
+        yield (Util.splitPath(metadata.endpoint.path): IndexedSeq[String], (route, metadata), metadata.endpoint.subpath)
       )
     }.toMap
 
@@ -59,9 +59,10 @@ abstract class BaseMain{
       routeTries(exchange.getRequestMethod.toString.toLowerCase()).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
         case None => writeResponse(exchange, handleError(404))
         case Some(((routes, metadata), bindings, remaining)) =>
-          val providers = metadata.endpoints.map(e =>
-            e.handle(ParamContext(exchange, remaining)) ++ bindings.mapValues(e.wrapPathSegment)
-          )
+          val providers =
+            Seq(metadata.endpoint.handle(ParamContext(exchange, remaining)) ++
+                bindings.mapValues(metadata.endpoint.wrapPathSegment)) ++
+            metadata.decorators.map(e => e.handle(ParamContext(exchange, remaining)))
           val result = metadata.entryPoint
             .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
             .invoke(routes, ParamContext(exchange, remaining), providers)

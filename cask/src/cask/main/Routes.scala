@@ -9,7 +9,7 @@ import language.experimental.macros
 
 object Routes{
 
-  trait Endpoint[R]{
+  trait Endpoint[R] extends Decorator{
     type InputType
     val path: String
     val methods: Seq[String]
@@ -18,8 +18,13 @@ object Routes{
     def handle(ctx: ParamContext): Map[String, InputType]
     def wrapPathSegment(s: String): InputType
   }
+  trait Decorator{
+    type InputType
+    def handle(ctx: ParamContext): Map[String, InputType]
+  }
 
-  case class EndpointMetadata[T](endpoints: Seq[Endpoint[_]],
+  case class EndpointMetadata[T](decorators: Seq[Decorator],
+                                 endpoint: Endpoint[_],
                                  entryPoint: EntryPoint[T, ParamContext])
   case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
   object RoutesEndpointsMetadata{
@@ -30,7 +35,7 @@ object Routes{
 
       val routeParts = for{
         m <- c.weakTypeOf[T].members
-        val annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[Endpoint[_]])
+        val annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[Decorator])
         if annotations.nonEmpty
       } yield {
 
@@ -57,11 +62,11 @@ object Routes{
         val res = q"""{
           ..$declarations
           cask.main.Routes.EndpointMetadata(
-            Seq(..$annotObjectSyms),
+            Seq(..${annotObjectSyms.dropRight(1)}),
+            ${annotObjectSyms.last},
             $route
           )
         }"""
-//        println(res)
         res
       }
 

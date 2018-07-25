@@ -85,6 +85,9 @@ object ExampleTests extends TestSuite{
         data = Seq("value1" -> "hello", "value2" -> "1", "value2" -> "2")
       ).text() ==>
       "OK Plain(hello,null) List(1, 2)"
+    }
+    'Decorator - test(Decorator){ host =>
+      requests.get(host + "/hello/woo").text()
 
     }
   }
