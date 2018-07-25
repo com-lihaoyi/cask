@@ -2,6 +2,7 @@ package cask.model
 
 import io.undertow.server.handlers.CookieImpl
 
+
 object Cookie{
   def fromUndertow(from: io.undertow.server.handlers.Cookie): Cookie = {
     Cookie(

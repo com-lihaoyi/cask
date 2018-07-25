@@ -2,6 +2,7 @@ package cask.main
 
 import cask.endpoints.Endpoint
 import cask.internal.Router.EntryPoint
+import cask.model.ParamContext
 import io.undertow.server.HttpServerExchange
 
 import scala.reflect.macros.blackbox.Context
@@ -9,7 +10,7 @@ import language.experimental.macros
 
 object Routes{
   case class EndpointMetadata[T](metadata: Endpoint[_],
-                                 entryPoint: EntryPoint[_, T, (HttpServerExchange, Seq[String])])
+                                 entryPoint: EntryPoint[_, T, ParamContext])
   case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
   object RoutesEndpointsMetadata{
     implicit def initialize[T] = macro initializeImpl[T]
@@ -27,7 +28,7 @@ object Routes{
           m.asInstanceOf[MethodSymbol],
           weakTypeOf[T],
           (t: router.c.universe.Tree) => q"$annotObjectSym.wrapMethodOutput($t)",
-          c.weakTypeOf[(io.undertow.server.HttpServerExchange, Seq[String])],
+          c.weakTypeOf[ParamContext],
           q"$annotObjectSym.parseMethodInput",
           tq"$annotObjectSym.InputType"
         )

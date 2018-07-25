@@ -3,7 +3,7 @@ package cask.endpoints
 import cask.internal.Router
 import cask.internal.Router.EntryPoint
 import cask.main.Routes
-import cask.model.BaseResponse
+import cask.model.{BaseResponse, ParamContext}
 import io.undertow.server.HttpServerExchange
 
 trait Endpoint[R]{
@@ -11,9 +11,8 @@ trait Endpoint[R]{
   val path: String
   def subpath: Boolean = false
   def wrapMethodOutput(t: R): Any
-  def handle(exchange: HttpServerExchange,
-             remaining: Seq[String],
+  def handle(ctx: ParamContext,
              bindings: Map[String, String],
              routes: Routes,
-             entryPoint: EntryPoint[InputType, Routes, (HttpServerExchange, Seq[String])]): Router.Result[BaseResponse]
+             entryPoint: EntryPoint[InputType, Routes, cask.model.ParamContext]): Router.Result[BaseResponse]
 }

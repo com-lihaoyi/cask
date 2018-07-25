@@ -1,6 +1,6 @@
 package cask.main
 
-import cask.model.{BaseResponse, Response, Status}
+import cask.model.{BaseResponse, ParamContext, Response, Status}
 import cask.Cookie
 import cask.internal.Router.EntryPoint
 import cask.internal.{DispatchTrie, Router, Util}
@@ -54,8 +54,10 @@ abstract class BaseMain{
         case None => writeResponse(exchange, handleError(404))
         case Some(((routes, metadata), bindings, remaining)) =>
           val result = metadata.metadata.handle(
-            exchange, remaining, bindings, routes,
-            metadata.entryPoint.asInstanceOf[EntryPoint[metadata.metadata.InputType, cask.main.Routes, (HttpServerExchange, Seq[String])]]
+            ParamContext(exchange, remaining), bindings, routes,
+            metadata.entryPoint.asInstanceOf[
+              EntryPoint[metadata.metadata.InputType, cask.main.Routes, cask.model.ParamContext]
+            ]
           )
 
           result match{

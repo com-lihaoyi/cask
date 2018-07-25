@@ -3,7 +3,7 @@ package cask.endpoints
 import cask.internal.Router
 import cask.internal.Router.EntryPoint
 import cask.main.Routes
-import cask.model.BaseResponse
+import cask.model.{BaseResponse, ParamContext}
 import io.undertow.server.HttpServerExchange
 
 class static(val path: String) extends Endpoint[String] {
@@ -13,14 +13,13 @@ class static(val path: String) extends Endpoint[String] {
   def parseMethodInput[T](implicit p: QueryParamReader[T]) = p
   def wrapMethodOutput(t: String) = t
 
-  def handle(exchange: HttpServerExchange,
-             remaining: Seq[String],
+  def handle(ctx: ParamContext,
              bindings: Map[String, String],
              routes: Routes,
-             entryPoint: EntryPoint[Seq[String], Routes, (HttpServerExchange, Seq[String])]): Router.Result[BaseResponse] = {
-    entryPoint.invoke(routes, (exchange, remaining), Map()).asInstanceOf[Router.Result[String]] match{
+             entryPoint: EntryPoint[Seq[String], Routes, cask.model.ParamContext]): Router.Result[BaseResponse] = {
+    entryPoint.invoke(routes, ctx, Map()).asInstanceOf[Router.Result[String]] match{
       case Router.Result.Success(s) =>
-        Router.Result.Success(cask.model.Static(s + "/" + remaining.mkString("/")))
+        Router.Result.Success(cask.model.Static(s + "/" + ctx.remaining.mkString("/")))
 
       case e: Router.Result.Error => e
 
