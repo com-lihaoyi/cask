@@ -25,7 +25,7 @@ object JsReader{
     }
   }
 }
-class postJson(val path: String, override val subpath: Boolean = false)  extends Endpoint[Response]{
+class postJson(val path: String, override val subpath: Boolean = false) extends Routes.Endpoint[Response]{
   type InputType = ujson.Js.Value
   def wrapMethodOutput(t: Response) = t
   def parseMethodInput[T](implicit p: JsReader[T]) = p

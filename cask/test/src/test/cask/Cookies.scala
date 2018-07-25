@@ -18,7 +18,7 @@ object Cookies extends cask.MainRoutes{
   def deleteCookie() = {
     cask.Response(
       "Cookies Deleted!",
-      cookies = Seq(cask.Cookie("username", "the username", expires = java.time.Instant.EPOCH))
+      cookies = Seq(cask.Cookie("username", "", expires = java.time.Instant.EPOCH))
     )
   }
 

@@ -1,14 +1,25 @@
 package cask.main
 
-import cask.endpoints.Endpoint
+import cask.internal.Router
 import cask.internal.Router.EntryPoint
-import cask.model.ParamContext
-import io.undertow.server.HttpServerExchange
+import cask.model.{BaseResponse, ParamContext}
 
 import scala.reflect.macros.blackbox.Context
 import language.experimental.macros
 
 object Routes{
+
+  trait Endpoint[R]{
+    type InputType
+    val path: String
+    def subpath: Boolean = false
+    def wrapMethodOutput(t: R): Any
+    def handle(ctx: ParamContext,
+               bindings: Map[String, String],
+               routes: Routes,
+               entryPoint: EntryPoint[InputType, Routes, cask.model.ParamContext]): Router.Result[BaseResponse]
+  }
+
   case class EndpointMetadata[T](metadata: Endpoint[_],
                                  entryPoint: EntryPoint[_, T, ParamContext])
   case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)

@@ -8,7 +8,7 @@ import cask.model.{BaseResponse, ParamContext}
 import collection.JavaConverters._
 
 
-trait WebEndpoint extends Endpoint[BaseResponse]{
+trait WebEndpoint extends Routes.Endpoint[BaseResponse]{
   type InputType = Seq[String]
   def wrapMethodOutput(t: BaseResponse) = t
   def parseMethodInput[T](implicit p: QueryParamReader[T]) = p

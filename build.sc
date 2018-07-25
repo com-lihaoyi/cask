@@ -8,6 +8,10 @@ object cask extends ScalaModule{
     ivy"com.github.scopt::scopt:3.5.0",
     ivy"com.lihaoyi::upickle:0.6.6"
   )
+  def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.1.7")
+  def scalacOptions = Seq("-P:acyclic:force")
+  def scalacPluginIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.1.7")
+
   object test extends Tests{
     def forkArgs = Seq("--illegal-access=deny")
     def ivyDeps = Agg(ivy"com.lihaoyi::utest::0.6.3")

@@ -1,11 +1,12 @@
 package cask.endpoints
 
+import cask.endpoints.ParamReader.NilParam
 import cask.internal.Router.EntryPoint
 import cask.internal.Router
 import cask.main.Routes
 import cask.model.{ParamContext, Response}
 import io.undertow.server.HttpServerExchange
-import io.undertow.server.handlers.form.FormParserFactory
+import io.undertow.server.handlers.form.{FormData, FormParserFactory}
 
 import collection.JavaConverters._
 
@@ -18,6 +19,7 @@ object FormReader{
       implicitly[QueryParamReader[T]].read(ctx, label, input.map(_.value))
     }
   }
+
   implicit def formValueReader = new FormReader[FormValue]{
     def arity = 1
     def read(ctx: ParamContext, label: String, input: Seq[FormValue]) = input.head
@@ -35,7 +37,7 @@ object FormReader{
     def read(ctx: ParamContext, label: String, input: Seq[FormValue]) = input.map(_.asFile.get)
   }
 }
-class postForm(val path: String, override val subpath: Boolean = false) extends Endpoint[Response]{
+class postForm(val path: String, override val subpath: Boolean = false) extends Routes.Endpoint[Response]{
   type InputType = Seq[FormValue]
   def wrapMethodOutput(t: Response) = t
   def parseMethodInput[T](implicit p: FormReader[T]) = p

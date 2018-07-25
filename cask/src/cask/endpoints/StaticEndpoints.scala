@@ -6,7 +6,7 @@ import cask.main.Routes
 import cask.model.{BaseResponse, ParamContext}
 import io.undertow.server.HttpServerExchange
 
-class static(val path: String) extends Endpoint[String] {
+class static(val path: String) extends Routes.Endpoint[String] {
   type InputType = Seq[String]
   override def subpath = true
   def wrapOutput(t: String) = t
