@@ -1,9 +1,8 @@
 package cask.endpoints
 
 import cask.internal.Router
-import cask.internal.Router.EntryPoint
 import cask.main.Routes
-import cask.model.{BaseResponse, ParamContext}
+import cask.model.ParamContext
 
 class static(val path: String) extends Routes.Endpoint[String] {
   val methods = Seq("get")
@@ -11,19 +10,10 @@ class static(val path: String) extends Routes.Endpoint[String] {
   override def subpath = true
   def wrapOutput(t: String) = t
   def parseMethodInput[T](implicit p: QueryParamReader[T]) = p
-  def wrapMethodOutput(t: String) = t
-
-  def handle(ctx: ParamContext,
-             bindings: Map[String, String],
-             routes: Routes,
-             entryPoint: EntryPoint[Seq[String], Routes, cask.model.ParamContext]): Router.Result[BaseResponse] = {
-    entryPoint.invoke(routes, ctx, Map()).asInstanceOf[Router.Result[String]] match{
-      case Router.Result.Success(s) =>
-        Router.Result.Success(cask.model.Static(s + "/" + ctx.remaining.mkString("/")))
-
-      case e: Router.Result.Error => e
-
-    }
-
+  override def wrapMethodOutput(ctx: ParamContext, t: String) = {
+    Router.Result.Success(cask.model.Static(t + "/" + ctx.remaining.mkString("/")))
   }
+
+  def handle(ctx: ParamContext) = Map()
+  def wrapPathSegment(s: String): InputType = Seq(s)
 }

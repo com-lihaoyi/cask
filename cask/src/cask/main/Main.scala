@@ -31,8 +31,8 @@ abstract class BaseMain{
   lazy val routeTries = Seq("get", "put", "post")
     .map { method =>
       method -> DispatchTrie.construct[(Routes, Routes.EndpointMetadata[_])](0,
-        for ((route, metadata) <- routeList if metadata.endpoint.methods.contains(method))
-          yield (Util.splitPath(metadata.endpoint.path): IndexedSeq[String], (route, metadata), metadata.endpoint.subpath)
+        for ((route, metadata) <- routeList if metadata.endpoints.exists(_.methods.contains(method)))
+        yield (Util.splitPath(metadata.endpoints.last.path): IndexedSeq[String], (route, metadata), metadata.endpoints.last.subpath)
       )
     }.toMap
 
@@ -59,22 +59,21 @@ abstract class BaseMain{
       routeTries(exchange.getRequestMethod.toString.toLowerCase()).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
         case None => writeResponse(exchange, handleError(404))
         case Some(((routes, metadata), bindings, remaining)) =>
-          val result = metadata.endpoint.handle(
-            ParamContext(exchange, remaining), bindings, routes,
-            metadata.entryPoint.asInstanceOf[
-              EntryPoint[metadata.endpoint.InputType, cask.main.Routes, cask.model.ParamContext]
-            ]
+          val providers = metadata.endpoints.map(e =>
+            e.handle(ParamContext(exchange, remaining)) ++ bindings.mapValues(e.wrapPathSegment)
           )
-
+          val result = metadata.entryPoint
+            .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
+            .invoke(routes, ParamContext(exchange, remaining), providers)
           result match{
-            case Router.Result.Success(response) => writeResponse(exchange, response)
+            case Router.Result.Success(response: BaseResponse) => writeResponse(exchange, response)
             case e: Router.Result.Error =>
 
               writeResponse(exchange,
                 Response(
                   ErrorMsgs.formatInvokeError(
                     routes,
-                    metadata.entryPoint.asInstanceOf[EntryPoint[_, cask.main.Routes, _]],
+                    metadata.entryPoint.asInstanceOf[EntryPoint[cask.main.Routes, _]],
                     e
                   ),
                   statusCode = 500)

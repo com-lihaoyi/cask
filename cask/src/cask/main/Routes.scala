@@ -14,15 +14,13 @@ object Routes{
     val path: String
     val methods: Seq[String]
     def subpath: Boolean = false
-    def wrapMethodOutput(t: R): Any
-    def handle(ctx: ParamContext,
-               bindings: Map[String, String],
-               routes: Routes,
-               entryPoint: EntryPoint[InputType, Routes, cask.model.ParamContext]): Router.Result[BaseResponse]
+    def wrapMethodOutput(ctx: ParamContext,t: R): cask.internal.Router.Result[Any] = cask.internal.Router.Result.Success(t)
+    def handle(ctx: ParamContext): Map[String, InputType]
+    def wrapPathSegment(s: String): InputType
   }
 
-  case class EndpointMetadata[T](endpoint: Endpoint[_],
-                                 entryPoint: EntryPoint[_, T, ParamContext])
+  case class EndpointMetadata[T](endpoints: Seq[Endpoint[_]],
+                                 entryPoint: EntryPoint[T, ParamContext])
   case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
   object RoutesEndpointsMetadata{
     implicit def initialize[T] = macro initializeImpl[T]
@@ -32,27 +30,39 @@ object Routes{
 
       val routeParts = for{
         m <- c.weakTypeOf[T].members
-        annot <- m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[Endpoint[_]])
+        val annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[Endpoint[_]])
+        if annotations.nonEmpty
       } yield {
-        val annotObject = q"new ${annot.tree.tpe}(..${annot.tree.children.tail})"
-        val annotObjectSym = c.universe.TermName(c.freshName("annotObject"))
+
+        val annotObjects =
+          for(annot <- annotations)
+          yield q"new ${annot.tree.tpe}(..${annot.tree.children.tail})"
+        val annotObjectSyms =
+          for(_ <- annotations.indices)
+          yield c.universe.TermName(c.freshName("annotObject"))
         val route = router.extractMethod(
           m.asInstanceOf[MethodSymbol],
           weakTypeOf[T],
-          (t: router.c.universe.Tree) => q"$annotObjectSym.wrapMethodOutput($t)",
+          (t: router.c.universe.Tree) => q"${annotObjectSyms.last}.wrapMethodOutput(ctx, $t)",
           c.weakTypeOf[ParamContext],
-          q"$annotObjectSym.parseMethodInput",
-          tq"$annotObjectSym.InputType"
+          annotObjectSyms.map(annotObjectSym => q"$annotObjectSym.parseMethodInput"),
+          annotObjectSyms.map(annotObjectSym => tq"$annotObjectSym.InputType")
+
         )
 
+        val declarations =
+          for((sym, obj) <- annotObjectSyms.zip(annotObjects))
+          yield q"val $sym = $obj"
 
-        q"""{
-          val $annotObjectSym = $annotObject
+        val res = q"""{
+          ..$declarations
           cask.main.Routes.EndpointMetadata(
-            $annotObjectSym,
+            Seq(..$annotObjectSyms),
             $route
           )
         }"""
+//        println(res)
+        res
       }
 
       c.Expr[RoutesEndpointsMetadata[T]](q"""cask.main.Routes.RoutesEndpointsMetadata(..$routeParts)""")

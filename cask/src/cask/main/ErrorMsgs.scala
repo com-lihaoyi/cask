@@ -37,11 +37,11 @@ object ErrorMsgs {
   }
 
   def formatMainMethodSignature[T](base: T,
-                                   main: Router.EntryPoint[_, T, _],
+                                   main: Router.EntryPoint[T, _],
                                    leftIndent: Int,
                                    leftColWidth: Int) = {
     // +2 for space on right of left col
-    val args = main.argSignatures.map(renderArg(base, _, leftColWidth + leftIndent + 2 + 2, 80))
+    val args = main.argSignatures.last.map(as => renderArg(base, as, leftColWidth + leftIndent + 2 + 2, 80))
 
     val leftIndentStr = " " * leftIndent
     val argStrings =
@@ -60,7 +60,7 @@ object ErrorMsgs {
        |${argStrings.map(_ + "\n").mkString}""".stripMargin
   }
 
-  def formatInvokeError[T](base: T, route: Router.EntryPoint[_, T, _], x: Router.Result.Error): String = {
+  def formatInvokeError[T](base: T, route: Router.EntryPoint[T, _], x: Router.Result.Error): String = {
     def expectedMsg = formatMainMethodSignature(base: T, route, 0, 0)
 
     x match{

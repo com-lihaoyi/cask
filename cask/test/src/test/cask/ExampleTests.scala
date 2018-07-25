@@ -10,8 +10,9 @@ object ExampleTests extends TestSuite{
       .setHandler(new BlockingHandler(example.defaultHandler))
       .build
     server.start()
-    val res = f("http://localhost:8080")
-    server.stop()
+    val res =
+      try f("http://localhost:8080")
+      finally server.stop()
     res
   }
 

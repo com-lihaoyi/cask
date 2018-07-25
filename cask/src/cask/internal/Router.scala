@@ -46,18 +46,22 @@ object Router{
     * instead, which provides a nicer API to call it that mimmicks the API of
     * calling a Scala method.
     */
-  case class EntryPoint[I, T, C](name: String,
-                                 argSignatures: Seq[ArgSig[I, T, _, C]],
-                                 doc: Option[String],
-                                 varargs: Boolean,
-                                 invoke0: (T, C, Map[String, I]) => Result[Any]){
-    def invoke(target: T, ctx: C, args: Map[String, I]): Result[Any] = {
-      val unknown = args.keySet -- argSignatures.map(_.name).toSet
-      val missing = argSignatures.filter(as => as.reads.arity != 0 && !args.contains(as.name) && as.default.isEmpty)
+  case class EntryPoint[T, C](name: String,
+                              argSignatures: Seq[Seq[ArgSig[_, T, _, C]]],
+                              doc: Option[String],
+                              invoke0: (T, C, Seq[Map[String, Any]]) => Result[Any]){
+    def invoke(target: T,
+               ctx: C,
+               paramLists: Seq[Map[String, Any]]): Result[Any] = {
+
+      val unknown = paramLists.head.keySet -- argSignatures.head.map(_.name).toSet
+      val missing = argSignatures.head.filter(as =>
+        as.reads.arity != 0 && !paramLists.head.contains(as.name) && as.default.isEmpty
+      )
 
       if (missing.nonEmpty || unknown.nonEmpty) Result.Error.MismatchedArguments(missing, unknown.toSeq)
       else {
-        try invoke0(target, ctx, args)
+        try invoke0(target, ctx, paramLists)
         catch{case e: Throwable => Result.Error.Exception(e)}
       }
     }
@@ -187,128 +191,142 @@ class Router[C <: Context](val c: C) {
                     curCls: c.universe.Type,
                     wrapOutput: c.Tree => c.Tree,
                     ctx: c.Type,
-                    argReader: c.Tree,
-                    annotDeserializeType: c.Tree): c.universe.Tree = {
+                    argReaders: Seq[c.Tree],
+                    annotDeserializeTypes: Seq[c.Tree]): c.universe.Tree = {
     val baseArgSym = TermName(c.freshName())
-    val flattenedArgLists = meth.paramss.flatten
-    def hasDefault(i: Int) = {
-      val defaultName = s"${meth.name}$$default$$${i + 1}"
-      if (curCls.members.exists(_.name.toString == defaultName)) Some(defaultName)
-      else None
-    }
-    val argListSymbol = q"${c.fresh[TermName]("argsList")}"
-
-    val defaults = for ((arg, i) <- flattenedArgLists.zipWithIndex) yield {
-      val arg = TermName(c.freshName())
-      hasDefault(i).map(defaultName => q"($arg: $curCls) => $arg.${newTermName(defaultName)}")
-    }
 
     def getDocAnnotation(annotations: List[Annotation]) = {
       val (docTrees, remaining) = annotations.partition(_.tpe =:= typeOf[Router.doc])
       val docValues = for {
         doc <- docTrees
         if doc.scalaArgs.head.isInstanceOf[Literal]
-        l =  doc.scalaArgs.head.asInstanceOf[Literal]
+        l = doc.scalaArgs.head.asInstanceOf[Literal]
         if l.value.value.isInstanceOf[String]
       } yield l.value.value.asInstanceOf[String]
       (remaining, docValues.headOption)
     }
-
-    def unwrapVarargType(arg: Symbol) = {
-      val vararg = arg.typeSignature.typeSymbol == definitions.RepeatedParamClass
-      val unwrappedType =
-        if (!vararg) arg.typeSignature
-        else arg.typeSignature.asInstanceOf[TypeRef].args(0)
-
-      (vararg, unwrappedType)
-    }
-
-
     val (_, methodDoc) = getDocAnnotation(meth.annotations)
-    val readArgSigs = for(
-      ((arg, defaultOpt), i) <- flattenedArgLists.zip(defaults).zipWithIndex
-    ) yield {
+    val argListSymbol = q"${c.fresh[TermName]("argsList")}"
+    val argData = for(argListIndex <- 0 until meth.paramLists.length) yield{
+      val annotDeserializeType = annotDeserializeTypes(argListIndex)
+      val argReader = argReaders(argListIndex)
+      val flattenedArgLists = meth.paramss(argListIndex)
+      def hasDefault(i: Int) = {
+        val defaultName = s"${meth.name}$$default$$${i + 1}"
+        if (curCls.members.exists(_.name.toString == defaultName)) Some(defaultName)
+        else None
+      }
 
-      val (vararg, varargUnwrappedType) = unwrapVarargType(arg)
 
-      val default =
-        if (vararg) q"scala.Some(scala.Nil)"
-        else defaultOpt match {
-          case Some(defaultExpr) => q"scala.Some($defaultExpr($baseArgSym))"
-          case None => q"scala.None"
+
+      val defaults = for ((arg, i) <- flattenedArgLists.zipWithIndex) yield {
+        val arg = TermName(c.freshName())
+        hasDefault(i).map(defaultName => q"($arg: $curCls) => $arg.${newTermName(defaultName)}")
+      }
+
+
+      def unwrapVarargType(arg: Symbol) = {
+        val vararg = arg.typeSignature.typeSymbol == definitions.RepeatedParamClass
+        val unwrappedType =
+          if (!vararg) arg.typeSignature
+          else arg.typeSignature.asInstanceOf[TypeRef].args(0)
+
+        (vararg, unwrappedType)
+      }
+
+
+
+      val readArgSigs = for (
+        ((arg, defaultOpt), i) <- flattenedArgLists.zip(defaults).zipWithIndex
+      ) yield {
+
+        val (vararg, varargUnwrappedType) = unwrapVarargType(arg)
+
+        val default =
+          if (vararg) q"scala.Some(scala.Nil)"
+          else defaultOpt match {
+            case Some(defaultExpr) => q"scala.Some($defaultExpr($baseArgSym))"
+            case None => q"scala.None"
+          }
+
+        val (docUnwrappedType, docOpt) = varargUnwrappedType match {
+          case t: AnnotatedType =>
+            import compat._
+            val (remaining, docValue) = getDocAnnotation(t.annotations)
+            if (remaining.isEmpty) (t.underlying, docValue)
+            else (c.universe.AnnotatedType(remaining, t.underlying), docValue)
+
+          case t => (t, None)
         }
 
-      val (docUnwrappedType, docOpt) = varargUnwrappedType match{
-        case t: AnnotatedType =>
-          import compat._
-          val (remaining, docValue) = getDocAnnotation(t.annotations)
-          if (remaining.isEmpty) (t.underlying, docValue)
-          else (c.universe.AnnotatedType(remaining, t.underlying), docValue)
+        val docTree = docOpt match {
+          case None => q"scala.None"
+          case Some(s) => q"scala.Some($s)"
+        }
 
-        case t => (t, None)
-      }
-
-      val docTree = docOpt match{
-        case None => q"scala.None"
-        case Some(s) => q"scala.Some($s)"
-      }
-
-      val argSig = q"""
-        cask.internal.Router.ArgSig[$annotDeserializeType, $curCls, $docUnwrappedType, $ctx](
-          ${arg.name.toString},
-          ${docUnwrappedType.toString + (if(vararg) "*" else "")},
-          $docTree,
-          $defaultOpt
-        )($argReader[$docUnwrappedType])
-      """
-
-      val reader =
-        if(vararg) c.abort(meth.pos, "Varargs are not supported in cask routes")
-        else q"""
-          cask.internal.Router.makeReadCall(
-            $argListSymbol,
-            ctx,
-            $default,
-            $argSig
-          )
+        val argSig =
+          q"""
+          cask.internal.Router.ArgSig[$annotDeserializeType, $curCls, $docUnwrappedType, $ctx](
+            ${arg.name.toString},
+            ${docUnwrappedType.toString + (if (vararg) "*" else "")},
+            $docTree,
+            $defaultOpt
+          )($argReader[$docUnwrappedType])
         """
-      c.internal.setPos(reader, meth.pos)
-      (reader, argSig, vararg)
+
+        val reader =
+          if (vararg) c.abort(meth.pos, "Varargs are not supported in cask routes")
+          else
+            q"""
+            cask.internal.Router.makeReadCall(
+              $argListSymbol($argListIndex),
+              ctx,
+              $default,
+              $argSig.asInstanceOf[cask.internal.Router.ArgSig[Any, _, _, cask.model.ParamContext]]
+            )
+          """
+        c.internal.setPos(reader, meth.pos)
+        (reader, argSig)
+      }
+
+      val (readArgs, argSigs) = readArgSigs.unzip
+      val (argNames, argNameCasts) = flattenedArgLists.map { arg =>
+        val (vararg, unwrappedType) = unwrapVarargType(arg)
+        (
+          pq"${arg.name.toTermName}",
+          if (!vararg) q"${arg.name.toTermName}.asInstanceOf[$unwrappedType]"
+          else q"${arg.name.toTermName}.asInstanceOf[Seq[$unwrappedType]]: _*"
+
+        )
+      }.unzip
+
+      (argNameCasts, argSigs, argNames, readArgs)
     }
 
-    val (readArgs, argSigs, varargs) = readArgSigs.unzip3
-    val (argNames, argNameCasts) = flattenedArgLists.map { arg =>
-      val (vararg, unwrappedType) = unwrapVarargType(arg)
-      (
-        pq"${arg.name.toTermName}",
-        if (!vararg) q"${arg.name.toTermName}.asInstanceOf[$unwrappedType]"
-        else q"${arg.name.toTermName}.asInstanceOf[Seq[$unwrappedType]]: _*"
+    val argNameCasts = argData.map(_._1)
+    val argSigs = argData.map(_._2)
+    val argNames = argData.map(_._3)
+    val readArgs = argData.map(_._4)
+    var methodCall: c.Tree = q"$baseArgSym.${meth.name.toTermName}"
+    for(argNameCast <- argNameCasts) methodCall = q"$baseArgSym.${meth.name.toTermName}(..$argNameCast)"
 
-      )
-    }.unzip
-
-
-    val methCall =
-      if (meth.paramLists.isEmpty) q"$baseArgSym.${meth.name.toTermName}"
-      else q"$baseArgSym.${meth.name.toTermName}(..$argNameCasts)"
     val res = q"""
-    cask.internal.Router.EntryPoint[$annotDeserializeType, $curCls, $ctx](
+    cask.internal.Router.EntryPoint[$curCls, $ctx](
       ${meth.name.toString},
-      scala.Seq(..$argSigs),
+      ${argSigs.toList},
       ${methodDoc match{
       case None => q"scala.None"
       case Some(s) => q"scala.Some($s)"
     }},
-      ${varargs.contains(true)},
-      ($baseArgSym: $curCls, ctx: $ctx, $argListSymbol: Map[String, $annotDeserializeType]) =>
-        cask.internal.Router.validate(Seq(..$readArgs)) match{
-          case cask.internal.Router.Result.Success(Seq(..$argNames)) =>
-            cask.internal.Router.Result.Success(
-              ${wrapOutput(methCall)}
-            )
+      ($baseArgSym: $curCls, ctx: $ctx, $argListSymbol: Seq[Map[String, Any]]) =>
+        cask.internal.Router.validate(Seq(..${readArgs.flatten.toList})) match{
+          case cask.internal.Router.Result.Success(Seq(..${argNames.flatten.toList})) =>
+
+            ${wrapOutput(methodCall)}
+
           case x: cask.internal.Router.Result.Error => x
         }
-    ).asInstanceOf[cask.internal.Router.EntryPoint[Any, $curCls, $ctx]]
+    ).asInstanceOf[cask.internal.Router.EntryPoint[$curCls, $ctx]]
     """
 
     c.internal.transform(res){(t, a) =>

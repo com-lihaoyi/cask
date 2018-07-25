@@ -27,19 +27,8 @@ object JsReader{
 class postJson(val path: String, override val subpath: Boolean = false) extends Routes.Endpoint[Response]{
   val methods = Seq("post")
   type InputType = ujson.Js.Value
-  def wrapMethodOutput(t: Response) = t
   def parseMethodInput[T](implicit p: JsReader[T]) = p
-  def handle(ctx: ParamContext,
-             bindings: Map[String, String],
-             routes: Routes,
-             entryPoint: EntryPoint[ujson.Js.Value, Routes, cask.model.ParamContext]): Router.Result[Response] = {
-
-    val js = ujson.read(new String(ctx.exchange.getInputStream.readAllBytes())).asInstanceOf[ujson.Js.Obj]
-
-    js.obj
-    val allBindings = bindings.mapValues(ujson.Js.Str(_))
-
-    entryPoint.invoke(routes, ctx, js.obj.toMap ++ allBindings)
-      .asInstanceOf[Router.Result[Response]]
-  }
+  def handle(ctx: ParamContext) =
+    ujson.read(new String(ctx.exchange.getInputStream.readAllBytes())).obj.toMap
+  def wrapPathSegment(s: String): InputType = ujson.Js.Str(s)
 }

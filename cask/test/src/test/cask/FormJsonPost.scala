@@ -5,7 +5,9 @@ import io.undertow.server.HttpServerExchange
 
 object FormJsonPost extends cask.MainRoutes{
   @cask.postJson("/json")
+//  @db.validateUser()
   def jsonEndpoint(x: HttpServerExchange, value1: ujson.Js.Value, value2: Seq[Int]) = {
+//                  (user: db.User) = {
     "OK " + value1 + " " + value2
   }
 

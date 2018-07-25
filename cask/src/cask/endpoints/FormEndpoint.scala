@@ -1,6 +1,5 @@
 package cask.endpoints
 
-import cask.internal.Router.EntryPoint
 import cask.internal.Router
 import cask.main.Routes
 import cask.model.{FormValue, ParamContext, Response}
@@ -38,27 +37,19 @@ object FormReader{
 class postForm(val path: String, override val subpath: Boolean = false) extends Routes.Endpoint[Response]{
   val methods = Seq("post")
   type InputType = Seq[FormValue]
-  def wrapMethodOutput(t: Response) = t
   def parseMethodInput[T](implicit p: FormReader[T]) = p
-  def handle(ctx: ParamContext,
-             bindings: Map[String, String],
-             routes: Routes,
-             entryPoint: EntryPoint[Seq[FormValue], Routes, ParamContext]): Router.Result[Response] = {
 
+
+  def handle(ctx: ParamContext) = {
     val formData = FormParserFactory.builder().build().createParser(ctx.exchange).parseBlocking()
     val formDataBindings =
       formData
         .iterator()
         .asScala
         .map(k => (k, formData.get(k).asScala.map(FormValue.fromUndertow).toSeq))
-
-    val pathBindings =
-      bindings.map{case (k, v) => (k, Seq(new FormValue.Plain(v, new io.undertow.util.HeaderMap())))}
-
-    val allBindings = pathBindings ++ formDataBindings
-
-    entryPoint.invoke(routes, ctx, allBindings)
-      .asInstanceOf[Router.Result[Response]]
+        .toMap
+    formDataBindings
   }
+  def wrapPathSegment(s: String): InputType = Seq(FormValue.Plain(s, new io.undertow.util.HeaderMap))
 }
 

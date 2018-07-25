@@ -10,22 +10,12 @@ import collection.JavaConverters._
 
 trait WebEndpoint extends Routes.Endpoint[BaseResponse]{
   type InputType = Seq[String]
-  def wrapMethodOutput(t: BaseResponse) = t
   def parseMethodInput[T](implicit p: QueryParamReader[T]) = p
-  def handle(ctx: ParamContext,
-             bindings: Map[String, String],
-             routes: Routes,
-             entryPoint: EntryPoint[Seq[String], Routes, cask.model.ParamContext]): Router.Result[BaseResponse] = {
-    val allBindings =
-      bindings.map{case (k, v) => (k, Seq(v))} ++
-        ctx.exchange.getQueryParameters
-          .asScala
-          .toSeq
-          .map{case (k, vs) => (k, vs.asScala.toArray.toSeq)}
-
-    entryPoint.invoke(routes, ctx, allBindings)
-      .asInstanceOf[Router.Result[BaseResponse]]
-  }
+  def handle(ctx: ParamContext) = ctx.exchange.getQueryParameters
+    .asScala
+    .map{case (k, vs) => (k, vs.asScala.toArray.toSeq)}
+    .toMap
+  def wrapPathSegment(s: String) = Seq(s)
 }
 class get(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("get")

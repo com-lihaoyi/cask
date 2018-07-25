@@ -7,7 +7,7 @@ object StaticFiles extends cask.MainRoutes{
   }
 
   @cask.static("/static")
-  def staticRoutes = "cask/resources/cask"
+  def staticRoutes() = "cask/resources/cask"
 
   initialize()
 }
