@@ -2,6 +2,8 @@ package cask.model
 
 import java.io.{InputStream, OutputStream, OutputStreamWriter}
 
+import cask.endpoints.Cookie
+
 
 trait BaseResponse{
   def data: BaseResponse.Data

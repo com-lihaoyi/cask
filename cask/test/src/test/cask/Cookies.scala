@@ -2,8 +2,8 @@ package test.cask
 
 object Cookies extends cask.MainRoutes{
   @cask.get("/read-cookie")
-  def readCookies(username: cask.CookieParam) = {
-    username.cookie.value
+  def readCookies(username: cask.Cookie) = {
+    username.value
   }
 
   @cask.get("/store-cookie")
