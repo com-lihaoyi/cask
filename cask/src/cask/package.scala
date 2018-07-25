@@ -6,6 +6,14 @@ package object cask {
   val Abort = model.Abort
   type Redirect = model.Redirect
   val Redirect = model.Redirect
+  type FormValue = model.FormValue
+  val FormValue = model.FormValue
+  type Cookie = model.Cookie
+  val Cookie = model.Cookie
+  type Subpath = model.Subpath
+  val Subpath = model.Subpath
+  type Request = model.Request
+  val Request = model.Request
 
   // endpoints
   type get = endpoints.get
@@ -15,14 +23,6 @@ package object cask {
   type static = endpoints.static
   type postJson = endpoints.postJson
   type postForm = endpoints.postForm
-
-  // endpoints misc
-  type FormValue = endpoints.FormValue
-  val FormValue = endpoints.FormValue
-  type Cookie = endpoints.Cookie
-  val Cookie = endpoints.Cookie
-  type Subpath = endpoints.Subpath
-  val Subpath = endpoints.Subpath
 
   // main
   type MainRoutes = main.MainRoutes

@@ -4,7 +4,6 @@ import cask.internal.Router
 import cask.internal.Router.EntryPoint
 import cask.main.Routes
 import cask.model.{ParamContext, Response}
-import io.undertow.server.HttpServerExchange
 
 
 sealed trait JsReader[T] extends Router.ArgReader[ujson.Js.Value, T, cask.model.ParamContext]

@@ -4,7 +4,6 @@ import cask.internal.Router
 import cask.internal.Router.EntryPoint
 import cask.main.Routes
 import cask.model.{BaseResponse, ParamContext}
-import io.undertow.server.HttpServerExchange
 
 class static(val path: String) extends Routes.Endpoint[String] {
   type InputType = Seq[String]

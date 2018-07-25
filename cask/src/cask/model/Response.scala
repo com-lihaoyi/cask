@@ -2,7 +2,7 @@ package cask.model
 
 import java.io.{InputStream, OutputStream, OutputStreamWriter}
 
-import cask.endpoints.Cookie
+import io.undertow.server.HttpServerExchange
 
 
 trait BaseResponse{
@@ -71,10 +71,7 @@ case class Static(path: String) extends BaseResponse {
 }
 
 
-case class Request(cookies: Map[String, Cookie],
-                   data: InputStream,
-                   queryParams: Map[String, Seq[String]],
-                   headers: Map[String, Seq[String]])
+
 
 case class Response(data: BaseResponse.Data,
                     statusCode: Int = 200,

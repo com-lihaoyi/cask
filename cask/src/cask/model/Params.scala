@@ -1,6 +1,9 @@
-package cask.endpoints
+package cask.model
+
+import java.io.InputStream
 
 import cask.endpoints.ParamReader.NilParam
+import io.undertow.server.HttpServerExchange
 import io.undertow.server.handlers.CookieImpl
 
 class Subpath(val value: Seq[String])
@@ -8,7 +11,24 @@ object Subpath{
   implicit object SubpathParam extends NilParam[Subpath]((ctx, label) => new Subpath(ctx.remaining))
 }
 
-
+case class Request(exchange: HttpServerExchange){
+  import collection.JavaConverters._
+  lazy val cookies: Map[String, Cookie] = {
+    exchange.getRequestCookies.asScala.mapValues(Cookie.fromUndertow).toMap
+  }
+  lazy val data: InputStream = exchange.getInputStream
+  lazy val queryParams: Map[String, Seq[String]] = {
+    exchange.getQueryParameters.asScala.mapValues(_.asScala.toArray.toSeq).toMap
+  }
+  lazy val headers: Map[String, Seq[String]] = {
+    exchange.getRequestHeaders.asScala
+      .map{ header => header.getHeaderName.toString.toLowerCase -> header.asScala }
+      .toMap
+  }
+}
+object Request{
+  implicit object RequestParam extends NilParam[Request]((ctx, label) => new Request(ctx.exchange))
+}
 object Cookie{
   implicit object CookieParam extends NilParam[Cookie]((ctx, label) =>
     Cookie.fromUndertow(ctx.exchange.getRequestCookies().get(label))

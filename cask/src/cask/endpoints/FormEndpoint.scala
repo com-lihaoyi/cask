@@ -1,12 +1,10 @@
 package cask.endpoints
 
-import cask.endpoints.ParamReader.NilParam
 import cask.internal.Router.EntryPoint
 import cask.internal.Router
 import cask.main.Routes
-import cask.model.{ParamContext, Response}
-import io.undertow.server.HttpServerExchange
-import io.undertow.server.handlers.form.{FormData, FormParserFactory}
+import cask.model.{FormValue, ParamContext, Response}
+import io.undertow.server.handlers.form.{FormParserFactory}
 
 import collection.JavaConverters._
 
@@ -61,3 +59,4 @@ class postForm(val path: String, override val subpath: Boolean = false) extends 
       .asInstanceOf[Router.Result[Response]]
   }
 }
+

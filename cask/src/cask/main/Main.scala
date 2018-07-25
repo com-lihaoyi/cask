@@ -1,6 +1,6 @@
 package cask.main
 
-import cask.model.{BaseResponse, ParamContext, Response, Status}
+import cask.model._
 import cask.internal.Router.EntryPoint
 import cask.internal.{DispatchTrie, Router, Util}
 import io.undertow.Undertow
@@ -41,7 +41,7 @@ abstract class BaseMain{
     response.headers.foreach{case (k, v) =>
       exchange.getResponseHeaders.put(new HttpString(k), v)
     }
-    response.cookies.foreach(c => exchange.setResponseCookie(cask.endpoints.Cookie.toUndertow(c)))
+    response.cookies.foreach(c => exchange.setResponseCookie(Cookie.toUndertow(c)))
 
     exchange.setStatusCode(response.statusCode)
     response.data.write(exchange.getOutputStream)
