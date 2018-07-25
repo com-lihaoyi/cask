@@ -35,12 +35,12 @@ class route(val path: String, val methods: Seq[String], override val subpath: Bo
 abstract class QueryParamReader[T]
   extends Router.ArgReader[Seq[String], T, cask.model.ParamContext]{
   def arity: Int
-  def read(ctx: cask.model.ParamContext, v: Seq[String]): T
+  def read(ctx: cask.model.ParamContext, label: String, v: Seq[String]): T
 }
 object QueryParamReader{
   class SimpleParam[T](f: String => T) extends QueryParamReader[T]{
     def arity = 1
-    def read(ctx: cask.model.ParamContext, v: Seq[String]): T = f(v.head)
+    def read(ctx: cask.model.ParamContext, label: String, v: Seq[String]): T = f(v.head)
   }
 
   implicit object StringParam extends SimpleParam[String](x => x)
@@ -53,15 +53,15 @@ object QueryParamReader{
   implicit object FloatParam extends SimpleParam[Float](_.toFloat)
   implicit def SeqParam[T: QueryParamReader] = new QueryParamReader[Seq[T]]{
     def arity = 1
-    def read(ctx: cask.model.ParamContext, v: Seq[String]): Seq[T] = {
-      v.map(x => implicitly[QueryParamReader[T]].read(ctx, Seq(x)))
+    def read(ctx: cask.model.ParamContext, label: String, v: Seq[String]): Seq[T] = {
+      v.map(x => implicitly[QueryParamReader[T]].read(ctx, label, Seq(x)))
     }
   }
   implicit def paramReader[T: ParamReader] = new QueryParamReader[T] {
     override def arity = 0
 
-    override def read(ctx: cask.model.ParamContext, v: Seq[String]) = {
-      implicitly[ParamReader[T]].read(ctx, v)
+    override def read(ctx: cask.model.ParamContext, label: String, v: Seq[String]) = {
+      implicitly[ParamReader[T]].read(ctx, label, v)
     }
   }
 

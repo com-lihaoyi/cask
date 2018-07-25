@@ -32,7 +32,7 @@ object Router{
 
   trait ArgReader[I, +T, -C]{
     def arity: Int
-    def read(ctx: C, input: I): T
+    def read(ctx: C, label: String, input: I): T
   }
 
   def stripDashes(s: String) = {
@@ -66,22 +66,21 @@ object Router{
     catch{ case e: Throwable => Left(error(e))}
   }
 
-  def read[I, C]
-  (dict: Map[String, I],
-   default: => Option[Any],
-   arg: ArgSig[I, _, _, C],
-   thunk: I => Any): FailMaybe = {
+  def read[I, C](dict: Map[String, I],
+                 default: => Option[Any],
+                 arg: ArgSig[I, _, _, C],
+                 thunk: (String, I) => Any): FailMaybe = {
     arg.reads.arity match{
       case 0 =>
         tryEither(
-          thunk(null.asInstanceOf[I]), Result.ParamError.DefaultFailed(arg, _)).left.map(Seq(_))
+          thunk(arg.name, null.asInstanceOf[I]), Result.ParamError.DefaultFailed(arg, _)).left.map(Seq(_))
       case 1 =>
         dict.get(arg.name) match{
           case None =>
             tryEither(default.get, Result.ParamError.DefaultFailed(arg, _)).left.map(Seq(_))
 
           case Some(x) =>
-            tryEither(thunk(x), Result.ParamError.Invalid(arg, x, _)).left.map(Seq(_))
+            tryEither(thunk(arg.name, x), Result.ParamError.Invalid(arg, x, _)).left.map(Seq(_))
         }
     }
 
@@ -159,12 +158,11 @@ object Router{
     }
   }
 
-  def makeReadCall[I, C]
-  (dict: Map[String, I],
-   ctx: C,
-   default: => Option[Any],
-   arg: ArgSig[I, _, _, C]) = {
-    read[I, C](dict, default, arg, arg.reads.read(ctx, _))
+  def makeReadCall[I, C](dict: Map[String, I],
+                         ctx: C,
+                         default: => Option[Any],
+                         arg: ArgSig[I, _, _, C]) = {
+    read[I, C](dict, default, arg, arg.reads.read(ctx, _, _))
   }
 
 }

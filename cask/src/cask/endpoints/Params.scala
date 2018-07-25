@@ -5,20 +5,19 @@ import cask.endpoints.ParamReader.NilParam
 
 class Subpath(val value: Seq[String])
 object Subpath{
-  implicit object SubpathParam extends NilParam[Subpath](ctx => new Subpath(ctx.remaining))
+  implicit object SubpathParam extends NilParam[Subpath]((ctx, label) => new Subpath(ctx.remaining))
 
 }
 class Cookies(val value: Map[String, Cookie])
 object Cookies{
-  implicit object CookieParam extends NilParam[Cookies](ctx => {
+  implicit object CookieParam extends NilParam[Cookies]((ctx, label) => {
     import collection.JavaConverters._
     new Cookies(ctx.exchange.getRequestCookies.asScala.toMap.map{case (k, v) => (k, Cookie.fromUndertow(v))})
   })
 }
 object CookieParam{
-  implicit object SubpathParamParam extends NilParam[CookieParam](ctx =>
-//    new CookieParam(ctx.exchange.getRequestCookies())
-    ???
+  implicit object CookieParamParam extends NilParam[CookieParam]((ctx, label) =>
+    new CookieParam(Cookie.fromUndertow(ctx.exchange.getRequestCookies().get(label)))
   )
 }
 

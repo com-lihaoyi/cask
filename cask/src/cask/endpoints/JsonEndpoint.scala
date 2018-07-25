@@ -12,7 +12,7 @@ object JsReader{
   implicit def defaultJsReader[T: upickle.default.Reader] = new JsReader[T]{
     def arity = 1
 
-    def read(ctx: cask.model.ParamContext, input: ujson.Js.Value): T = {
+    def read(ctx: cask.model.ParamContext, label: String, input: ujson.Js.Value): T = {
       implicitly[upickle.default.Reader[T]].apply(input)
     }
   }
@@ -20,8 +20,8 @@ object JsReader{
   implicit def paramReader[T: ParamReader] = new JsReader[T] {
     override def arity = 0
 
-    override def read(ctx: cask.model.ParamContext, v: ujson.Js.Value) = {
-      implicitly[ParamReader[T]].read(ctx, Nil)
+    override def read(ctx: cask.model.ParamContext, label: String, v: ujson.Js.Value) = {
+      implicitly[ParamReader[T]].read(ctx, label, Nil)
     }
   }
 }
