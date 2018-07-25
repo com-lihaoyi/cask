@@ -1,5 +1,7 @@
 package cask.main
 
+import java.io.{PrintWriter, StringWriter}
+
 import cask.model._
 import cask.internal.Router.EntryPoint
 import cask.internal.{DispatchTrie, Router, Util}
@@ -139,10 +141,13 @@ abstract class BaseMain{
         val thingies = x.map{
           case Router.Result.ParamError.Invalid(p, v, ex) =>
             val literalV = literalize(v)
-
-            s"${p.name}: ${p.typeString} = $literalV failed to parse with $ex"
+            val trace = new StringWriter()
+            ex.printStackTrace(new PrintWriter(trace))
+            s"${p.name}: ${p.typeString} = $literalV failed to parse with $ex\n$trace"
           case Router.Result.ParamError.DefaultFailed(p, ex) =>
-            s"${p.name}'s default value failed to evaluate with $ex"
+            val trace = new StringWriter()
+            ex.printStackTrace(new PrintWriter(trace))
+            s"${p.name}'s default value failed to evaluate with $ex\n$trace"
         }
 
         s"""The following $argumentsStr failed to parse:

@@ -4,7 +4,7 @@ import cask.internal.Router.EntryPoint
 import cask.internal.Router
 import cask.main.Routes
 import cask.model.{FormValue, ParamContext, Response}
-import io.undertow.server.handlers.form.{FormParserFactory}
+import io.undertow.server.handlers.form.FormParserFactory
 
 import collection.JavaConverters._
 
@@ -14,7 +14,7 @@ object FormReader{
     def arity = implicitly[QueryParamReader[T]].arity
 
     def read(ctx: ParamContext, label: String, input: Seq[FormValue]) = {
-      implicitly[QueryParamReader[T]].read(ctx, label, input.map(_.value))
+      implicitly[QueryParamReader[T]].read(ctx, label, if (input == null) null else input.map(_.value))
     }
   }
 
@@ -52,11 +52,12 @@ class postForm(val path: String, override val subpath: Boolean = false) extends 
         .asScala
         .map(k => (k, formData.get(k).asScala.map(FormValue.fromUndertow).toSeq))
 
-
     val pathBindings =
       bindings.map{case (k, v) => (k, Seq(new FormValue.Plain(v, new io.undertow.util.HeaderMap())))}
 
-    entryPoint.invoke(routes, ctx, pathBindings ++ formDataBindings)
+    val allBindings = pathBindings ++ formDataBindings
+
+    entryPoint.invoke(routes, ctx, allBindings)
       .asInstanceOf[Router.Result[Response]]
   }
 }

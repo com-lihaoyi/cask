@@ -124,9 +124,7 @@ object Router{
     }
   }
 
-
   type FailMaybe = Either[Seq[Result.ParamError], Any]
-  type FailAll = Either[Seq[Result.ParamError], Seq[Any]]
 
   def validate(args: Seq[FailMaybe]): Result[Seq[Any]] = {
     val lefts = args.collect{case Left(x) => x}.flatten
@@ -155,9 +153,7 @@ object Router{
             tryEither(arg.reads.read(ctx, arg.name, x), Result.ParamError.Invalid(arg, x.toString, _)).left.map(Seq(_))
         }
     }
-
   }
-
 }
 
 
@@ -201,7 +197,7 @@ class Router[C <: Context](val c: C) {
       else None
     }
     val argListSymbol = q"${c.fresh[TermName]("argsList")}"
-    val extrasSymbol = q"${c.fresh[TermName]("extras")}"
+
     val defaults = for ((arg, i) <- flattenedArgLists.zipWithIndex) yield {
       val arg = TermName(c.freshName())
       hasDefault(i).map(defaultName => q"($arg: $curCls) => $arg.${newTermName(defaultName)}")
