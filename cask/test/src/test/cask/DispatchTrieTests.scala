@@ -1,5 +1,5 @@
 package test.cask
-import cask.DispatchTrie
+import cask.internal.DispatchTrie
 import utest._
 
 object DispatchTrieTests extends TestSuite {

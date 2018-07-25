@@ -1,4 +1,4 @@
-package cask
+package cask.internal
 
 object Util {
   def splitPath(p: String) =

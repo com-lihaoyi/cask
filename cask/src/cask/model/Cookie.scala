@@ -1,4 +1,4 @@
-package cask
+package cask.model
 
 import io.undertow.server.handlers.CookieImpl
 

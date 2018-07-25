@@ -3,12 +3,12 @@ package test.cask
 object RedirectAbort extends cask.MainRoutes{
   @cask.get("/")
   def index() = {
-    cask.redirect("/login")
+    cask.Redirect("/login")
   }
 
   @cask.get("/login")
   def login() = {
-    cask.abort(401)
+    cask.Abort(401)
   }
 
   initialize()

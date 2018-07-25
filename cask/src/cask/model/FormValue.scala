@@ -1,4 +1,4 @@
-package cask
+package cask.model
 
 object FormValue{
   def fromUndertow(from: io.undertow.server.handlers.form.FormData.FormValue) = {

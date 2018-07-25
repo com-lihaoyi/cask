@@ -1,13 +1,14 @@
-package cask
-import cask.Router.EntryPoint
-import java.io.OutputStream
-import java.nio.ByteBuffer
+package cask.main
 
-import cask.Routes.RoutesEndpointsMetadata
+import cask.model.{BaseResponse, Response, Status}
+import cask.Cookie
+import cask.internal.Router.EntryPoint
+import cask.internal.{DispatchTrie, Router, Util}
 import io.undertow.Undertow
-import io.undertow.server.handlers.BlockingHandler
 import io.undertow.server.{HttpHandler, HttpServerExchange}
-import io.undertow.util.{Headers, HttpString}
+import io.undertow.server.handlers.BlockingHandler
+import io.undertow.util.HttpString
+
 
 class MainRoutes extends BaseMain with Routes{
   def allRoutes = Seq(this)
@@ -27,7 +28,7 @@ abstract class BaseMain{
 
   lazy val routeTrie = DispatchTrie.construct[(Routes, Routes.EndpointMetadata[_])](0,
     for((route, metadata) <- routeList)
-    yield (Util.splitPath(metadata.metadata.path): IndexedSeq[String], (route, metadata), metadata.metadata.subpath)
+      yield (Util.splitPath(metadata.metadata.path): IndexedSeq[String], (route, metadata), metadata.metadata.subpath)
   )
 
   def handleError(statusCode: Int): Response = {
@@ -54,7 +55,7 @@ abstract class BaseMain{
         case Some(((routes, metadata), bindings, remaining)) =>
           val result = metadata.metadata.handle(
             exchange, remaining, bindings, routes,
-            metadata.entryPoint.asInstanceOf[EntryPoint[metadata.metadata.InputType, cask.Routes, (HttpServerExchange, Seq[String])]]
+            metadata.entryPoint.asInstanceOf[EntryPoint[metadata.metadata.InputType, cask.main.Routes, (HttpServerExchange, Seq[String])]]
           )
 
           result match{

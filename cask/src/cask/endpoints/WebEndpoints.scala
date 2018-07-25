@@ -1,29 +1,39 @@
-package cask
+package cask.endpoints
 
+import cask.internal.Router
+import cask.internal.Router.EntryPoint
+import cask.main.Routes
+import cask.model.BaseResponse
 import io.undertow.server.HttpServerExchange
-import io.undertow.server.handlers.form.{FormData, FormParserFactory}
+
+import collection.JavaConverters._
 
 
-abstract class ParamReader[T]
-  extends Router.ArgReader[Seq[String], T, (HttpServerExchange, Seq[String])]{
-  def arity: Int
-  def read(ctx: (HttpServerExchange, Seq[String]), v: Seq[String]): T
-}
-object ParamReader{
-  class NilParam[T](f: (HttpServerExchange, Seq[String]) => T) extends ParamReader[T]{
-    def arity = 0
-    def read(ctx: (HttpServerExchange, Seq[String]), v: Seq[String]): T = f(ctx._1, ctx._2)
+trait WebEndpoint extends Endpoint[BaseResponse]{
+  type InputType = Seq[String]
+  def wrapMethodOutput(t: BaseResponse) = t
+  def parseMethodInput[T](implicit p: QueryParamReader[T]) = p
+  def handle(exchange: HttpServerExchange,
+             remaining: Seq[String],
+             bindings: Map[String, String],
+             routes: Routes,
+             entryPoint: EntryPoint[Seq[String], Routes, (HttpServerExchange, Seq[String])]): Router.Result[BaseResponse] = {
+    val allBindings =
+      bindings.map{case (k, v) => (k, Seq(v))} ++
+        exchange.getQueryParameters
+          .asScala
+          .toSeq
+          .map{case (k, vs) => (k, vs.asScala.toArray.toSeq)}
+
+    entryPoint.invoke(routes, (exchange, remaining), allBindings)
+      .asInstanceOf[Router.Result[BaseResponse]]
   }
-  implicit object HttpExchangeParam extends NilParam[HttpServerExchange]((server, remaining) => server)
-  implicit object SubpathParam extends NilParam[Subpath]((server, remaining) => new Subpath(remaining))
-  implicit object CookieParam extends NilParam[Cookies]((server, remaining) => {
-    import collection.JavaConverters._
-    new Cookies(server.getRequestCookies.asScala.toMap.map{case (k, v) => (k, Cookie.fromUndertow(v))})
-  })
-  implicit object FormDataParam extends NilParam[FormData]((server, remaining) =>
-    FormParserFactory.builder().build().createParser(server).parseBlocking()
-  )
 }
+class get(val path: String, override val subpath: Boolean = false) extends WebEndpoint
+class post(val path: String, override val subpath: Boolean = false) extends WebEndpoint
+class put(val path: String, override val subpath: Boolean = false) extends WebEndpoint
+class route(val path: String, val methods: Seq[String], override val subpath: Boolean = false) extends WebEndpoint
+
 abstract class QueryParamReader[T]
   extends Router.ArgReader[Seq[String], T, (HttpServerExchange, Seq[String])]{
   def arity: Int
@@ -58,6 +68,3 @@ object QueryParamReader{
   }
 
 }
-
-class Subpath(val value: Seq[String])
-class Cookies(val value: Map[String, Cookie])

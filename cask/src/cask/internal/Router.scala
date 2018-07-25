@@ -1,4 +1,4 @@
-package cask
+package cask.internal
 
 
 import io.undertow.server.HttpServerExchange
@@ -67,10 +67,10 @@ object Router{
   }
 
   def read[I, C]
-          (dict: Map[String, I],
-           default: => Option[Any],
-           arg: ArgSig[I, _, _, C],
-           thunk: I => Any): FailMaybe = {
+  (dict: Map[String, I],
+   default: => Option[Any],
+   arg: ArgSig[I, _, _, C],
+   thunk: I => Any): FailMaybe = {
     arg.reads.arity match{
       case 0 =>
         tryEither(
@@ -160,10 +160,10 @@ object Router{
   }
 
   def makeReadCall[I, C]
-                  (dict: Map[String, I],
-                   ctx: C,
-                   default: => Option[Any],
-                   arg: ArgSig[I, _, _, C]) = {
+  (dict: Map[String, I],
+   ctx: C,
+   default: => Option[Any],
+   arg: ArgSig[I, _, _, C]) = {
     read[I, C](dict, default, arg, arg.reads.read(ctx, _))
   }
 
@@ -267,7 +267,7 @@ class Router[C <: Context](val c: C) {
       }
 
       val argSig = q"""
-        cask.Router.ArgSig[$annotDeserializeType, $curCls, $docUnwrappedType, $ctx](
+        cask.internal.Router.ArgSig[$annotDeserializeType, $curCls, $docUnwrappedType, $ctx](
           ${arg.name.toString},
           ${docUnwrappedType.toString + (if(vararg) "*" else "")},
           $docTree,
@@ -278,7 +278,7 @@ class Router[C <: Context](val c: C) {
       val reader =
         if(vararg) c.abort(meth.pos, "Varargs are not supported in cask routes")
         else q"""
-          cask.Router.makeReadCall(
+          cask.internal.Router.makeReadCall(
             $argListSymbol,
             ctx,
             $default,
@@ -305,23 +305,23 @@ class Router[C <: Context](val c: C) {
       if (meth.paramLists.isEmpty) q"$baseArgSym.${meth.name.toTermName}"
       else q"$baseArgSym.${meth.name.toTermName}(..$argNameCasts)"
     val res = q"""
-    cask.Router.EntryPoint[$annotDeserializeType, $curCls, $ctx](
+    cask.internal.Router.EntryPoint[$annotDeserializeType, $curCls, $ctx](
       ${meth.name.toString},
       scala.Seq(..$argSigs),
       ${methodDoc match{
-        case None => q"scala.None"
-        case Some(s) => q"scala.Some($s)"
-      }},
+      case None => q"scala.None"
+      case Some(s) => q"scala.Some($s)"
+    }},
       ${varargs.contains(true)},
       ($baseArgSym: $curCls, ctx: $ctx, $argListSymbol: Map[String, $annotDeserializeType]) =>
-        cask.Router.validate(Seq(..$readArgs)) match{
-          case cask.Router.Result.Success(Seq(..$argNames)) =>
-            cask.Router.Result.Success(
+        cask.internal.Router.validate(Seq(..$readArgs)) match{
+          case cask.internal.Router.Result.Success(Seq(..$argNames)) =>
+            cask.internal.Router.Result.Success(
               ${wrapOutput(methCall)}
             )
-          case x: cask.Router.Result.Error => x
+          case x: cask.internal.Router.Result.Error => x
         }
-    ).asInstanceOf[cask.Router.EntryPoint[Any, $curCls, $ctx]]
+    ).asInstanceOf[cask.internal.Router.EntryPoint[Any, $curCls, $ctx]]
     """
 
     c.internal.transform(res){(t, a) =>

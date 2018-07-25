@@ -1,51 +1,11 @@
-package cask
-import language.experimental.macros
-import java.io.{InputStream, OutputStream, OutputStreamWriter, StringWriter}
+package cask.main
 
-import cask.Router.EntryPoint
+import cask.endpoints.Endpoint
+import cask.internal.Router.EntryPoint
 import io.undertow.server.HttpServerExchange
 
 import scala.reflect.macros.blackbox.Context
-
-case class Request(cookies: Map[String, Cookie],
-                   data: InputStream,
-                   queryParams: Map[String, Seq[String]],
-                   headers: Map[String, Seq[String]])
-
-case class Response(data: Response.Data,
-                    statusCode: Int = 200,
-                    headers: Seq[(String, String)] = Nil,
-                    cookies: Seq[Cookie] = Nil) extends BaseResponse
-
-trait BaseResponse{
-  def data: Response.Data
-  def statusCode: Int
-  def headers: Seq[(String, String)]
-  def cookies: Seq[Cookie]
-}
-object Response{
-  implicit def dataResponse[T](t: T)(implicit c: T => Data) = Response(t)
-  trait Data{
-    def write(out: OutputStream): Unit
-  }
-  object Data{
-    implicit class StringData(s: String) extends Data{
-      def write(out: OutputStream) = out.write(s.getBytes)
-    }
-    implicit class BytesData(b: Array[Byte]) extends Data{
-      def write(out: OutputStream) = out.write(b)
-    }
-    implicit class StreamData(b: InputStream) extends Data{
-      def write(out: OutputStream) = b.transferTo(out)
-    }
-    implicit def JsonResponse[T: upickle.default.Writer](t: T) = new Data{
-      def write(out: OutputStream) = implicitly[upickle.default.Writer[T]].write(
-        new ujson.BaseRenderer(new OutputStreamWriter(out)),
-        t
-      )
-    }
-  }
-}
+import language.experimental.macros
 
 object Routes{
   case class EndpointMetadata[T](metadata: Endpoint[_],
@@ -55,7 +15,7 @@ object Routes{
     implicit def initialize[T] = macro initializeImpl[T]
     implicit def initializeImpl[T: c.WeakTypeTag](c: Context): c.Expr[RoutesEndpointsMetadata[T]] = {
       import c.universe._
-      val router = new cask.Router[c.type](c)
+      val router = new cask.internal.Router[c.type](c)
 
       val routeParts = for{
         m <- c.weakTypeOf[T].members
@@ -75,14 +35,14 @@ object Routes{
 
         q"""{
           val $annotObjectSym = $annotObject
-          cask.Routes.EndpointMetadata(
+          cask.main.Routes.EndpointMetadata(
             $annotObjectSym,
             $route
           )
         }"""
       }
 
-      c.Expr[RoutesEndpointsMetadata[T]](q"""cask.Routes.RoutesEndpointsMetadata(..$routeParts)""")
+      c.Expr[RoutesEndpointsMetadata[T]](q"""cask.main.Routes.RoutesEndpointsMetadata(..$routeParts)""")
     }
   }
 }

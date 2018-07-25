@@ -1,4 +1,4 @@
-package cask
+package cask.internal
 import collection.mutable
 object DispatchTrie{
   def construct[T](index: Int,
@@ -21,7 +21,7 @@ object DispatchTrie{
     if (terminals.length > 1){
       throw new Exception(
         "More than one endpoint has the same path: " +
-        terminals.map(_._1.map(_.mkString("/"))).mkString(", ")
+          terminals.map(_._1.map(_.mkString("/"))).mkString(", ")
       )
     } else if(wildcards.size >= 1 && continuations.size > 1) {
       throw new Exception(
@@ -49,7 +49,7 @@ case class DispatchTrie[T](current: Option[(T, Boolean)],
                            children: Map[String, DispatchTrie[T]]){
   final def lookup(remainingInput: List[String],
                    bindings: Map[String, String])
-                   : Option[(T, Map[String, String], Seq[String])] = {
+  : Option[(T, Map[String, String], Seq[String])] = {
     remainingInput match{
       case Nil =>
         current.map(x => (x._1, bindings, Nil))
