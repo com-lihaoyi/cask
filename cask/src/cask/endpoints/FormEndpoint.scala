@@ -1,6 +1,6 @@
 package cask.endpoints
 
-import cask.internal.Router
+import cask.internal.{Router, Util}
 import cask.main.Routes
 import cask.model.{FormValue, ParamContext, Response}
 import io.undertow.server.handlers.form.FormParserFactory
@@ -40,14 +40,21 @@ class postForm(val path: String, override val subpath: Boolean = false) extends 
   type Input = Seq[FormValue]
   type InputParser[T] = FormReader[T]
   def getRawParams(ctx: ParamContext) = {
-    val formData = FormParserFactory.builder().build().createParser(ctx.exchange).parseBlocking()
-    val formDataBindings =
-      formData
-        .iterator()
-        .asScala
-        .map(k => (k, formData.get(k).asScala.map(FormValue.fromUndertow).toSeq))
-        .toMap
-    formDataBindings
+    for{
+      formData <-
+        try Right(FormParserFactory.builder().build().createParser(ctx.exchange).parseBlocking())
+        catch{case e: Exception => Left(cask.model.Response(
+          "Unable to parse form data: " + e + "\n" + Util.stackTraceString(e)
+        ))}
+    } yield {
+      val formDataBindings =
+        formData
+          .iterator()
+          .asScala
+          .map(k => (k, formData.get(k).asScala.map(FormValue.fromUndertow).toSeq))
+          .toMap
+      formDataBindings
+    }
   }
   def wrapPathSegment(s: String): Input = Seq(FormValue.Plain(s, new io.undertow.util.HeaderMap))
 }

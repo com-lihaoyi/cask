@@ -16,7 +16,7 @@ object Routes{
     def wrapMethodOutput(ctx: ParamContext,t: R): cask.internal.Router.Result[Any] = {
       cask.internal.Router.Result.Success(t)
     }
-    def getRawParams(ctx: ParamContext): Map[String, Input]
+
     def wrapPathSegment(s: String): Input
 
   }
@@ -37,7 +37,7 @@ object Routes{
   trait BaseDecorator{
     type Input
     type InputParser[T] <: ArgReader[Input, T, ParamContext]
-    def getRawParams(ctx: ParamContext): Map[String, Input]
+    def getRawParams(ctx: ParamContext): Either[cask.model.Response, Map[String, Input]]
     def getParamParser[T](implicit p: InputParser[T]) = p
 
   }

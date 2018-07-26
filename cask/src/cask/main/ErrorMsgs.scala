@@ -97,12 +97,10 @@ object ErrorMsgs {
         val thingies = x.map{
           case Router.Result.ParamError.Invalid(p, v, ex) =>
             val literalV = literalize(v)
-            val trace = new StringWriter()
-            ex.printStackTrace(new PrintWriter(trace))
+            val trace = Util.stackTraceString(ex)
             s"${p.name}: ${p.typeString} = $literalV failed to parse with $ex\n$trace"
           case Router.Result.ParamError.DefaultFailed(p, ex) =>
-            val trace = new StringWriter()
-            ex.printStackTrace(new PrintWriter(trace))
+            val trace = Util.stackTraceString(ex)
             s"${p.name}'s default value failed to evaluate with $ex\n$trace"
         }
 

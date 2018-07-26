@@ -5,7 +5,7 @@ import utest._
 
 object FailureTests extends TestSuite {
   class myDecorator extends cask.Routes.Decorator {
-    def getRawParams(ctx: ParamContext) = Map("extra" -> 31337)
+    def getRawParams(ctx: ParamContext) = Right(Map("extra" -> 31337))
   }
   val tests = Tests{
 

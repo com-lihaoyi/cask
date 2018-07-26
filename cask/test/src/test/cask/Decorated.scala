@@ -4,7 +4,7 @@ import cask.model.ParamContext
 
 object Decorated extends cask.MainRoutes{
   class myDecorator extends cask.Routes.Decorator {
-    def getRawParams(ctx: ParamContext) = Map("extra" -> 31337)
+    def getRawParams(ctx: ParamContext) = Right(Map("extra" -> 31337))
   }
 
   @myDecorator()

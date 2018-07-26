@@ -56,14 +56,22 @@ abstract class BaseMain{
       routeTries(exchange.getRequestMethod.toString.toLowerCase()).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
         case None => writeResponse(exchange, handleError(404))
         case Some(((routes, metadata), bindings, remaining)) =>
-          val providers =
-            Seq(metadata.endpoint.getRawParams(ParamContext(exchange, remaining)) ++
-                bindings.mapValues(metadata.endpoint.wrapPathSegment)) ++
-            metadata.decorators.map(e => e.getRawParams(ParamContext(exchange, remaining)))
+          val params = for{
+            endpointParams <- metadata.endpoint.getRawParams(ParamContext(exchange, remaining))
+            decoratorParams <- Util.sequenceEither(
+              metadata.decorators.map(e => e.getRawParams(ParamContext(exchange, remaining)))
+            )
+          } yield (endpointParams ++ bindings.mapValues(metadata.endpoint.wrapPathSegment)) +: decoratorParams
 
-          val result = metadata.entryPoint
-            .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
-            .invoke(routes, ParamContext(exchange, remaining), providers)
+          val result = params match{
+            case Left(resp) => resp
+            case Right(paramValues) =>
+              metadata.entryPoint
+                .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
+                .invoke(routes, ParamContext(exchange, remaining), paramValues)
+          }
+
+
           result match{
             case Router.Result.Success(response: BaseResponse) => writeResponse(exchange, response)
             case e: Router.Result.Error =>

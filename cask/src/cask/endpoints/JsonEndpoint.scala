@@ -1,6 +1,6 @@
 package cask.endpoints
 
-import cask.internal.Router
+import cask.internal.{Router, Util}
 import cask.internal.Router.EntryPoint
 import cask.main.Routes
 import cask.model.{ParamContext, Response}
@@ -28,7 +28,22 @@ class postJson(val path: String, override val subpath: Boolean = false) extends 
   val methods = Seq("post")
   type Input = ujson.Js.Value
   type InputParser[T] = JsReader[T]
-  def getRawParams(ctx: ParamContext) =
-    ujson.read(new String(ctx.exchange.getInputStream.readAllBytes())).obj.toMap
+  def getRawParams(ctx: ParamContext) = {
+    for{
+      str <-
+        try Right(new String(ctx.exchange.getInputStream.readAllBytes()))
+        catch{case e: Throwable => Left(cask.model.Response(
+          "Unable to deserialize input JSON text: " + e + "\n" + Util.stackTraceString(e)
+        ))}
+      json <-
+        try Right(ujson.read(str))
+        catch{case e: Throwable => Left(cask.model.Response(
+          "Input text is invalid JSON: " + e + "\n" + Util.stackTraceString(e)
+        ))}
+      obj <-
+        try Right(json.obj)
+        catch {case e: Throwable => Left(cask.model.Response("Input JSON must be a dictionary"))}
+    } yield obj.toMap
+  }
   def wrapPathSegment(s: String): Input = ujson.Js.Str(s)
 }
