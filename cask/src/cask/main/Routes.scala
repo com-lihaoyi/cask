@@ -91,7 +91,7 @@ object Routes{
         val route = router.extractMethod(
           m.asInstanceOf[MethodSymbol],
           weakTypeOf[T],
-          (t: router.c.universe.Tree) => q"${annotObjectSyms.head}.wrapMethodOutput(ctx, $t)",
+          (ctx: c.Tree, t: c.Tree) => q"${annotObjectSyms.head}.wrapMethodOutput($ctx, $t)",
           c.weakTypeOf[ParamContext],
           annotObjectSyms.map(annotObjectSym => q"$annotObjectSym.getParamParser"),
           annotObjectSyms.map(annotObjectSym => tq"$annotObjectSym.Input")
