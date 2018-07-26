@@ -58,6 +58,17 @@ object Routes{
         val annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[BaseDecorator]).reverse
         if annotations.nonEmpty
       } yield {
+        if(!(annotations.head.tree.tpe <:< weakTypeOf[Endpoint[_]])) c.abort(
+          annotations.head.tree.pos,
+          s"Last annotation applied to a function must be an instance of Endpoint, " +
+          s"not ${annotations.head.tree.tpe}"
+        )
+        val allEndpoints = annotations.filter(_.tree.tpe <:< weakTypeOf[Endpoint[_]])
+        if(allEndpoints.length > 1) c.abort(
+          annotations.head.tree.pos,
+          s"You can only apply one Endpoint annotation to a function, not " +
+          s"${allEndpoints.length} in ${allEndpoints.map(_.tree.tpe).mkString(", ")}"
+        )
         val annotObjects =
           for(annot <- annotations)
           yield q"new ${annot.tree.tpe}(..${annot.tree.children.tail})"

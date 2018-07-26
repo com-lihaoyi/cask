@@ -187,7 +187,7 @@ class Router[C <: Context](val c: C) {
     }
   }
 
-  def extractMethod(meth: MethodSymbol,
+  def extractMethod(method: MethodSymbol,
                     curCls: c.universe.Type,
                     wrapOutput: c.Tree => c.Tree,
                     ctx: c.Type,
@@ -205,14 +205,19 @@ class Router[C <: Context](val c: C) {
       } yield l.value.value.asInstanceOf[String]
       (remaining, docValues.headOption)
     }
-    val (_, methodDoc) = getDocAnnotation(meth.annotations)
+    val (_, methodDoc) = getDocAnnotation(method.annotations)
     val argListSymbol = q"${c.fresh[TermName]("argsList")}"
-    val argData = for(argListIndex <- 0 until meth.paramLists.length) yield{
+    if (method.paramLists.length != argReaders.length) c.abort(
+      method.pos,
+      s"Endpoint ${method.name}'s number of parameter lists (${method.paramLists.length}) " +
+      s"doesn't match number of decorators (${argReaders.length})"
+    )
+    val argData = for(argListIndex <- 0 until method.paramLists.length) yield{
       val annotDeserializeType = annotDeserializeTypes(argListIndex)
       val argReader = argReaders(argListIndex)
-      val flattenedArgLists = meth.paramss(argListIndex)
+      val flattenedArgLists = method.paramss(argListIndex)
       def hasDefault(i: Int) = {
-        val defaultName = s"${meth.name}$$default$$${i + 1}"
+        val defaultName = s"${method.name}$$default$$${i + 1}"
         if (curCls.members.exists(_.name.toString == defaultName)) Some(defaultName)
         else None
       }
@@ -275,7 +280,7 @@ class Router[C <: Context](val c: C) {
         """
 
         val reader =
-          if (vararg) c.abort(meth.pos, "Varargs are not supported in cask routes")
+          if (vararg) c.abort(method.pos, "Varargs are not supported in cask routes")
           else
             q"""
             cask.internal.Router.makeReadCall(
@@ -285,7 +290,7 @@ class Router[C <: Context](val c: C) {
               $argSig.asInstanceOf[cask.internal.Router.ArgSig[Any, _, _, cask.model.ParamContext]]
             )
           """
-        c.internal.setPos(reader, meth.pos)
+        c.internal.setPos(reader, method.pos)
         (reader, argSig)
       }
 
@@ -307,12 +312,12 @@ class Router[C <: Context](val c: C) {
     val argSigs = argData.map(_._2)
     val argNames = argData.map(_._3)
     val readArgs = argData.map(_._4)
-    var methodCall: c.Tree = q"$baseArgSym.${meth.name.toTermName}"
+    var methodCall: c.Tree = q"$baseArgSym.${method.name.toTermName}"
     for(argNameCast <- argNameCasts) methodCall = q"$methodCall(..$argNameCast)"
 
     val res = q"""
     cask.internal.Router.EntryPoint[$curCls, $ctx](
-      ${meth.name.toString},
+      ${method.name.toString},
       ${argSigs.toList},
       ${methodDoc match{
       case None => q"scala.None"
@@ -330,7 +335,7 @@ class Router[C <: Context](val c: C) {
     """
 
     c.internal.transform(res){(t, a) =>
-      c.internal.setPos(t, meth.pos)
+      c.internal.setPos(t, method.pos)
       a.default(t)
     }
 
