@@ -49,7 +49,7 @@ object Router{
   case class EntryPoint[T, C](name: String,
                               argSignatures: Seq[Seq[ArgSig[_, T, _, C]]],
                               doc: Option[String],
-                              invoke0: (T, C, Seq[Map[String, Any]]) => Result[Any]){
+                              invoke0: (T, C, Seq[Map[String, Any]], Seq[Seq[ArgSig[Any, _, _, cask.model.ParamContext]]]) => Result[Any]){
     def invoke(target: T,
                ctx: C,
                paramLists: Seq[Map[String, Any]]): Result[Any] = {
@@ -61,7 +61,12 @@ object Router{
 
       if (missing.nonEmpty || unknown.nonEmpty) Result.Error.MismatchedArguments(missing, unknown.toSeq)
       else {
-        try invoke0(target, ctx, paramLists)
+        try invoke0(
+          target,
+          ctx,
+          paramLists,
+          argSignatures.asInstanceOf[Seq[Seq[ArgSig[Any, _, _, cask.model.ParamContext]]]]
+        )
         catch{case e: Throwable => Result.Error.Exception(e)}
       }
     }
@@ -206,7 +211,9 @@ class Router[C <: Context](val c: C) {
       (remaining, docValues.headOption)
     }
     val (_, methodDoc) = getDocAnnotation(method.annotations)
-    val argListSymbol = q"${c.fresh[TermName]("argsList")}"
+    val argValuesSymbol = q"${c.fresh[TermName]("argValues")}"
+    val argSigsSymbol = q"${c.fresh[TermName]("argSigs")}"
+    val ctxSymbol = q"${c.fresh[TermName]("ctx")}"
     if (method.paramLists.length != argReaders.length) c.abort(
       method.pos,
       s"Endpoint ${method.name}'s number of parameter lists (${method.paramLists.length}) " +
@@ -224,7 +231,7 @@ class Router[C <: Context](val c: C) {
 
 
 
-      val defaults = for ((arg, i) <- flattenedArgLists.zipWithIndex) yield {
+      val defaults = for (i <- flattenedArgLists.indices) yield {
         val arg = TermName(c.freshName())
         hasDefault(i).map(defaultName => q"($arg: $curCls) => $arg.${newTermName(defaultName)}")
       }
@@ -284,10 +291,10 @@ class Router[C <: Context](val c: C) {
           else
             q"""
             cask.internal.Router.makeReadCall(
-              $argListSymbol($argListIndex),
-              ctx,
+              $argValuesSymbol($argListIndex),
+              $ctxSymbol,
               $default,
-              $argSig.asInstanceOf[cask.internal.Router.ArgSig[Any, _, _, cask.model.ParamContext]]
+              $argSigsSymbol($argListIndex)($i)
             )
           """
         c.internal.setPos(reader, method.pos)
@@ -323,7 +330,12 @@ class Router[C <: Context](val c: C) {
       case None => q"scala.None"
       case Some(s) => q"scala.Some($s)"
     }},
-      ($baseArgSym: $curCls, ctx: $ctx, $argListSymbol: Seq[Map[String, Any]]) =>
+      (
+        $baseArgSym: $curCls,
+        $ctxSymbol: $ctx,
+        $argValuesSymbol: Seq[Map[String, Any]],
+        $argSigsSymbol: scala.Seq[scala.Seq[cask.internal.Router.ArgSig[Any, _, _, cask.model.ParamContext]]]
+      ) =>
         cask.internal.Router.validate(Seq(..${readArgs.flatten.toList})) match{
           case cask.internal.Router.Result.Success(Seq(..${argNames.flatten.toList})) =>
 
