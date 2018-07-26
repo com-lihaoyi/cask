@@ -184,6 +184,17 @@ class Router[C <: Context](val c: C) {
     }
   }
 
+
+
+  def unwrapVarargType(arg: Symbol) = {
+    val vararg = arg.typeSignature.typeSymbol == definitions.RepeatedParamClass
+    val unwrappedType =
+      if (!vararg) arg.typeSignature
+      else arg.typeSignature.asInstanceOf[TypeRef].args(0)
+
+    (vararg, unwrappedType)
+  }
+
   def extractMethod(method: MethodSymbol,
                     curCls: c.universe.Type,
                     wrapOutput: (c.Tree, c.Tree) => c.Tree,
@@ -277,9 +288,11 @@ class Router[C <: Context](val c: C) {
 
       val (readArgs, argSigs) = readArgSigs.unzip
       val (argNames, argNameCasts) = flattenedArgLists.map { arg =>
+        val (vararg, unwrappedType) = unwrapVarargType(arg)
         (
           pq"${arg.name.toTermName}",
-          q"${arg.name.toTermName}.asInstanceOf[Seq[${arg.typeSignature}]]: _*"
+          if (!vararg) q"${arg.name.toTermName}.asInstanceOf[$unwrappedType]"
+          else q"${arg.name.toTermName}.asInstanceOf[Seq[$unwrappedType]]: _*"
 
         )
       }.unzip

@@ -88,6 +88,8 @@ object ExampleTests extends TestSuite{
     }
     'Decorated - test(Decorated){ host =>
       requests.get(host + "/hello/woo").text() ==> "woo31337"
+      requests.get(host + "/internal/boo").text() ==> "boo[haoyi]"
+      requests.get(host + "/internal-extra/goo").text() ==> "goo[haoyi]31337"
 
     }
   }
