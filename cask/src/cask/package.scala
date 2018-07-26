@@ -29,5 +29,8 @@ package object cask {
   type Routes = main.Routes
   val Routes = main.Routes
   type Main = main.Main
+  type Decorator = main.Decorator
+  type Endpoint[R] = main.Endpoint[R]
+  type BaseDecorator = main.BaseDecorator
 
 }

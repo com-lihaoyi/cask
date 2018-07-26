@@ -2,7 +2,7 @@ package cask.endpoints
 
 import cask.internal.{Router, Util}
 import cask.internal.Router.EntryPoint
-import cask.main.Routes
+import cask.main.{Endpoint, Routes}
 import cask.model.{ParamContext, Response}
 
 
@@ -24,7 +24,7 @@ object JsReader{
     }
   }
 }
-class postJson(val path: String, override val subpath: Boolean = false) extends Routes.Endpoint[Response]{
+class postJson(val path: String, override val subpath: Boolean = false) extends Endpoint[Response]{
   val methods = Seq("post")
   type Input = ujson.Js.Value
   type InputParser[T] = JsReader[T]

@@ -1,7 +1,7 @@
 package cask.endpoints
 
 import cask.internal.{Router, Util}
-import cask.main.Routes
+import cask.main.{Endpoint, Routes}
 import cask.model.{FormValue, ParamContext, Response}
 import io.undertow.server.handlers.form.FormParserFactory
 
@@ -34,7 +34,7 @@ object FormReader{
     def read(ctx: ParamContext, label: String, input: Seq[FormValue]) = input.map(_.asFile.get)
   }
 }
-class postForm(val path: String, override val subpath: Boolean = false) extends Routes.Endpoint[Response]{
+class postForm(val path: String, override val subpath: Boolean = false) extends Endpoint[Response]{
 
   val methods = Seq("post")
   type Input = Seq[FormValue]

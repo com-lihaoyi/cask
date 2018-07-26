@@ -6,10 +6,10 @@ object Decorated extends cask.MainRoutes{
   class User{
     override def toString = "[haoyi]"
   }
-  class loggedIn extends cask.Routes.Decorator {
+  class loggedIn extends cask.Decorator {
     def getRawParams(ctx: ParamContext) = Right(Map("user" -> new User()))
   }
-  class withExtra extends cask.Routes.Decorator {
+  class withExtra extends cask.Decorator {
     def getRawParams(ctx: ParamContext) = Right(Map("extra" -> 31337))
   }
 

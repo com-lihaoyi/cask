@@ -1,14 +1,13 @@
 package cask.endpoints
 
 import cask.internal.Router
-import cask.internal.Router.EntryPoint
-import cask.main.Routes
+import cask.main.Endpoint
 import cask.model.{BaseResponse, ParamContext}
 
 import collection.JavaConverters._
 
 
-trait WebEndpoint extends Routes.Endpoint[BaseResponse]{
+trait WebEndpoint extends Endpoint[BaseResponse]{
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
   def getRawParams(ctx: ParamContext) = Right(

@@ -1,10 +1,10 @@
 package cask.endpoints
 
 import cask.internal.Router
-import cask.main.Routes
+import cask.main.Endpoint
 import cask.model.ParamContext
 
-class static(val path: String) extends Routes.Endpoint[String] {
+class static(val path: String) extends Endpoint[String] {
   val methods = Seq("get")
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
