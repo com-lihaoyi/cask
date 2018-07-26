@@ -27,8 +27,8 @@ object JsReader{
 class postJson(val path: String, override val subpath: Boolean = false) extends Routes.Endpoint[Response]{
   val methods = Seq("post")
   type InputType = ujson.Js.Value
-  def parseMethodInput[T](implicit p: JsReader[T]) = p
-  def handle(ctx: ParamContext) =
+  type InputParser[T] = JsReader[T]
+  def getParamValues(ctx: ParamContext) =
     ujson.read(new String(ctx.exchange.getInputStream.readAllBytes())).obj.toMap
   def wrapPathSegment(s: String): InputType = ujson.Js.Str(s)
 }

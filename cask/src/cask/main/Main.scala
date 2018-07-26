@@ -1,7 +1,5 @@
 package cask.main
 
-import java.io.{PrintWriter, StringWriter}
-
 import cask.model._
 import cask.internal.Router.EntryPoint
 import cask.internal.{DispatchTrie, Router, Util}
@@ -9,7 +7,6 @@ import io.undertow.Undertow
 import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.server.handlers.BlockingHandler
 import io.undertow.util.HttpString
-import fastparse.utils.Utils.literalize
 
 class MainRoutes extends BaseMain with Routes{
   def allRoutes = Seq(this)
@@ -60,9 +57,9 @@ abstract class BaseMain{
         case None => writeResponse(exchange, handleError(404))
         case Some(((routes, metadata), bindings, remaining)) =>
           val providers =
-            Seq(metadata.endpoint.handle(ParamContext(exchange, remaining)) ++
+            Seq(metadata.endpoint.getParamValues(ParamContext(exchange, remaining)) ++
                 bindings.mapValues(metadata.endpoint.wrapPathSegment)) ++
-            metadata.decorators.map(e => e.handle(ParamContext(exchange, remaining)))
+            metadata.decorators.map(e => e.getParamValues(ParamContext(exchange, remaining)))
 
           val result = metadata.entryPoint
             .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]

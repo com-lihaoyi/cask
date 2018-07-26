@@ -86,7 +86,7 @@ object ExampleTests extends TestSuite{
       ).text() ==>
       "OK Plain(hello,null) List(1, 2)"
     }
-    'Decorator - test(Decorator){ host =>
+    'Decorated - test(Decorated){ host =>
       requests.get(host + "/hello/woo").text() ==> "woo31337"
 
     }

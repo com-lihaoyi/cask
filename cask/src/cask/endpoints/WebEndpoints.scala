@@ -10,8 +10,8 @@ import collection.JavaConverters._
 
 trait WebEndpoint extends Routes.Endpoint[BaseResponse]{
   type InputType = Seq[String]
-  def parseMethodInput[T](implicit p: QueryParamReader[T]) = p
-  def handle(ctx: ParamContext) = ctx.exchange.getQueryParameters
+  type InputParser[T] = QueryParamReader[T]
+  def getParamValues(ctx: ParamContext) = ctx.exchange.getQueryParameters
     .asScala
     .map{case (k, vs) => (k, vs.asScala.toArray.toSeq)}
     .toMap

@@ -1,7 +1,7 @@
 package cask.main
 
 import cask.internal.Router
-import cask.internal.Router.EntryPoint
+import cask.internal.Router.{ArgReader, EntryPoint}
 import cask.model.{BaseResponse, ParamContext}
 
 import scala.reflect.macros.blackbox.Context
@@ -9,21 +9,41 @@ import language.experimental.macros
 
 object Routes{
 
-  trait Endpoint[R] extends Decorator{
-    type InputType
+  trait Endpoint[R] extends BaseDecorator{
+
     val path: String
     val methods: Seq[String]
     def subpath: Boolean = false
-    def wrapMethodOutput(ctx: ParamContext,t: R): cask.internal.Router.Result[Any] = cask.internal.Router.Result.Success(t)
-    def handle(ctx: ParamContext): Map[String, InputType]
+    def wrapMethodOutput(ctx: ParamContext,t: R): cask.internal.Router.Result[Any] = {
+      cask.internal.Router.Result.Success(t)
+    }
+    def getParamValues(ctx: ParamContext): Map[String, InputType]
     def wrapPathSegment(s: String): InputType
+
   }
-  trait Decorator{
+  trait BaseDecorator{
     type InputType
-    def handle(ctx: ParamContext): Map[String, InputType]
+    type InputParser[T]
+    def getParamValues(ctx: ParamContext): Map[String, InputType]
+    def parseMethodInput[T](implicit p: InputParser[T]) = p
+
   }
 
-  case class EndpointMetadata[T](decorators: Seq[Decorator],
+  trait Decorator extends BaseDecorator {
+    type InputType = Any
+    type InputParser[T] = NoOpParser[InputType, T]
+  }
+
+  class NoOpParser[InputType, T] extends ArgReader[InputType, T, ParamContext] {
+    def arity = 1
+
+    def read(ctx: ParamContext, label: String, input: InputType) = input.asInstanceOf[T]
+  }
+  object NoOpParser{
+    implicit def instance[InputType, T] = new NoOpParser[InputType, T]
+  }
+
+  case class EndpointMetadata[T](decorators: Seq[BaseDecorator],
                                  endpoint: Endpoint[_],
                                  entryPoint: EntryPoint[T, ParamContext])
   case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
@@ -35,7 +55,7 @@ object Routes{
 
       val routeParts = for{
         m <- c.weakTypeOf[T].members
-        val annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[Decorator]).reverse
+        val annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[BaseDecorator]).reverse
         if annotations.nonEmpty
       } yield {
         val annotObjects =

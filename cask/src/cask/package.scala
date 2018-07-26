@@ -27,6 +27,7 @@ package object cask {
   // main
   type MainRoutes = main.MainRoutes
   type Routes = main.Routes
+  val Routes = main.Routes
   type Main = main.Main
 
 }
