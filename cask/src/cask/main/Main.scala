@@ -57,9 +57,9 @@ abstract class BaseMain{
         case None => writeResponse(exchange, handleError(404))
         case Some(((routes, metadata), bindings, remaining)) =>
           val providers =
-            Seq(metadata.endpoint.getParamValues(ParamContext(exchange, remaining)) ++
+            Seq(metadata.endpoint.getRawParams(ParamContext(exchange, remaining)) ++
                 bindings.mapValues(metadata.endpoint.wrapPathSegment)) ++
-            metadata.decorators.map(e => e.getParamValues(ParamContext(exchange, remaining)))
+            metadata.decorators.map(e => e.getRawParams(ParamContext(exchange, remaining)))
 
           val result = metadata.entryPoint
             .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]

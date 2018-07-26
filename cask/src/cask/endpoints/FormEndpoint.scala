@@ -37,9 +37,9 @@ object FormReader{
 class postForm(val path: String, override val subpath: Boolean = false) extends Routes.Endpoint[Response]{
 
   val methods = Seq("post")
-  type InputType = Seq[FormValue]
+  type Input = Seq[FormValue]
   type InputParser[T] = FormReader[T]
-  def getParamValues(ctx: ParamContext) = {
+  def getRawParams(ctx: ParamContext) = {
     val formData = FormParserFactory.builder().build().createParser(ctx.exchange).parseBlocking()
     val formDataBindings =
       formData
@@ -49,6 +49,6 @@ class postForm(val path: String, override val subpath: Boolean = false) extends 
         .toMap
     formDataBindings
   }
-  def wrapPathSegment(s: String): InputType = Seq(FormValue.Plain(s, new io.undertow.util.HeaderMap))
+  def wrapPathSegment(s: String): Input = Seq(FormValue.Plain(s, new io.undertow.util.HeaderMap))
 }
 

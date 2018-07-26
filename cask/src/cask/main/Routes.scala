@@ -1,8 +1,7 @@
 package cask.main
 
-import cask.internal.Router
 import cask.internal.Router.{ArgReader, EntryPoint}
-import cask.model.{BaseResponse, ParamContext}
+import cask.model.ParamContext
 
 import scala.reflect.macros.blackbox.Context
 import language.experimental.macros
@@ -17,30 +16,44 @@ object Routes{
     def wrapMethodOutput(ctx: ParamContext,t: R): cask.internal.Router.Result[Any] = {
       cask.internal.Router.Result.Success(t)
     }
-    def getParamValues(ctx: ParamContext): Map[String, InputType]
-    def wrapPathSegment(s: String): InputType
+    def getRawParams(ctx: ParamContext): Map[String, Input]
+    def wrapPathSegment(s: String): Input
 
   }
+
+  /**
+    * The core interface of decorator annotations: the decorator provides "raw"
+    * values to the annotated function via `getRawParams`, which then get
+    * processed by `getParamParser` into the correct argument types before
+    * being passed to the function.
+    *
+    * For a trivial "provide value" decorator, `getRawParams` would return the
+    * final param value and `getParamParser` would return a no-op parser. For
+    * a decorator that takes its input as query-params, JSON, or similar,
+    * `getRawParams` would provide raw query/JSON/etc. values and
+    * `getParamParser` would be responsible for processing those into the
+    * correct parameter types.
+    */
   trait BaseDecorator{
-    type InputType
-    type InputParser[T]
-    def getParamValues(ctx: ParamContext): Map[String, InputType]
-    def parseMethodInput[T](implicit p: InputParser[T]) = p
+    type Input
+    type InputParser[T] <: ArgReader[Input, T, ParamContext]
+    def getRawParams(ctx: ParamContext): Map[String, Input]
+    def getParamParser[T](implicit p: InputParser[T]) = p
 
   }
 
   trait Decorator extends BaseDecorator {
-    type InputType = Any
-    type InputParser[T] = NoOpParser[InputType, T]
+    type Input = Any
+    type InputParser[T] = NoOpParser[Input, T]
   }
 
-  class NoOpParser[InputType, T] extends ArgReader[InputType, T, ParamContext] {
+  class NoOpParser[Input, T] extends ArgReader[Input, T, ParamContext] {
     def arity = 1
 
-    def read(ctx: ParamContext, label: String, input: InputType) = input.asInstanceOf[T]
+    def read(ctx: ParamContext, label: String, input: Input) = input.asInstanceOf[T]
   }
   object NoOpParser{
-    implicit def instance[InputType, T] = new NoOpParser[InputType, T]
+    implicit def instance[Input, T] = new NoOpParser[Input, T]
   }
 
   case class EndpointMetadata[T](decorators: Seq[BaseDecorator],
@@ -80,8 +93,8 @@ object Routes{
           weakTypeOf[T],
           (t: router.c.universe.Tree) => q"${annotObjectSyms.head}.wrapMethodOutput(ctx, $t)",
           c.weakTypeOf[ParamContext],
-          annotObjectSyms.map(annotObjectSym => q"$annotObjectSym.parseMethodInput"),
-          annotObjectSyms.map(annotObjectSym => tq"$annotObjectSym.InputType")
+          annotObjectSyms.map(annotObjectSym => q"$annotObjectSym.getParamParser"),
+          annotObjectSyms.map(annotObjectSym => tq"$annotObjectSym.Input")
 
         )
 
