@@ -24,3 +24,9 @@ object cask extends ScalaModule{
     )
   }
 }
+object example extends Module{
+  object todo extends ScalaModule{
+    def scalaVersion = "2.12.6"
+    def moduleDeps = Seq(cask)
+  }
+}
