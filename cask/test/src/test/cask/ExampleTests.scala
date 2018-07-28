@@ -38,17 +38,17 @@ object ExampleTests extends TestSuite{
       requests.get(host + "/user").statusCode ==> 404
 
 
-      requests.get(host + "/post/123?query=xyz&query=abc").text() ==>
+      requests.get(host + "/post/123?param=xyz&param=abc").text() ==>
         "Post 123 ArrayBuffer(xyz, abc)"
 
       requests.get(host + "/post/123").text() ==>
-        """Missing argument: (query: Seq[String])
+        """Missing argument: (param: Seq[String])
           |
           |Arguments provided did not match expected signature:
           |
           |showPost
           |  postId  Int
-          |  query  Seq[String]
+          |  param  Seq[String]
           |
           |""".stripMargin
 
@@ -67,15 +67,6 @@ object ExampleTests extends TestSuite{
       resp.history.get.statusCode ==> 301
     }
 
-    'MultipartFileUploads - test(MultipartFileUploads){ host =>
-      val resp = requests.post(
-        host + "/upload",
-        data = requests.MultiPart(
-          requests.MultiItem("image", "...", "my-best-image.txt")
-        )
-      )
-      resp.text() ==> "my-best-image.txt"
-    }
     'FormJsonPost - test(FormJsonPost){ host =>
       requests.post(host + "/json", data = """{"value1": true, "value2": [3]}""").text() ==>
         "OK true Vector(3)"
@@ -84,7 +75,15 @@ object ExampleTests extends TestSuite{
         host + "/form",
         data = Seq("value1" -> "hello", "value2" -> "1", "value2" -> "2")
       ).text() ==>
-      "OK Plain(hello,null) List(1, 2)"
+      "OK FormValue(hello,null) List(1, 2)"
+
+      val resp = requests.post(
+        host + "/upload",
+        data = requests.MultiPart(
+          requests.MultiItem("image", "...", "my-best-image.txt")
+        )
+      )
+      resp.text() ==> "my-best-image.txt"
     }
     'Decorated - test(Decorated){ host =>
       requests.get(host + "/hello/woo").text() ==> "woo31337"

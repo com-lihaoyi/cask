@@ -6,8 +6,12 @@ package object cask {
   val Abort = model.Abort
   type Redirect = model.Redirect
   val Redirect = model.Redirect
+  type FormEntry = model.FormEntry
+  val FormEntry = model.FormEntry
   type FormValue = model.FormValue
   val FormValue = model.FormValue
+  type FormFile = model.FormFile
+  val FormFile = model.FormFile
   type Cookie = model.Cookie
   val Cookie = model.Cookie
   type Subpath = model.Subpath

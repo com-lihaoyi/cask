@@ -7,8 +7,8 @@ object VariableRoutes extends cask.MainRoutes{
   }
 
   @cask.get("/post/:postId")
-  def showPost(postId: Int, query: Seq[String]) = {
-    s"Post $postId $query"
+  def showPost(postId: Int, param: Seq[String]) = {
+    s"Post $postId $param"
   }
 
   @cask.get("/path", subpath = true)

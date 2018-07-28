@@ -1,6 +1,6 @@
 package test.cask
-import cask.model.ParamContext
 
+import cask.model.ParamContext
 
 object Decorated extends cask.MainRoutes{
   class User{
