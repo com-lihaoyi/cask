@@ -5,7 +5,7 @@ import utest._
 
 object FailureTests extends TestSuite {
   class myDecorator extends cask.Decorator {
-    def getRawParams(ctx: ParamContext) = Right(Map("extra" -> 31337))
+    def getRawParams(ctx: ParamContext) = Right(cask.Decor("extra" -> 31337))
   }
   val tests = Tests{
 
@@ -17,17 +17,7 @@ object FailureTests extends TestSuite {
           initialize()
         }
       """).msg ==>
-      "Endpoint hello's number of parameter lists (2) doesn't match number of decorators (1)"
-
-      utest.compileError("""
-        object Decorated extends cask.MainRoutes{
-          @myDecorator()
-          @cask.get("/hello/:world")
-          def hello(world: String)= world
-          initialize()
-        }
-      """).msg ==>
-        "Endpoint hello's number of parameter lists (1) doesn't match number of decorators (2)"
+      "Endpoint hello's number of parameter lists (2) cannot be more than the number of decorators (1)"
 
       utest.compileError("""
         object Decorated extends cask.MainRoutes{
@@ -51,3 +41,4 @@ object FailureTests extends TestSuite {
     }
   }
 }
+

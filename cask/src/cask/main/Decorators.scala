@@ -33,9 +33,18 @@ trait Endpoint[R] extends BaseDecorator{
 trait BaseDecorator{
   type Input
   type InputParser[T] <: ArgReader[Input, T, ParamContext]
-  def getRawParams(ctx: ParamContext): Either[cask.model.Response, Map[String, Input]]
+  def getRawParams(ctx: ParamContext): Either[cask.model.Response, Decor[Input]]
   def getParamParser[T](implicit p: InputParser[T]) = p
+}
 
+object Decor{
+  def apply[Input](params: (String, Input)*) = new Decor(params.toMap, () => ())
+  def apply[Input](params: TraversableOnce[(String, Input)], cleanup: () => Unit = () => ()) = {
+    new Decor(params.toMap, cleanup)
+  }
+}
+class Decor[Input](val params: Map[String, Input], val cleanup: () => Unit){
+  def withCleanup(newCleanUp: () => Unit) = new Decor(params, newCleanUp)
 }
 
 trait Decorator extends BaseDecorator {

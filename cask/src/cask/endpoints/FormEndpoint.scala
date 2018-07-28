@@ -56,13 +56,13 @@ class postForm(val path: String, override val subpath: Boolean = false) extends 
           "Unable to parse form data: " + e + "\n" + Util.stackTraceString(e)
         ))}
     } yield {
-      val formDataBindings =
+      cask.main.Decor(
         formData
           .iterator()
           .asScala
           .map(k => (k, formData.get(k).asScala.map(FormEntry.fromUndertow).toSeq))
           .toMap
-      formDataBindings
+      )
     }
   }
   def wrapPathSegment(s: String): Input = Seq(FormValue(s, new io.undertow.util.HeaderMap))

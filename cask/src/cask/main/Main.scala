@@ -57,18 +57,23 @@ abstract class BaseMain{
         case None => writeResponse(exchange, handleError(404))
         case Some(((routes, metadata), bindings, remaining)) =>
           val params = for{
-            endpointParams <- metadata.endpoint.getRawParams(ParamContext(exchange, remaining))
-            decoratorParams <- Util.sequenceEither(
+            decoratorParams <- Util.sequenceEither[Response, cask.main.Decor[_], Seq](
               metadata.decorators.map(e => e.getRawParams(ParamContext(exchange, remaining)))
             )
-          } yield (endpointParams ++ bindings.mapValues(metadata.endpoint.wrapPathSegment)) +: decoratorParams
+            endpointParams <- metadata.endpoint.getRawParams(ParamContext(exchange, remaining))
+          } yield (
+            (endpointParams.params ++ bindings.mapValues(metadata.endpoint.wrapPathSegment)) +:
+              decoratorParams.map(_.params),
+            () => {endpointParams.cleanup(); decoratorParams.foreach(_.cleanup())}
+          )
 
           val result = params match{
             case Left(resp) => resp
-            case Right(paramValues) =>
-              metadata.entryPoint
+            case Right((paramValues, cleanup)) =>
+              try metadata.entryPoint
                 .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
                 .invoke(routes, ParamContext(exchange, remaining), paramValues)
+              finally cleanup()
           }
 
 
@@ -86,8 +91,6 @@ abstract class BaseMain{
                   statusCode = 500)
               )
           }
-
-
       }
     }
   }

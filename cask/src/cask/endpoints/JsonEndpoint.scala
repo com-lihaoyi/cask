@@ -43,7 +43,7 @@ class postJson(val path: String, override val subpath: Boolean = false) extends 
       obj <-
         try Right(json.obj)
         catch {case e: Throwable => Left(cask.model.Response("Input JSON must be a dictionary"))}
-    } yield obj.toMap
+    } yield cask.main.Decor(obj.toMap)
   }
   def wrapPathSegment(s: String): Input = ujson.Js.Str(s)
 }

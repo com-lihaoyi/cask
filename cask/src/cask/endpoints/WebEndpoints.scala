@@ -11,10 +11,12 @@ trait WebEndpoint extends Endpoint[BaseResponse]{
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
   def getRawParams(ctx: ParamContext) = Right(
-    ctx.exchange.getQueryParameters
-      .asScala
-      .map{case (k, vs) => (k, vs.asScala.toArray.toSeq)}
-      .toMap
+    cask.main.Decor(
+      ctx.exchange.getQueryParameters
+        .asScala
+        .map{case (k, vs) => (k, vs.asScala.toArray.toSeq)}
+        .toMap
+    )
   )
   def wrapPathSegment(s: String) = Seq(s)
 }

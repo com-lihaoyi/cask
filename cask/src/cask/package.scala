@@ -36,5 +36,7 @@ package object cask {
   type Decorator = main.Decorator
   type Endpoint[R] = main.Endpoint[R]
   type BaseDecorator = main.BaseDecorator
+  type Decor[T] = main.Decor[T]
+  val Decor = main.Decor
 
 }

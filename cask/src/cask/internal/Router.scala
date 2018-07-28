@@ -217,10 +217,10 @@ class Router[C <: Context](val c: C) {
     val argValuesSymbol = q"${c.fresh[TermName]("argValues")}"
     val argSigsSymbol = q"${c.fresh[TermName]("argSigs")}"
     val ctxSymbol = q"${c.fresh[TermName]("ctx")}"
-    if (method.paramLists.length != argReaders.length) c.abort(
+    if (method.paramLists.length > argReaders.length) c.abort(
       method.pos,
       s"Endpoint ${method.name}'s number of parameter lists (${method.paramLists.length}) " +
-      s"doesn't match number of decorators (${argReaders.length})"
+      s"cannot be more than the number of decorators (${argReaders.length})"
     )
     val argData = for(argListIndex <- method.paramLists.indices) yield{
       val annotDeserializeType = annotDeserializeTypes(argListIndex)

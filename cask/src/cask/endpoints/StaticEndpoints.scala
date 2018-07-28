@@ -14,6 +14,8 @@ class static(val path: String) extends Endpoint[String] {
     Router.Result.Success(cask.model.Static(t + "/" + ctx.remaining.mkString("/")))
   }
 
-  def getRawParams(ctx: ParamContext) = Right(Map())
+  def getRawParams(ctx: ParamContext) = Right(
+    cask.main.Decor(Map())
+  )
   def wrapPathSegment(s: String): Input = Seq(s)
 }

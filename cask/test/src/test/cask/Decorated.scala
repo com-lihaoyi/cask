@@ -7,10 +7,10 @@ object Decorated extends cask.MainRoutes{
     override def toString = "[haoyi]"
   }
   class loggedIn extends cask.Decorator {
-    def getRawParams(ctx: ParamContext) = Right(Map("user" -> new User()))
+    def getRawParams(ctx: ParamContext) = Right(cask.Decor("user" -> new User()))
   }
   class withExtra extends cask.Decorator {
-    def getRawParams(ctx: ParamContext) = Right(Map("extra" -> 31337))
+    def getRawParams(ctx: ParamContext) = Right(cask.Decor("extra" -> 31337))
   }
 
   @withExtra()
@@ -30,6 +30,13 @@ object Decorated extends cask.MainRoutes{
   @cask.get("/internal-extra/:world")
   def internalExtra(world: String)(user: User)(extra: Int) = {
     world + user + extra
+  }
+
+  @withExtra()
+  @loggedIn()
+  @cask.get("/ignore-extra/:world")
+  def ignoreExtra(world: String)(user: User) = {
+    world + user
   }
 
   initialize()

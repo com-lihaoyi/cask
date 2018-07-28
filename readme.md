@@ -281,6 +281,7 @@ the relevant headers or status code for you.
 
 Extending Endpoints with Decorators
 -----------------------------------
+
 ```scala
 import cask.model.ParamContext
 
@@ -289,10 +290,10 @@ object Decorated extends cask.MainRoutes{
     override def toString = "[haoyi]"
   }
   class loggedIn extends cask.Decorator {
-    def getRawParams(ctx: ParamContext) = Right(Map("user" -> new User()))
+    def getRawParams(ctx: ParamContext) = Right(cask.Decor("user" -> new User()))
   }
   class withExtra extends cask.Decorator {
-    def getRawParams(ctx: ParamContext) = Right(Map("extra" -> 31337))
+    def getRawParams(ctx: ParamContext) = Right(cask.Decor("extra" -> 31337))
   }
 
   @withExtra()
@@ -314,7 +315,48 @@ object Decorated extends cask.MainRoutes{
     world + user + extra
   }
 
+  @withExtra()
+  @loggedIn()
+  @cask.get("/ignore-extra/:world")
+  def ignoreExtra(world: String)(user: User) = {
+    world + user
+  }
+
   initialize()
 }
-
 ```
+
+You can write extra decorator annotations that stack on top of the existing
+`@cask.get`/`@cask.post` to provide additional arguments or validation. This is
+done by implementing the `cask.Decorator` interface and it's `getRawParams`
+function. `getRawParams`:
+
+- Receives a `ParamContext`, which basically gives you full access to the
+  underlying undertow HTTP connection so you can pick out whatever data you
+  would like
+
+- Returns an `Either[Response, cask.Decor[Any]]`. Returning a `Left` lets you
+  bail out early with a fixed `cask.Response`, avoiding further processing.
+  Returning a `Right` provides a map of parameter names and values that will
+  then get passed to the endpoint function in consecutive parameter lists (shown
+  above), as well as an optional cleanup function that is run after the endpoint
+  terminates.
+
+Each additional decorator is responsible for one additional parameter list to
+the right of the existing parameter lists, each of which can contain any number
+of parameters.
+
+Decorators are useful for things like:
+
+- Making an endpoint return a HTTP 403 if the user isn't logged in, but if they are
+  logged in providing the `: User` object to the body of the endpoint function
+
+- Rate-limiting users by returning early with a HTTP 429 if a user tries to
+  access an endpoint too many times too quickly
+
+- Providing request-scoped values to the endpoint function: perhaps a database
+  transaction that commits when the function succeeds (and rolls-back if it
+  fails), or access to some system resource that needs to be released.
+
+Writing Custom Endpoints
+------------------------

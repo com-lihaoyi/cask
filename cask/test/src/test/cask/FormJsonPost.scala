@@ -18,4 +18,3 @@ object FormJsonPost extends cask.MainRoutes{
 
   initialize()
 }
-
