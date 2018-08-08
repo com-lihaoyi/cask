@@ -58,17 +58,25 @@ abstract class BaseMain{
         case Some(((routes, metadata), extBindings, remaining)) =>
           val ctx = ParamContext(exchange, remaining)
           def rec(remaining: List[Decorator],
-                  bindings: List[Map[String, Any]]): Router.Result[Response] = remaining match{
-            case head :: rest => head.wrapMethodOutput(ctx, args => rec(rest, args :: bindings))
-            case Nil =>
-              metadata.endpoint.wrapMethodOutput(ctx, epBindings =>
-                metadata.entryPoint
-                  .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
-                  .invoke(routes, ctx, (epBindings ++ extBindings.mapValues(metadata.endpoint.wrapPathSegment)) :: bindings.reverse)
-                  .asInstanceOf[Router.Result[Nothing]]
-              )
+                  bindings: List[Map[String, Any]]): Router.Result[Response] = try {
+            remaining match {
+              case head :: rest =>
+                head.wrapFunction(ctx, args => rec(rest, args :: bindings))
 
-          }
+              case Nil =>
+                metadata.endpoint.wrapFunction(ctx, epBindings =>
+                  metadata.entryPoint
+                    .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
+                    .invoke(routes, ctx, (epBindings ++ extBindings.mapValues(metadata.endpoint.wrapPathSegment)) :: bindings.reverse)
+                    .asInstanceOf[Router.Result[Nothing]]
+                )
+
+            }
+          // Make sure we wrap any exceptions that bubble up from decorator
+          // bodies, so outer decorators do not need to worry about their
+          // delegate throwing on them
+          }catch{case e: Throwable => Router.Result.Error.Exception(e) }
+
           rec(metadata.decorators.toList, Nil)match{
             case Router.Result.Success(response: Response) => writeResponse(exchange, response)
             case e: Router.Result.Error =>
@@ -87,6 +95,7 @@ abstract class BaseMain{
       }
     }
   }
+
 
   def main(args: Array[String]): Unit = {
     val server = Undertow.builder

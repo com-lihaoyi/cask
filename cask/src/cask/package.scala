@@ -18,6 +18,8 @@ package object cask {
   val Subpath = model.Subpath
   type Request = model.Request
   val Request = model.Request
+  type ParamContext = model.ParamContext
+  val ParamContext = model.ParamContext
 
   // endpoints
   type get = endpoints.get
@@ -34,7 +36,7 @@ package object cask {
   val Routes = main.Routes
   type Main = main.Main
   type Decorator = main.Decorator
-  type Endpoint[R] = main.Endpoint[R]
+  type Endpoint = main.Endpoint
   type BaseDecorator = main.BaseDecorator
 
 }

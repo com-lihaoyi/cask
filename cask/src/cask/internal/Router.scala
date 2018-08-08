@@ -197,7 +197,7 @@ class Router[C <: Context](val c: C) {
 
   def extractMethod(method: MethodSymbol,
                     curCls: c.universe.Type,
-                    wrapOutput: (c.Tree, c.Tree) => c.Tree,
+                    convertToResultType: c.Tree,
                     ctx: c.Type,
                     argReaders: Seq[c.Tree],
                     annotDeserializeTypes: Seq[c.Tree]): c.universe.Tree = {
@@ -323,7 +323,7 @@ class Router[C <: Context](val c: C) {
       ) =>
         cask.internal.Router.validate(Seq(..${readArgs.flatten.toList})) match{
           case cask.internal.Router.Result.Success(Seq(..${argNames.flatten.toList})) =>
-            ${wrapOutput(ctxSymbol, methodCall)}
+            cask.internal.Router.Result.Success($convertToResultType($methodCall))
           case x: cask.internal.Router.Result.Error => x
         }
     )

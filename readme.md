@@ -119,6 +119,32 @@ data type you need and returning meaningful errors if they are missing. Thus,
 although you can always get all the data necessary through `cask.Request`, it is
 often more convenient to use another way, which will go into below.
 
+As your application grows, you will likely want to split up the routes into
+separate files, themselves separate from any configuration of the Main
+entrypoint (e.g. overriding the port, host, default error handlers, etc.). You
+can do this by splitting it up into `cask.Routes` and `cask.Main` objects:
+
+```scala
+object MinimalRoutes extends cask.Routes{
+  @cask.get("/")
+  def hello() = {
+    "Hello World!"
+  }
+
+  @cask.post("/do-thing")
+  def doThing(request: cask.Request) = {
+    new String(request.data.readAllBytes()).reverse
+  }
+
+  initialize()
+}
+
+object MinimalMain extends cask.Main(MinimalRoutes)
+```
+
+You can split up your routes into separate `cask.Routes` objects as makes sense
+and pass them all into `cask.Main`.
+
 Variable Routes
 ---------------
 
@@ -283,17 +309,19 @@ Extending Endpoints with Decorators
 -----------------------------------
 
 ```scala
-import cask.model.ParamContext
-
 object Decorated extends cask.MainRoutes{
   class User{
     override def toString = "[haoyi]"
   }
   class loggedIn extends cask.Decorator {
-    def getRawParams(ctx: ParamContext) = Right(cask.Decor("user" -> new User()))
+    def wrapFunction(ctx: cask.ParamContext, delegate: Delegate): Returned = {
+      delegate(Map("user" -> new User()))
+    }
   }
   class withExtra extends cask.Decorator {
-    def getRawParams(ctx: ParamContext) = Right(cask.Decor("extra" -> 31337))
+    def wrapFunction(ctx: cask.ParamContext, delegate: Delegate): Returned = {
+      delegate(Map("extra" -> 31337))
+    }
   }
 
   @withExtra()
@@ -358,9 +386,6 @@ Decorators are useful for things like:
   transaction that commits when the function succeeds (and rolls-back if it
   fails), or access to some system resource that needs to be released.
 
-Writing Custom Endpoints
-------------------------
-
 TodoMVC Api Server
 ------------------
 
@@ -404,9 +429,115 @@ object TodoMvcApi extends cask.MainRoutes{
 }
 ```
 
-This is a simple self-contained example of using Cask to write an API server for
-the common [TodoMVC example app](http://todomvc.com/).
+This is a simple self-contained example of using Cask to write an in-memory API
+server for the common [TodoMVC example app](http://todomvc.com/).
 
 This minimal example intentionally does not contain javascript, HTML, styles,
 etc.. Those can be managed via the normal mechanism for
 [Serving Static Files](#serving-static-files).
+
+
+TodoMVC Database Integration
+----------------------------
+```scala
+import cask.internal.Router
+import com.typesafe.config.ConfigFactory
+import io.getquill.{SqliteJdbcContext, SnakeCase}
+
+object TodoMvcDb extends cask.MainRoutes{
+  val tmpDb = java.nio.file.Files.createTempDirectory("todo-cask-sqlite")
+
+  object ctx extends SqliteJdbcContext(
+    SnakeCase,
+    ConfigFactory.parseString(
+      s"""{"driverClassName":"org.sqlite.JDBC","jdbcUrl":"jdbc:sqlite:$tmpDb/file.db"}"""
+    )
+  )
+
+  class transactional extends cask.Decorator{
+    class TransactionFailed(val value: Router.Result.Error) extends Exception
+    def wrapFunction(pctx: cask.ParamContext, delegate: Delegate): Returned = {
+      try ctx.transaction(
+        delegate(Map()) match{
+          case Router.Result.Success(t) => Router.Result.Success(t)
+          case e: Router.Result.Error => throw new TransactionFailed(e)
+        }
+      )
+      catch{case e: TransactionFailed => e.value}
+
+    }
+  }
+
+  case class Todo(id: Int, checked: Boolean, text: String)
+  object Todo{
+    implicit def todoRW = upickle.default.macroRW[Todo]
+  }
+
+  ctx.executeAction(
+    """CREATE TABLE todo (
+      |  id INTEGER PRIMARY KEY AUTOINCREMENT,
+      |  checked BOOLEAN,
+      |  text TEXT
+      |);
+      |""".stripMargin
+  )
+  ctx.executeAction(
+    """INSERT INTO todo (checked, text) VALUES
+      |(1, 'Get started with Cask'),
+      |(0, 'Profit!');
+      |""".stripMargin
+  )
+
+  import ctx._
+
+  @transactional
+  @cask.get("/list/:state")
+  def list(state: String) = {
+    val filteredTodos = state match{
+      case "all" => run(query[Todo])
+      case "active" => run(query[Todo].filter(!_.checked))
+      case "completed" => run(query[Todo].filter(_.checked))
+    }
+    upickle.default.write(filteredTodos)
+  }
+
+  @transactional
+  @cask.post("/add")
+  def add(request: cask.Request) = {
+    val body = new String(request.data.readAllBytes())
+    run(query[Todo].insert(_.checked -> lift(false), _.text -> lift(body)).returning(_.id))
+  }
+
+  @transactional
+  @cask.post("/toggle/:index")
+  def toggle(index: Int) = {
+    run(query[Todo].filter(_.id == lift(index)).update(p => p.checked -> !p.checked))
+  }
+
+  @transactional
+  @cask.post("/delete/:index")
+  def delete(index: Int) = {
+    run(query[Todo].filter(_.id == lift(index)).delete)
+  }
+
+  initialize()
+}
+
+```
+
+This example demonstrates how to use Cask to write a TodoMVC API server that
+persists it's state in a database rather than in memory. We use the
+[Quill](http://getquill.io/) database access library to write a `@transactional`
+decorator that automatically opens one transaction per call to an endpoint,
+ensuring that database queries are properly committed on success or rolled-back
+on error. Note that because the default database connector propagates its
+transaction context in a thread-local, `@transactional` does not need to pass
+the `ctx` object into each endpoint as an additional parameter list, and so we
+simply leave it out.
+
+While this example is specific to Quill, you can easily modify the
+`@transactional` decorator to make it work with whatever database access library
+you happen to be using. For libraries which need an implicit transaction, it can
+be passed into each endpoint function as an additional parameter list as
+described in
+[Extending Endpoints with Decorators](#extending-endpoints-with-decorators).

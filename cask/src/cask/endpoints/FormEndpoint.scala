@@ -43,12 +43,13 @@ object FormReader{
     def read(ctx: ParamContext, label: String, input: Seq[FormEntry]) = input.map(_.asInstanceOf[FormFile])
   }
 }
-class postForm(val path: String, override val subpath: Boolean = false) extends Endpoint[Response]{
+class postForm(val path: String, override val subpath: Boolean = false) extends Endpoint{
+  type Output = Response
 
   val methods = Seq("post")
   type Input = Seq[FormEntry]
   type InputParser[T] = FormReader[T]
-  def wrapMethodOutput(ctx: ParamContext,
+  def wrapFunction(ctx: ParamContext,
                        delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
     try {
       val formData = FormParserFactory.builder().build().createParser(ctx.exchange).parseBlocking()

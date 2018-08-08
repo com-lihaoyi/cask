@@ -6,8 +6,7 @@ import utest._
 
 object FailureTests extends TestSuite {
   class myDecorator extends cask.Decorator {
-    def wrapMethodOutput(ctx: ParamContext,
-                         delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
+    def wrapFunction(ctx: ParamContext, delegate: Delegate): Returned = {
       delegate(Map("extra" -> 31337))
     }
   }

@@ -24,12 +24,13 @@ object JsReader{
     }
   }
 }
-class postJson(val path: String, override val subpath: Boolean = false) extends Endpoint[Response]{
+class postJson(val path: String, override val subpath: Boolean = false) extends Endpoint{
+  type Output = Response
   val methods = Seq("post")
   type Input = ujson.Js.Value
   type InputParser[T] = JsReader[T]
 
-  def wrapMethodOutput(ctx: ParamContext,
+  def wrapFunction(ctx: ParamContext,
                        delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
     val obj = for{
       str <-

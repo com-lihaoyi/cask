@@ -4,48 +4,65 @@ import cask.internal.Router
 import cask.internal.Router.ArgReader
 import cask.model.{Response, ParamContext}
 
-
-trait Endpoint[R] extends BaseDecorator{
-
-  type Output = R
+/**
+  * Used to annotate a single Cask endpoint function; similar to a [[Decorator]]
+  * but with additional metadata and capabilities.
+  */
+trait Endpoint extends BaseDecorator{
+  /**
+    * What is the path that this particular endpoint matches?
+    */
   val path: String
+  /**
+    * Which HTTP methods does this endpoint support? POST? GET? PUT? Or some
+    * combination of those?
+    */
   val methods: Seq[String]
+
+  /**
+    * Whether or not this endpoint allows matching on sub-paths: does
+    * `@endpoint("/foo")` capture the path "/foo/bar/baz"? Useful to e.g. have
+    * an endpoint match URLs with paths in a filesystem (real or virtual) to
+    * serve files
+    */
   def subpath: Boolean = false
 
-  def wrapMethodOutput0(ctx: ParamContext, t: R): cask.internal.Router.Result[Any] = {
-    cask.internal.Router.Result.Success(t)
-  }
-  def wrapMethodOutput(ctx: ParamContext,
-                       delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response]
+  def convertToResultType(t: Output): Output = t
 
+  /**
+    * [[Endpoint]]s are unique among decorators in that they alone can bind
+    * path segments to parameters, e.g. binding `/hello/:world` to `(world: Int)`.
+    * In order to do so, we need to box up the path segment strings into an
+    * [[Input]] so they can later be parsed by [[getParamParser]] into an
+    * instance of the appropriate type.
+    */
   def wrapPathSegment(s: String): Input
 
 }
 
-/**
-  * The core interface of decorator annotations: the decorator provides "raw"
-  * values to the annotated function via `getRawParams`, which then get
-  * processed by `getParamParser` into the correct argument types before
-  * being passed to the function.
-  *
-  * For a trivial "provide value" decorator, `getRawParams` would return the
-  * final param value and `getParamParser` would return a no-op parser. For
-  * a decorator that takes its input as query-params, JSON, or similar,
-  * `getRawParams` would provide raw query/JSON/etc. values and
-  * `getParamParser` would be responsible for processing those into the
-  * correct parameter types.
-  */
 trait BaseDecorator{
   type Input
   type InputParser[T] <: ArgReader[Input, T, ParamContext]
   type Output
-  def wrapMethodOutput(ctx: ParamContext,
-                       delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response]
+  type Delegate = Map[String, Input] => Router.Result[Output]
+  type Returned = Router.Result[Response]
+  def wrapFunction(ctx: ParamContext, delegate: Delegate): Returned
   def getParamParser[T](implicit p: InputParser[T]) = p
 }
 
-
+/**
+  * A decorator allows you to annotate a function to wrap it, via
+  * `wrapFunction`. You can use this to perform additional validation before or
+  * after the function runs, provide an additional parameter list of params,
+  * open/commit/rollback database transactions before/after the function runs,
+  * or even retrying the wrapped function if it fails.
+  *
+  * Calls to the wrapped function are done on the `delegate` parameter passed
+  * to `wrapFunction`, which takes a `Map` representing any additional argument
+  * lists (if any).
+  */
 trait Decorator extends BaseDecorator {
+
   type Input = Any
   type Output = Response
   type InputParser[T] = NoOpParser[Input, T]

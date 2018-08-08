@@ -7,10 +7,11 @@ import cask.model.{Response, ParamContext}
 import collection.JavaConverters._
 
 
-trait WebEndpoint extends Endpoint[Response]{
+trait WebEndpoint extends Endpoint{
+  type Output = Response
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
-  def wrapMethodOutput(ctx: ParamContext,
+  def wrapFunction(ctx: ParamContext,
                        delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
     delegate(
       ctx.exchange.getQueryParameters

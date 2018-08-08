@@ -8,7 +8,7 @@ import language.experimental.macros
 
 object Routes{
   case class EndpointMetadata[T](decorators: Seq[Decorator],
-                                 endpoint: Endpoint[_],
+                                 endpoint: Endpoint,
                                  entryPoint: EntryPoint[T, ParamContext])
   case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
   object RoutesEndpointsMetadata{
@@ -22,12 +22,12 @@ object Routes{
         val annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[BaseDecorator]).reverse
         if annotations.nonEmpty
       } yield {
-        if(!(annotations.head.tree.tpe <:< weakTypeOf[Endpoint[_]])) c.abort(
+        if(!(annotations.head.tree.tpe <:< weakTypeOf[Endpoint])) c.abort(
           annotations.head.tree.pos,
           s"Last annotation applied to a function must be an instance of Endpoint, " +
           s"not ${annotations.head.tree.tpe}"
         )
-        val allEndpoints = annotations.filter(_.tree.tpe <:< weakTypeOf[Endpoint[_]])
+        val allEndpoints = annotations.filter(_.tree.tpe <:< weakTypeOf[Endpoint])
         if(allEndpoints.length > 1) c.abort(
           annotations.head.tree.pos,
           s"You can only apply one Endpoint annotation to a function, not " +
@@ -42,7 +42,7 @@ object Routes{
         val route = router.extractMethod(
           m.asInstanceOf[MethodSymbol],
           weakTypeOf[T],
-          (ctx: c.Tree, t: c.Tree) => q"${annotObjectSyms.head}.wrapMethodOutput0($ctx, $t)",
+          q"${annotObjectSyms.head}.convertToResultType",
           c.weakTypeOf[ParamContext],
           annotObjectSyms.map(annotObjectSym => q"$annotObjectSym.getParamParser"),
           annotObjectSyms.map(annotObjectSym => tq"$annotObjectSym.Input")
