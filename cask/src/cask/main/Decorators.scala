@@ -75,4 +75,5 @@ class NoOpParser[Input, T] extends ArgReader[Input, T, ParamContext] {
 }
 object NoOpParser{
   implicit def instance[Input, T] = new NoOpParser[Input, T]
+  implicit def instanceAny[T] = new NoOpParser[Any, T]
 }

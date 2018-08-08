@@ -386,6 +386,112 @@ Decorators are useful for things like:
   transaction that commits when the function succeeds (and rolls-back if it
   fails), or access to some system resource that needs to be released.
 
+For decorators that you wish to apply to multiple routes at once, you can define
+them by overriding the `cask.Routes#decorators` field (to apply to every
+endpoint in that routes object) or `cask.Main#mainDecorators` (to apply to every
+endpoint, period):
+
+```scala
+object Decorated2 extends cask.MainRoutes{
+  class User{
+    override def toString = "[haoyi]"
+  }
+  class loggedIn extends cask.Decorator {
+    def wrapFunction(ctx: cask.ParamContext, delegate: Delegate): Returned = {
+      delegate(Map("user" -> new User()))
+    }
+  }
+  class withExtra extends cask.Decorator {
+    def wrapFunction(ctx: cask.ParamContext, delegate: Delegate): Returned = {
+      delegate(Map("extra" -> 31337))
+    }
+  }
+  
+  override def decorators = Seq(new withExtra())
+
+  @cask.get("/hello/:world")
+  def hello(world: String)(extra: Int) = {
+    world + extra
+  }
+
+  @loggedIn()
+  @cask.get("/internal-extra/:world")
+  def internalExtra(world: String)(user: User)(extra: Int) = {
+    world + user + extra
+  }
+
+  @loggedIn()
+  @cask.get("/ignore-extra/:world")
+  def ignoreExtra(world: String)(user: User) = {
+    world + user
+  }
+
+  initialize()
+}
+```
+
+This is convenient for cases where you want a set of decorators to apply broadly
+across your web application, and do not want to repeat them over and over at
+every single endpoint.
+
+Gzip & Deflated Responses
+-------------------------
+
+```scala
+object Compress extends cask.MainRoutes{
+
+  @cask.decorators.compress
+  @cask.get("/")
+  def hello() = {
+    "Hello World! Hello World! Hello World!"
+  }
+
+  initialize()
+}
+
+```
+
+Cask provides a useful `@cask.decorators.compress` decorator that gzips or
+deflates a response body if possible. This is useful if you don't have a proxy
+like Nginx or similar in front of your server to perform the compression for
+you.
+
+Like all decorators, `@cask.decorators.compress` can be defined on a level of a
+set of `cask.Routes`:
+
+```scala
+object Compress2 extends cask.Routes{
+  override def decorators = Seq(new cask.decorators.compress())
+
+  @cask.get("/")
+  def hello() = {
+    "Hello World! Hello World! Hello World!"
+  }
+
+  initialize()
+}
+
+object Compress2Main extends cask.Main(Compress2)
+```
+
+Or globally, in your `cask.Main`:
+
+```scala
+object Compress3 extends cask.Routes{
+
+  @cask.get("/")
+  def hello() = {
+    "Hello World! Hello World! Hello World!"
+  }
+
+  initialize()
+}
+
+object Compress3Main extends cask.Main(Compress3){
+  override def decorators = Seq(new cask.decorators.compress())
+}
+```
+
 TodoMVC Api Server
 ------------------
 

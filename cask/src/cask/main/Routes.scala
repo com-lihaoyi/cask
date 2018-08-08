@@ -70,6 +70,8 @@ object Routes{
 }
 
 trait Routes{
+
+  def decorators = Seq.empty[cask.main.Decorator]
   private[this] var metadata0: Routes.RoutesEndpointsMetadata[this.type] = null
   def caskMetadata =
     if (metadata0 != null) metadata0

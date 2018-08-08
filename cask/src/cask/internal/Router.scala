@@ -217,14 +217,9 @@ class Router[C <: Context](val c: C) {
     val argValuesSymbol = q"${c.fresh[TermName]("argValues")}"
     val argSigsSymbol = q"${c.fresh[TermName]("argSigs")}"
     val ctxSymbol = q"${c.fresh[TermName]("ctx")}"
-    if (method.paramLists.length > argReaders.length) c.abort(
-      method.pos,
-      s"Endpoint ${method.name}'s number of parameter lists (${method.paramLists.length}) " +
-      s"cannot be more than the number of decorators (${argReaders.length})"
-    )
     val argData = for(argListIndex <- method.paramLists.indices) yield{
-      val annotDeserializeType = annotDeserializeTypes(argListIndex)
-      val argReader = argReaders(argListIndex)
+      val annotDeserializeType = annotDeserializeTypes.lift(argListIndex).getOrElse(tq"scala.Any")
+      val argReader = argReaders.lift(argListIndex).getOrElse(q"cask.main.NoOpParser.instanceAny")
       val flattenedArgLists = method.paramss(argListIndex)
       def hasDefault(i: Int) = {
         val defaultName = s"${method.name}$$default$$${i + 1}"

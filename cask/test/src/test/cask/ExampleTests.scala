@@ -103,6 +103,12 @@ object ExampleTests extends TestSuite{
       requests.get(s"$host/internal-extra/goo").text() ==> "goo[haoyi]31337"
 
     }
+    'Decorated2 - test(Decorated2){ host =>
+      requests.get(s"$host/hello/woo").text() ==> "woo31337"
+      requests.get(s"$host/internal-extra/goo").text() ==> "goo[haoyi]31337"
+      requests.get(s"$host/ignore-extra/boo").text() ==> "boo[haoyi]"
+
+    }
     'TodoMvcApi - test(TodoMvcApi){ host =>
       requests.get(s"$host/list/all").text() ==>
         """[{"checked":true,"text":"Get started with Cask"},{"checked":false,"text":"Profit!"}]"""
@@ -154,6 +160,32 @@ object ExampleTests extends TestSuite{
 
       requests.get(s"$host/list/active").text() ==>
         """[]"""
+    }
+
+    'Compress - test(Compress){ host =>
+      val expected = "Hello World! Hello World! Hello World!"
+      requests.get(s"$host").text() ==> expected
+      assert(
+        requests.get(s"$host", autoDecompress = false).text().length < expected.length
+      )
+
+    }
+
+    'Compress2Main - test(Compress2Main) { host =>
+      val expected = "Hello World! Hello World! Hello World!"
+      requests.get(s"$host").text() ==> expected
+      assert(
+        requests.get(s"$host", autoDecompress = false).text().length < expected.length
+      )
+    }
+
+    'Compress3Main - test(Compress3Main){ host =>
+      val expected = "Hello World! Hello World! Hello World!"
+      requests.get(s"$host").text() ==> expected
+      assert(
+        requests.get(s"$host", autoDecompress = false).text().length < expected.length
+      )
+
     }
   }
 }

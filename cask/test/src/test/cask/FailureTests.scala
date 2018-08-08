@@ -11,16 +11,12 @@ object FailureTests extends TestSuite {
     }
   }
   val tests = Tests{
-
     'mismatchedDecorators - {
-      utest.compileError("""
-        object Decorated extends cask.MainRoutes{
-          @cask.get("/hello/:world")
-          def hello(world: String)(extra: Int) = world + extra
-          initialize()
-        }
-      """).msg ==>
-      "Endpoint hello's number of parameter lists (2) cannot be more than the number of decorators (1)"
+      object Decorated extends cask.MainRoutes{
+        @cask.get("/hello/:world")
+        def hello(world: String)(extra: Int) = world + extra
+        initialize()
+      }
 
       utest.compileError("""
         object Decorated extends cask.MainRoutes{

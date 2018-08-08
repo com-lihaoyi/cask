@@ -15,6 +15,7 @@ class Main(servers0: Routes*) extends BaseMain{
   def allRoutes = servers0.toSeq
 }
 abstract class BaseMain{
+  def mainDecorators = Seq.empty[cask.main.Decorator]
   def allRoutes: Seq[Routes]
   val port: Int = 8080
   val host: String = "localhost"
@@ -77,7 +78,7 @@ abstract class BaseMain{
           // delegate throwing on them
           }catch{case e: Throwable => Router.Result.Error.Exception(e) }
 
-          rec(metadata.decorators.toList, Nil)match{
+          rec((metadata.decorators ++ routes.decorators ++ mainDecorators).toList, Nil)match{
             case Router.Result.Success(response: Response) => writeResponse(exchange, response)
             case e: Router.Result.Error =>
 
