@@ -24,7 +24,6 @@ object Server extends cask.MainRoutes{
         }
       )
       catch{case e: TransactionFailed => e.value}
-
     }
   }
 
@@ -83,7 +82,6 @@ object Server extends cask.MainRoutes{
   @transactional
   @cask.post("/toggle-all/:state")
   def toggleAll(state: String) = {
-
     val next = run(query[Todo].filter(_.checked).size) != 0
     run(query[Todo].update(_.checked -> !lift(next)))
     renderBody(state).render
