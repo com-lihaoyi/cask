@@ -91,5 +91,31 @@ object ExampleTests extends TestSuite{
       requests.get(host + "/internal-extra/goo").text() ==> "goo[haoyi]31337"
 
     }
+    'TodoMvcApi - test(TodoMvcApi){ host =>
+      requests.get(host + "/list/all").text() ==>
+        """[{"checked":true,"text":"Get started with Cask"},{"checked":false,"text":"Profit!"}]"""
+      requests.get(host + "/list/active").text() ==>
+        """[{"checked":false,"text":"Profit!"}]"""
+      requests.get(host + "/list/completed").text() ==>
+        """[{"checked":true,"text":"Get started with Cask"}]"""
+
+      requests.post(host + "/toggle/1")
+
+      requests.get(host + "/list/all").text() ==>
+        """[{"checked":true,"text":"Get started with Cask"},{"checked":true,"text":"Profit!"}]"""
+
+      requests.get(host + "/list/active").text() ==>
+        """[]"""
+
+      requests.post(host + "/add", data = "new Task")
+
+      requests.get(host + "/list/active").text() ==>
+        """[{"checked":false,"text":"new Task"}]"""
+
+      requests.post(host + "/delete/0")
+
+      requests.get(host + "/list/active").text() ==>
+        """[]"""
+    }
   }
 }
