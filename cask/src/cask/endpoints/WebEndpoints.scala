@@ -58,6 +58,12 @@ object QueryParamReader{
       v.map(x => implicitly[QueryParamReader[T]].read(ctx, label, Seq(x)))
     }
   }
+  implicit def OptionParam[T: QueryParamReader] = new QueryParamReader[Option[T]]{
+    def arity = 1
+    def read(ctx: cask.model.ParamContext, label: String, v: Seq[String]): Option[T] = {
+      v.headOption.map(x => implicitly[QueryParamReader[T]].read(ctx, label, Seq(x)))
+    }
+  }
   implicit def paramReader[T: ParamReader] = new QueryParamReader[T] {
     override def arity = 0
 

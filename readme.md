@@ -172,9 +172,9 @@ object VariableRoutes extends cask.MainRoutes{
 You can bind variables to endpoints by declaring them as parameters: these are
 either taken from a path-segment matcher of the same name (e.g. `postId` above),
 or from query-parameters of the same name (e.g. `param` above). You can make
-`param` take a `: String` to match `?param=hello`, an `: Int` for `?param=123`
-or a `Seq[String]` (as above) for repeated params such as
-`?param=hello&param=world`.
+`param` take a `: String` to match `?param=hello`, an `: Int` for `?param=123` a
+`Seq[T]` (as above) for repeated params such as `?param=hello&param=world`, or
+`: Option[T]` for cases where the `?param=hello` is optional.
 
 If you need to capture the entire sub-path of the request, you can set the flag
 `subpath=true` and ask for a `: cask.Subpath` (the name of the param doesn't
