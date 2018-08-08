@@ -3,7 +3,7 @@ package cask.endpoints
 import cask.internal.{Router, Util}
 import cask.internal.Router.EntryPoint
 import cask.main.{Endpoint, Routes}
-import cask.model.{ParamContext, Response}
+import cask.model.{Response, ParamContext}
 
 
 sealed trait JsReader[T] extends Router.ArgReader[ujson.Js.Value, T, cask.model.ParamContext]
@@ -28,8 +28,10 @@ class postJson(val path: String, override val subpath: Boolean = false) extends 
   val methods = Seq("post")
   type Input = ujson.Js.Value
   type InputParser[T] = JsReader[T]
-  def getRawParams(ctx: ParamContext) = {
-    for{
+
+  def wrapMethodOutput(ctx: ParamContext,
+                       delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
+    val obj = for{
       str <-
         try Right(new String(ctx.exchange.getInputStream.readAllBytes()))
         catch{case e: Throwable => Left(cask.model.Response(
@@ -43,7 +45,11 @@ class postJson(val path: String, override val subpath: Boolean = false) extends 
       obj <-
         try Right(json.obj)
         catch {case e: Throwable => Left(cask.model.Response("Input JSON must be a dictionary"))}
-    } yield cask.main.Decor(obj.toMap)
+    } yield obj.toMap
+    obj match{
+      case Left(r) => Router.Result.Success(r)
+      case Right(params) => delegate(params)
+    }
   }
   def wrapPathSegment(s: String): Input = ujson.Js.Str(s)
 }

@@ -20,7 +20,9 @@ object cask extends ScalaModule{
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.6.3",
-      ivy"com.lihaoyi::requests::0.1.2"
+      ivy"com.lihaoyi::requests::0.1.2",
+      ivy"org.xerial:sqlite-jdbc:3.18.0",
+      ivy"io.getquill::quill-jdbc:2.5.4"
     )
   }
 }

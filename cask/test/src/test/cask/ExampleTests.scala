@@ -117,5 +117,31 @@ object ExampleTests extends TestSuite{
       requests.get(host + "/list/active").text() ==>
         """[]"""
     }
+    'TodoMvcDb - test(TodoMvcDb){ host =>
+      requests.get(host + "/list/all").text() ==>
+        """[{"id":1,"checked":true,"text":"Get started with Cask"},{"id":2,"checked":false,"text":"Profit!"}]"""
+      requests.get(host + "/list/active").text() ==>
+        """[{"id":2,"checked":false,"text":"Profit!"}]"""
+      requests.get(host + "/list/completed").text() ==>
+        """[{"id":1,"checked":true,"text":"Get started with Cask"}]"""
+
+      requests.post(host + "/toggle/2")
+
+      requests.get(host + "/list/all").text() ==>
+        """[{"id":1,"checked":true,"text":"Get started with Cask"},{"id":2,"checked":true,"text":"Profit!"}]"""
+
+      requests.get(host + "/list/active").text() ==>
+        """[]"""
+
+      requests.post(host + "/add", data = "new Task")
+
+      requests.get(host + "/list/active").text() ==>
+        """[{"id":3,"checked":false,"text":"new Task"}]"""
+
+      requests.post(host + "/delete/3")
+
+      requests.get(host + "/list/active").text() ==>
+        """[]"""
+    }
   }
 }

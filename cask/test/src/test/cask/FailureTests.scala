@@ -1,11 +1,15 @@
 package test.cask
 
-import cask.model.ParamContext
+import cask.internal.Router
+import cask.model.{ParamContext, Response}
 import utest._
 
 object FailureTests extends TestSuite {
   class myDecorator extends cask.Decorator {
-    def getRawParams(ctx: ParamContext) = Right(cask.Decor("extra" -> 31337))
+    def wrapMethodOutput(ctx: ParamContext,
+                         delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
+      delegate(Map("extra" -> 31337))
+    }
   }
   val tests = Tests{
 

@@ -48,23 +48,24 @@ class postForm(val path: String, override val subpath: Boolean = false) extends 
   val methods = Seq("post")
   type Input = Seq[FormEntry]
   type InputParser[T] = FormReader[T]
-  def getRawParams(ctx: ParamContext) = {
-    for{
-      formData <-
-        try Right(FormParserFactory.builder().build().createParser(ctx.exchange).parseBlocking())
-        catch{case e: Exception => Left(cask.model.Response(
-          "Unable to parse form data: " + e + "\n" + Util.stackTraceString(e)
-        ))}
-    } yield {
-      cask.main.Decor(
+  def wrapMethodOutput(ctx: ParamContext,
+                       delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
+    try {
+      val formData = FormParserFactory.builder().build().createParser(ctx.exchange).parseBlocking()
+      delegate(
         formData
           .iterator()
           .asScala
           .map(k => (k, formData.get(k).asScala.map(FormEntry.fromUndertow).toSeq))
           .toMap
       )
+    } catch{case e: Exception =>
+      Router.Result.Success(cask.model.Response(
+        "Unable to parse form data: " + e + "\n" + Util.stackTraceString(e)
+      ))
     }
   }
+
   def wrapPathSegment(s: String): Input = Seq(FormValue(s, new io.undertow.util.HeaderMap))
 }
 

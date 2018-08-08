@@ -64,7 +64,7 @@ object ErrorMsgs {
     def expectedMsg = formatMainMethodSignature(base: T, route, 0, 0)
 
     x match{
-      case Router.Result.Error.Exception(x) => ???
+      case Router.Result.Error.Exception(x) => Util.stackTraceString(x)
       case Router.Result.Error.MismatchedArguments(missing, unknown) =>
         val missingStr =
           if (missing.isEmpty) ""

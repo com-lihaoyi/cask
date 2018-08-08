@@ -1,17 +1,22 @@
 package cask.main
 
+import cask.internal.Router
 import cask.internal.Router.ArgReader
-import cask.model.ParamContext
+import cask.model.{Response, ParamContext}
 
 
 trait Endpoint[R] extends BaseDecorator{
 
+  type Output = R
   val path: String
   val methods: Seq[String]
   def subpath: Boolean = false
-  def wrapMethodOutput(ctx: ParamContext,t: R): cask.internal.Router.Result[Any] = {
+
+  def wrapMethodOutput0(ctx: ParamContext, t: R): cask.internal.Router.Result[Any] = {
     cask.internal.Router.Result.Success(t)
   }
+  def wrapMethodOutput(ctx: ParamContext,
+                       delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response]
 
   def wrapPathSegment(s: String): Input
 
@@ -33,22 +38,16 @@ trait Endpoint[R] extends BaseDecorator{
 trait BaseDecorator{
   type Input
   type InputParser[T] <: ArgReader[Input, T, ParamContext]
-  def getRawParams(ctx: ParamContext): Either[cask.model.Response, Decor[Input]]
+  type Output
+  def wrapMethodOutput(ctx: ParamContext,
+                       delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response]
   def getParamParser[T](implicit p: InputParser[T]) = p
 }
 
-object Decor{
-  def apply[Input](params: (String, Input)*) = new Decor(params.toMap, () => ())
-  def apply[Input](params: TraversableOnce[(String, Input)], cleanup: () => Unit = () => ()) = {
-    new Decor(params.toMap, cleanup)
-  }
-}
-class Decor[Input](val params: Map[String, Input], val cleanup: () => Unit){
-  def withCleanup(newCleanUp: () => Unit) = new Decor(params, newCleanUp)
-}
 
 trait Decorator extends BaseDecorator {
   type Input = Any
+  type Output = Response
   type InputParser[T] = NoOpParser[Input, T]
 }
 

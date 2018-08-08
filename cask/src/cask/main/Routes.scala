@@ -7,7 +7,7 @@ import scala.reflect.macros.blackbox.Context
 import language.experimental.macros
 
 object Routes{
-  case class EndpointMetadata[T](decorators: Seq[BaseDecorator],
+  case class EndpointMetadata[T](decorators: Seq[Decorator],
                                  endpoint: Endpoint[_],
                                  entryPoint: EntryPoint[T, ParamContext])
   case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
@@ -42,7 +42,7 @@ object Routes{
         val route = router.extractMethod(
           m.asInstanceOf[MethodSymbol],
           weakTypeOf[T],
-          (ctx: c.Tree, t: c.Tree) => q"${annotObjectSyms.head}.wrapMethodOutput($ctx, $t)",
+          (ctx: c.Tree, t: c.Tree) => q"${annotObjectSyms.head}.wrapMethodOutput0($ctx, $t)",
           c.weakTypeOf[ParamContext],
           annotObjectSyms.map(annotObjectSym => q"$annotObjectSym.getParamParser"),
           annotObjectSyms.map(annotObjectSym => tq"$annotObjectSym.Input")

@@ -2,16 +2,23 @@ package cask.model
 
 import java.io.{InputStream, OutputStream, OutputStreamWriter}
 
-import io.undertow.server.HttpServerExchange
 
-
-trait BaseResponse{
-  def data: BaseResponse.Data
+trait Response{
+  def data: Response.Data
   def statusCode: Int
   def headers: Seq[(String, String)]
   def cookies: Seq[Cookie]
 }
-object BaseResponse{
+object Response{
+  def apply(data: Data,
+            statusCode: Int = 200,
+            headers: Seq[(String, String)] = Nil,
+            cookies: Seq[Cookie] = Nil) = Simple(data, statusCode, headers, cookies)
+  case class Simple(data: Data,
+                    statusCode: Int = 200,
+                    headers: Seq[(String, String)] = Nil,
+                    cookies: Seq[Cookie] = Nil) extends Response
+
   implicit def dataResponse[T](t: T)(implicit c: T => Data) = Response(t)
   trait Data{
     def write(out: OutputStream): Unit
@@ -34,7 +41,7 @@ object BaseResponse{
     }
   }
 }
-case class Redirect(url: String)  extends BaseResponse{
+case class Redirect(url: String)  extends Response{
   override def data = ""
 
   override def statusCode = 301
@@ -43,7 +50,7 @@ case class Redirect(url: String)  extends BaseResponse{
 
   override def cookies = Nil
 }
-case class Abort(code: Int) extends BaseResponse {
+case class Abort(code: Int) extends Response {
   override def data = ""
 
   override def statusCode = code
@@ -53,13 +60,13 @@ case class Abort(code: Int) extends BaseResponse {
   override def cookies = Nil
 }
 
-case class Static(path: String) extends BaseResponse {
+case class Static(path: String) extends Response {
   val relPath = java.nio.file.Paths.get(path)
   val (data0, statusCode0) =
     if (java.nio.file.Files.exists(relPath) && java.nio.file.Files.isRegularFile(relPath)){
-      (java.nio.file.Files.newInputStream(relPath): BaseResponse.Data, 200)
+      (java.nio.file.Files.newInputStream(relPath): Response.Data, 200)
     }else{
-      ("": BaseResponse.Data, 404)
+      ("": Response.Data, 404)
     }
   override def data = data0
 
@@ -73,8 +80,4 @@ case class Static(path: String) extends BaseResponse {
 
 
 
-case class Response(data: BaseResponse.Data,
-                    statusCode: Int = 200,
-                    headers: Seq[(String, String)] = Nil,
-                    cookies: Seq[Cookie] = Nil) extends BaseResponse
 

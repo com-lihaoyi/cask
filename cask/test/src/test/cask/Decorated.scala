@@ -1,16 +1,23 @@
 package test.cask
 
-import cask.model.ParamContext
+import cask.internal.Router
+import cask.model.{ParamContext, Response}
 
 object Decorated extends cask.MainRoutes{
   class User{
     override def toString = "[haoyi]"
   }
   class loggedIn extends cask.Decorator {
-    def getRawParams(ctx: ParamContext) = Right(cask.Decor("user" -> new User()))
+    def wrapMethodOutput(ctx: ParamContext,
+                         delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
+      delegate(Map("user" -> new User()))
+    }
   }
   class withExtra extends cask.Decorator {
-    def getRawParams(ctx: ParamContext) = Right(cask.Decor("extra" -> 31337))
+    def wrapMethodOutput(ctx: ParamContext,
+                         delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
+      delegate(Map("extra" -> 31337))
+    }
   }
 
   @withExtra()

@@ -2,22 +2,23 @@ package cask.endpoints
 
 import cask.internal.Router
 import cask.main.Endpoint
-import cask.model.{BaseResponse, ParamContext}
+import cask.model.{Response, ParamContext}
 
 import collection.JavaConverters._
 
 
-trait WebEndpoint extends Endpoint[BaseResponse]{
+trait WebEndpoint extends Endpoint[Response]{
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
-  def getRawParams(ctx: ParamContext) = Right(
-    cask.main.Decor(
+  def wrapMethodOutput(ctx: ParamContext,
+                       delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
+    delegate(
       ctx.exchange.getQueryParameters
         .asScala
         .map{case (k, vs) => (k, vs.asScala.toArray.toSeq)}
         .toMap
     )
-  )
+  }
   def wrapPathSegment(s: String) = Seq(s)
 }
 class get(val path: String, override val subpath: Boolean = false) extends WebEndpoint{

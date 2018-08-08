@@ -33,7 +33,7 @@ abstract class BaseMain{
       )
     }.toMap
 
-  def writeResponse(exchange: HttpServerExchange, response: BaseResponse) = {
+  def writeResponse(exchange: HttpServerExchange, response: Response) = {
     response.headers.foreach{case (k, v) =>
       exchange.getResponseHeaders.put(new HttpString(k), v)
     }
@@ -55,30 +55,22 @@ abstract class BaseMain{
     def handleRequest(exchange: HttpServerExchange): Unit = {
       routeTries(exchange.getRequestMethod.toString.toLowerCase()).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
         case None => writeResponse(exchange, handleError(404))
-        case Some(((routes, metadata), bindings, remaining)) =>
-          val params = for{
-            decoratorParams <- Util.sequenceEither[Response, cask.main.Decor[_], Seq](
-              metadata.decorators.map(e => e.getRawParams(ParamContext(exchange, remaining)))
-            )
-            endpointParams <- metadata.endpoint.getRawParams(ParamContext(exchange, remaining))
-          } yield (
-            (endpointParams.params ++ bindings.mapValues(metadata.endpoint.wrapPathSegment)) +:
-              decoratorParams.map(_.params),
-            () => {endpointParams.cleanup(); decoratorParams.foreach(_.cleanup())}
-          )
+        case Some(((routes, metadata), extBindings, remaining)) =>
+          val ctx = ParamContext(exchange, remaining)
+          def rec(remaining: List[Decorator],
+                  bindings: List[Map[String, Any]]): Router.Result[Response] = remaining match{
+            case head :: rest => head.wrapMethodOutput(ctx, args => rec(rest, args :: bindings))
+            case Nil =>
+              metadata.endpoint.wrapMethodOutput(ctx, epBindings =>
+                metadata.entryPoint
+                  .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
+                  .invoke(routes, ctx, (epBindings ++ extBindings.mapValues(metadata.endpoint.wrapPathSegment)) :: bindings.reverse)
+                  .asInstanceOf[Router.Result[Nothing]]
+              )
 
-          val result = params match{
-            case Left(resp) => resp
-            case Right((paramValues, cleanup)) =>
-              try metadata.entryPoint
-                .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
-                .invoke(routes, ParamContext(exchange, remaining), paramValues)
-              finally cleanup()
           }
-
-
-          result match{
-            case Router.Result.Success(response: BaseResponse) => writeResponse(exchange, response)
+          rec(metadata.decorators.toList, Nil)match{
+            case Router.Result.Success(response: Response) => writeResponse(exchange, response)
             case e: Router.Result.Error =>
 
               writeResponse(exchange,
@@ -88,7 +80,8 @@ abstract class BaseMain{
                     metadata.entryPoint.asInstanceOf[EntryPoint[cask.main.Routes, _]],
                     e
                   ),
-                  statusCode = 500)
+                  statusCode = 500
+                )
               )
           }
       }
