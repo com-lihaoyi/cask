@@ -30,5 +30,9 @@ object example extends Module{
   object todo extends ScalaModule{
     def scalaVersion = "2.12.6"
     def moduleDeps = Seq(cask)
+    def ivyDeps = Agg(
+      ivy"org.xerial:sqlite-jdbc:3.18.0",
+      ivy"io.getquill::quill-jdbc:2.5.4"
+    )
   }
 }
