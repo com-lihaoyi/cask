@@ -21,7 +21,7 @@ object TodoMvcApi extends cask.MainRoutes{
 
   @cask.post("/add")
   def add(request: cask.Request) = {
-    todos = Seq(Todo(false, new String(request.data.readAllBytes()))) ++ todos
+    todos = Seq(Todo(false, new String(request.readAllBytes()))) ++ todos
   }
 
   @cask.post("/toggle/:index")

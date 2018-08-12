@@ -2,6 +2,8 @@ package cask.model
 
 import java.io.{InputStream, OutputStream, OutputStreamWriter}
 
+import cask.internal.Util
+
 
 trait Response{
   def data: Response.Data
@@ -31,7 +33,7 @@ object Response{
       def write(out: OutputStream) = out.write(b)
     }
     implicit class StreamData(b: InputStream) extends Data{
-      def write(out: OutputStream) = b.transferTo(out)
+      def write(out: OutputStream) = Util.transferTo(b, out)
     }
     implicit def JsonResponse[T: upickle.default.Writer](t: T) = new Data{
       def write(out: OutputStream) = implicitly[upickle.default.Writer[T]].write(

@@ -1,8 +1,9 @@
 package cask.model
 
-import java.io.InputStream
+import java.io.{ByteArrayOutputStream, InputStream}
 
 import cask.endpoints.ParamReader.NilParam
+import cask.internal.Util
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.handlers.CookieImpl
 
@@ -17,6 +18,11 @@ case class Request(exchange: HttpServerExchange){
     exchange.getRequestCookies.asScala.mapValues(Cookie.fromUndertow).toMap
   }
   lazy val data: InputStream = exchange.getInputStream
+  def readAllBytes() = {
+    val baos = new ByteArrayOutputStream()
+    Util.transferTo(data, baos)
+    baos.toByteArray
+  }
   lazy val queryParams: Map[String, Seq[String]] = {
     exchange.getQueryParameters.asScala.mapValues(_.asScala.toArray.toSeq).toMap
   }

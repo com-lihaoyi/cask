@@ -8,7 +8,7 @@ object MinimalRoutes extends cask.Routes{
 
   @cask.post("/do-thing")
   def doThing(request: cask.Request) = {
-    new String(request.data.readAllBytes()).reverse
+    new String(request.readAllBytes()).reverse
   }
 
   initialize()

@@ -7,7 +7,7 @@ object MinimalApplication extends cask.MainRoutes{
 
   @cask.post("/do-thing")
   def doThing(request: cask.Request) = {
-    new String(request.data.readAllBytes()).reverse
+    new String(request.readAllBytes()).reverse
   }
 
   initialize()
@@ -92,7 +92,7 @@ object MinimalApplication extends cask.MainRoutes{
 
   @cask.post("/do-thing")
   def doThing(request: cask.Request) = {
-    new String(request.data.readAllBytes()).reverse
+    new String(request.readAllBytes()).reverse
   }
 
   initialize()
@@ -136,7 +136,7 @@ object MinimalRoutes extends cask.Routes{
 
   @cask.post("/do-thing")
   def doThing(request: cask.Request) = {
-    new String(request.data.readAllBytes()).reverse
+    new String(request.readAllBytes()).reverse
   }
 
   initialize()
@@ -543,7 +543,7 @@ object TodoMvcApi extends cask.MainRoutes{
 
   @cask.post("/add")
   def add(request: cask.Request) = {
-    todos = Seq(Todo(false, new String(request.data.readAllBytes()))) ++ todos
+    todos = Seq(Todo(false, new String(request.readAllBytes()))) ++ todos
   }
 
   @cask.post("/toggle/:index")
@@ -637,7 +637,7 @@ object TodoMvcDb extends cask.MainRoutes{
   @transactional
   @cask.post("/add")
   def add(request: cask.Request) = {
-    val body = new String(request.data.readAllBytes())
+    val body = new String(request.readAllBytes())
     run(query[Todo].insert(_.checked -> lift(false), _.text -> lift(body)).returning(_.id))
   }
 
@@ -748,7 +748,7 @@ object Server extends cask.MainRoutes{
   @transactional
   @cask.post("/add/:state")
   def add(state: String, request: cask.Request) = {
-    val body = new String(request.data.readAllBytes())
+    val body = new String(request.readAllBytes())
     run(query[Todo].insert(_.checked -> lift(false), _.text -> lift(body)).returning(_.id))
     renderBody(state).render
   }

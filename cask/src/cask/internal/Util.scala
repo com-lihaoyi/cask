@@ -1,11 +1,24 @@
 package cask.internal
 
-import java.io.{PrintWriter, StringWriter}
+import java.io.{InputStream, PrintWriter, StringWriter}
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.mutable
+import java.io.OutputStream
 
 object Util {
+  def transferTo(in: InputStream, out: OutputStream) = {
+    val buffer = new Array[Byte](8192)
+
+    while ({
+      in.read(buffer) match{
+        case -1 => false
+        case n =>
+          out.write(buffer, 0, n)
+          true
+      }
+    }) ()
+  }
   def pluralize(s: String, n: Int) = {
     if (n == 1) s else s + "s"
   }
