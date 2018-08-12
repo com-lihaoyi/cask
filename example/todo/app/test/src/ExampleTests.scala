@@ -1,6 +1,6 @@
 package app
 import utest._
-object TodoTests extends TestSuite{
+object ExampleTests extends TestSuite{
   def test[T](example: cask.main.BaseMain)(f: String => T): T = {
     val server = io.undertow.Undertow.builder
       .addHttpListener(8080, "localhost")

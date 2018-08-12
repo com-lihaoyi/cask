@@ -184,6 +184,17 @@ Cask provides some convenient helpers `cask.Redirect` and `cask.Abort` which you
 can return; these are simple wrappers around `cask.Request`, and simply set up
 the relevant headers or status code for you.
 
+### HTML Rendering
+
+Cask doesn't come bundled with HTML templating functionality, but it makes it
+really easy to use community-standard libraries like
+[Scalatags](https://github.com/lihaoyi/scalatags) to render your HTML. Simply
+adding the relevant `ivy"com.lihaoyi::scalatags:0.6.7"` dependency to your
+`build.sc` file is enough to render Scalatags templates:
+
+$$$scalatags
+
+
 ### Extending Endpoints with Decorators
 
 

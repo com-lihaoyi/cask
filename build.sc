@@ -12,10 +12,12 @@ import $file.example.httpMethods.build
 import $file.example.minimalApplication.build
 import $file.example.minimalApplication2.build
 import $file.example.redirectAbort.build
+import $file.example.scalatags.build
 import $file.example.staticFiles.build
 import $file.example.todo.build
 import $file.example.todoApi.build
 import $file.example.todoDb.build
+import $file.example.twirl.build
 import $file.example.variableRoutes.build
 
 object cask extends ScalaModule{
@@ -33,7 +35,7 @@ object cask extends ScalaModule{
   def scalacPluginIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.1.7")
 
   object test extends Tests{
-    def forkArgs = Seq("--illegal-access=deny")
+
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.6.3",
@@ -61,10 +63,12 @@ object example extends Module{
   object minimalApplication extends $file.example.minimalApplication.build.AppModule with LocalModule
   object minimalApplication2 extends $file.example.minimalApplication2.build.AppModule with LocalModule
   object redirectAbort extends $file.example.redirectAbort.build.AppModule with LocalModule
+  object scalatags extends $file.example.scalatags.build.AppModule with LocalModule
   object staticFiles extends $file.example.staticFiles.build.AppModule with LocalModule
   object todo extends $file.example.todo.build.AppModule with LocalModule
   object todoApi extends $file.example.todoApi.build.AppModule with LocalModule
   object todoDb extends $file.example.todoDb.build.AppModule with LocalModule
+  object twirl extends $file.example.twirl.build.AppModule with LocalModule
   object variableRoutes extends $file.example.variableRoutes.build.AppModule with LocalModule
 }
 
@@ -100,10 +104,12 @@ def uploadToGithub(authKey: String) = T.command{
     $file.example.minimalApplication.build.millSourcePath,
     $file.example.minimalApplication2.build.millSourcePath,
     $file.example.redirectAbort.build.millSourcePath,
+    $file.example.scalatags.build.millSourcePath,
     $file.example.staticFiles.build.millSourcePath,
     $file.example.todo.build.millSourcePath,
     $file.example.todoApi.build.millSourcePath,
     $file.example.todoDb.build.millSourcePath,
+    $file.example.twirl.build.millSourcePath,
     $file.example.variableRoutes.build.millSourcePath,
   )
   for(example <- examples){
