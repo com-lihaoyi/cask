@@ -17,8 +17,9 @@ class Main(servers0: Routes*) extends BaseMain{
 abstract class BaseMain{
   def mainDecorators = Seq.empty[cask.main.Decorator]
   def allRoutes: Seq[Routes]
-  val port: Int = 8080
-  val host: String = "localhost"
+  def port: Int = 8080
+  def host: String = "localhost"
+  def debugMode: Boolean = true
 
   lazy val routeList = for{
     routes <- allRoutes
@@ -44,64 +45,76 @@ abstract class BaseMain{
     response.data.write(exchange.getOutputStream)
   }
 
-  def handleError(statusCode: Int): Response = {
+  def handleNotFound(): Response = {
     Response(
-      s"Error $statusCode: ${Status.codesToStatus(statusCode).reason}",
-      statusCode = statusCode
+      s"Error 404: ${Status.codesToStatus(404).reason}",
+      statusCode = 404
     )
   }
 
 
-  def defaultHandler = new HttpHandler() {
-    def handleRequest(exchange: HttpServerExchange): Unit = {
-      routeTries(exchange.getRequestMethod.toString.toLowerCase()).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
-        case None => writeResponse(exchange, handleError(404))
-        case Some(((routes, metadata), extBindings, remaining)) =>
-          val ctx = ParamContext(exchange, remaining)
-          def rec(remaining: List[Decorator],
-                  bindings: List[Map[String, Any]]): Router.Result[Response] = try {
-            remaining match {
-              case head :: rest =>
-                head.wrapFunction(ctx, args => rec(rest, args :: bindings))
+  def defaultHandler = new BlockingHandler(
+    new HttpHandler() {
+      def handleRequest(exchange: HttpServerExchange): Unit = {
+        routeTries(exchange.getRequestMethod.toString.toLowerCase()).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match{
+          case None => writeResponse(exchange, handleNotFound())
+          case Some(((routes, metadata), extBindings, remaining)) =>
+            val ctx = ParamContext(exchange, remaining)
+            def rec(remaining: List[Decorator],
+                    bindings: List[Map[String, Any]]): Router.Result[Response] = try {
+              remaining match {
+                case head :: rest =>
+                  head.wrapFunction(ctx, args => rec(rest, args :: bindings))
 
-              case Nil =>
-                metadata.endpoint.wrapFunction(ctx, epBindings =>
-                  metadata.entryPoint
-                    .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
-                    .invoke(routes, ctx, (epBindings ++ extBindings.mapValues(metadata.endpoint.wrapPathSegment)) :: bindings.reverse)
-                    .asInstanceOf[Router.Result[Nothing]]
-                )
+                case Nil =>
+                  metadata.endpoint.wrapFunction(ctx, epBindings =>
+                    metadata.entryPoint
+                      .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
+                      .invoke(routes, ctx, (epBindings ++ extBindings.mapValues(metadata.endpoint.wrapPathSegment)) :: bindings.reverse)
+                      .asInstanceOf[Router.Result[Nothing]]
+                  )
 
+              }
+            // Make sure we wrap any exceptions that bubble up from decorator
+            // bodies, so outer decorators do not need to worry about their
+            // delegate throwing on them
+            }catch{case e: Throwable => Router.Result.Error.Exception(e) }
+
+            rec((metadata.decorators ++ routes.decorators ++ mainDecorators).toList, Nil)match{
+              case Router.Result.Success(response: Response) => writeResponse(exchange, response)
+              case e: Router.Result.Error => writeResponse(exchange, handleEndpointError(exchange, routes, metadata, e))
             }
-          // Make sure we wrap any exceptions that bubble up from decorator
-          // bodies, so outer decorators do not need to worry about their
-          // delegate throwing on them
-          }catch{case e: Throwable => Router.Result.Error.Exception(e) }
-
-          rec((metadata.decorators ++ routes.decorators ++ mainDecorators).toList, Nil)match{
-            case Router.Result.Success(response: Response) => writeResponse(exchange, response)
-            case e: Router.Result.Error =>
-
-              writeResponse(exchange,
-                Response(
-                  ErrorMsgs.formatInvokeError(
-                    routes,
-                    metadata.entryPoint.asInstanceOf[EntryPoint[cask.main.Routes, _]],
-                    e
-                  ),
-                  statusCode = 500
-                )
-              )
-          }
+        }
       }
     }
+  )
+
+  def handleEndpointError(exchange: HttpServerExchange,
+                          routes: Routes,
+                          metadata: Routes.EndpointMetadata[_],
+                          e: Router.Result.Error) = {
+    val statusCode = e match {
+      case _: Router.Result.Error.Exception => 500
+      case _: Router.Result.Error.InvalidArguments => 400
+      case _: Router.Result.Error.MismatchedArguments => 400
+    }
+    Response(
+      if (!debugMode) s"Error $statusCode: ${Status.codesToStatus(statusCode).reason}"
+      else ErrorMsgs.formatInvokeError(
+        routes,
+        metadata.entryPoint.asInstanceOf[EntryPoint[cask.main.Routes, _]],
+        e
+      ),
+      statusCode = statusCode
+    )
+
   }
 
 
   def main(args: Array[String]): Unit = {
     val server = Undertow.builder
       .addHttpListener(port, host)
-      .setHandler(new BlockingHandler(defaultHandler))
+      .setHandler(defaultHandler)
       .build
     server.start()
   }
