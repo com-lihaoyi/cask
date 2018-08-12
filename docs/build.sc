@@ -33,10 +33,22 @@ val posts = {
       Extensions.FENCED_CODE_BLOCKS | Extensions.TABLES | Extensions.AUTOLINKS
     )
 
-    val txt = read(path)
-      .replaceAll(
-        """\$\$\$([a-zA-Z_0-9]+)""",
-        s"[example project](https://github.com/lihaoyi/cask/releases/download/$releaseTag/$label.$$1)"
+    val txt =
+      """\$\$\$([a-zA-Z_0-9]+)""".r.replaceAllIn(
+        read(path),
+        m => {
+          val g = m.group(1)
+          val txt = read(ls(pwd/up/'example/g/'app/'src).head).replace("$", "\\$")
+          val downloadLink =
+            s"https://github.com/lihaoyi/cask/releases/download/$releaseTag/$label.$g"
+
+          s"""
+             |```scala
+             |$txt
+             |```
+             |
+             |- [example project]($downloadLink)""".stripMargin
+        }
       )
 
     val ast = processor.parseMarkdown(txt.toArray)

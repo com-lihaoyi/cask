@@ -4,6 +4,7 @@ import com.typesafe.config.ConfigFactory
 import io.getquill.{SnakeCase, SqliteJdbcContext}
 import scalatags.Text.all._
 import scalatags.Text.tags2
+
 object TodoServer extends cask.MainRoutes{
   val tmpDb = java.nio.file.Files.createTempDirectory("todo-cask-sqlite")
 

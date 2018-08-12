@@ -1,9 +1,11 @@
 package cask.endpoints
 
+import java.io.ByteArrayOutputStream
+
 import cask.internal.{Router, Util}
 import cask.internal.Router.EntryPoint
 import cask.main.{Endpoint, Routes}
-import cask.model.{Response, ParamContext}
+import cask.model.{ParamContext, Response}
 
 
 sealed trait JsReader[T] extends Router.ArgReader[ujson.Js.Value, T, cask.model.ParamContext]
@@ -34,7 +36,11 @@ class postJson(val path: String, override val subpath: Boolean = false) extends 
                        delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
     val obj = for{
       str <-
-        try Right(new String(ctx.exchange.getInputStream.readAllBytes()))
+        try {
+          val boas = new ByteArrayOutputStream()
+          Util.transferTo(ctx.exchange.getInputStream, boas)
+          Right(new String(boas.toByteArray))
+        }
         catch{case e: Throwable => Left(cask.model.Response(
           "Unable to deserialize input JSON text: " + e + "\n" + Util.stackTraceString(e)
         ))}
