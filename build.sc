@@ -19,6 +19,7 @@ import $file.example.todo.build
 import $file.example.todoApi.build
 import $file.example.todoDb.build
 import $file.example.variableRoutes.build
+import $file.example.websockets.build
 
 object cask extends ScalaModule with PublishModule {
   def scalaVersion = "2.12.6"
@@ -80,6 +81,7 @@ object example extends Module{
   object todoApi extends $file.example.todoApi.build.AppModule with LocalModule
   object todoDb extends $file.example.todoDb.build.AppModule with LocalModule
   object variableRoutes extends $file.example.variableRoutes.build.AppModule with LocalModule
+  object websockets extends $file.example.websockets.build.AppModule with LocalModule
 }
 
 def publishVersion = T.input($file.ci.version.publishVersion)
@@ -121,6 +123,7 @@ def uploadToGithub(authKey: String) = T.command{
     $file.example.todoApi.build.millSourcePath,
     $file.example.todoDb.build.millSourcePath,
     $file.example.variableRoutes.build.millSourcePath,
+    $file.example.websockets.build.millSourcePath,
   )
   for(example <- examples){
     val f = tmp.dir()

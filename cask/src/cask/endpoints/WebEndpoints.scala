@@ -1,13 +1,13 @@
 package cask.endpoints
 
 import cask.internal.Router
-import cask.main.Endpoint
-import cask.model.{Response, ParamContext}
+import cask.main.{Endpoint, HttpDecorator}
+import cask.model.{ParamContext, Response}
 
 import collection.JavaConverters._
 
 
-trait WebEndpoint extends Endpoint{
+trait WebEndpoint extends Endpoint with HttpDecorator{
   type Output = Response
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]

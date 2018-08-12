@@ -204,7 +204,7 @@ class Router[C <: Context](val c: C) {
   def extractMethod(method: MethodSymbol,
                     curCls: c.universe.Type,
                     convertToResultType: c.Tree,
-                    ctx: c.Type,
+                    ctx: c.Tree,
                     argReaders: Seq[c.Tree],
                     annotDeserializeTypes: Seq[c.Tree]): c.universe.Tree = {
     val baseArgSym = TermName(c.freshName())

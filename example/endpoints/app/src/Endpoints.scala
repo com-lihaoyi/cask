@@ -1,7 +1,10 @@
 package app
 
+import cask.main.HttpDecorator
+import cask.model.ParamContext
 
-class custom(val path: String, val methods: Seq[String]) extends cask.Endpoint{
+
+class custom(val path: String, val methods: Seq[String]) extends cask.Endpoint with HttpDecorator{
   type Output = Int
   def wrapFunction(ctx: cask.ParamContext, delegate: Delegate): Returned = {
     delegate(Map()).map{num =>

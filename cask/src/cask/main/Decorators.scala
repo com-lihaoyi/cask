@@ -2,13 +2,15 @@ package cask.main
 
 import cask.internal.Router
 import cask.internal.Router.ArgReader
-import cask.model.{Response, ParamContext}
+import cask.model.{ParamContext, Response}
 
+
+trait Endpoint extends BaseEndpoint with HttpDecorator
 /**
   * Used to annotate a single Cask endpoint function; similar to a [[Decorator]]
   * but with additional metadata and capabilities.
   */
-trait Endpoint extends BaseDecorator{
+trait BaseEndpoint extends BaseDecorator{
   /**
     * What is the path that this particular endpoint matches?
     */
@@ -45,9 +47,12 @@ trait BaseDecorator{
   type InputParser[T] <: ArgReader[Input, T, ParamContext]
   type Output
   type Delegate = Map[String, Input] => Router.Result[Output]
-  type Returned = Router.Result[Response]
+  type Returned <: Router.Result[Any]
   def wrapFunction(ctx: ParamContext, delegate: Delegate): Returned
   def getParamParser[T](implicit p: InputParser[T]) = p
+}
+trait HttpDecorator extends BaseDecorator{
+  type Returned = Router.Result[Response]
 }
 
 /**
@@ -61,7 +66,7 @@ trait BaseDecorator{
   * to `wrapFunction`, which takes a `Map` representing any additional argument
   * lists (if any).
   */
-trait Decorator extends BaseDecorator {
+trait Decorator extends HttpDecorator {
 
   type Input = Any
   type Output = Response

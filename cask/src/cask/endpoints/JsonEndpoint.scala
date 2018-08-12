@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream
 
 import cask.internal.{Router, Util}
 import cask.internal.Router.EntryPoint
-import cask.main.{Endpoint, Routes}
+import cask.main.{Endpoint, HttpDecorator, Routes}
 import cask.model.{ParamContext, Response}
 
 
@@ -26,12 +26,11 @@ object JsReader{
     }
   }
 }
-class postJson(val path: String, override val subpath: Boolean = false) extends Endpoint{
+class postJson(val path: String, override val subpath: Boolean = false) extends Endpoint with HttpDecorator{
   type Output = Response
   val methods = Seq("post")
   type Input = ujson.Js.Value
   type InputParser[T] = JsReader[T]
-
   def wrapFunction(ctx: ParamContext,
                        delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
     val obj = for{

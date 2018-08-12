@@ -299,6 +299,26 @@ Or globally, in your `cask.Main`:
 
 $$$compress3
 
+### Websockets
+
+$$$websockets
+
+Cask's Websocket endpoints are very similar to Cask's HTTP endpoints. Annotated
+with `@cask.websocket` instead of `@cask.get` or `@cast.post`, the primary
+difference is that instead of only returning a `cask.Response`, you now have an
+option of returning a `io.undertow.websockets.WebSocketConnectionCallback`.
+
+The `WebSocketConnectionCallback` allows you to pro-actively start sending
+websocket messages once a connection has been made, and it lets you register a
+`AbstractReceiveListener` that allows you to react to any messages the client on
+the other side of the websocket connection sends you. You can use these two APIs
+to perform full bi-directional, asynchronous communications, as websockets are
+intended to be used for.
+
+Returning a `cask.Response` immediately closes the websocket connection, and is
+useful if you want to e.g. return a 404 or 403 due to the initial request being
+invalid.
+
 ### TodoMVC Api Server
 
 

@@ -6,6 +6,7 @@ import cask.endpoints.ParamReader.NilParam
 import cask.internal.Util
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.handlers.CookieImpl
+import io.undertow.websockets.spi.WebSocketHttpExchange
 
 class Subpath(val value: Seq[String])
 object Subpath{

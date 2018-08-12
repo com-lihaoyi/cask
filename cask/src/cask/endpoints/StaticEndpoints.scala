@@ -1,10 +1,10 @@
 package cask.endpoints
 
 import cask.internal.Router
-import cask.main.Endpoint
-import cask.model.{Response, ParamContext}
+import cask.main.{Endpoint, HttpDecorator}
+import cask.model.{ParamContext, Response}
 
-class static(val path: String) extends Endpoint {
+class static(val path: String) extends Endpoint with HttpDecorator{
   type Output = String
   val methods = Seq("get")
   type Input = Seq[String]

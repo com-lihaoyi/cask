@@ -22,6 +22,10 @@ package object cask {
   val ParamContext = model.ParamContext
 
   // endpoints
+  type websocket = endpoints.websocket
+  val WebsocketResult = endpoints.WebsocketResult
+  type WebsocketResult = endpoints.WebsocketResult
+
   type get = endpoints.get
   type post = endpoints.post
   type put = endpoints.put
@@ -37,6 +41,6 @@ package object cask {
   type Main = main.Main
   type Decorator = main.Decorator
   type Endpoint = main.Endpoint
-  type BaseDecorator = main.BaseDecorator
+  type BaseDecorator = main.HttpDecorator
 
 }
