@@ -72,8 +72,8 @@ object example extends Module{
   object variableRoutes extends $file.example.variableRoutes.build.AppModule with LocalModule
 }
 
-def publishVersion = T.input($file.version.publishVersion)
-def gitHead = T.input($file.version.gitHead)
+def publishVersion = T.input($file.ci.version.publishVersion)
+def gitHead = T.input($file.ci.version.gitHead)
 
 def uploadToGithub(authKey: String) = T.command{
   val (releaseTag, label) = publishVersion()
