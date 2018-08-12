@@ -1,6 +1,6 @@
 import mill._, scalalib._
 import ammonite.ops._, ujson.Js
-import $file.upload
+import $file.upload, $file.version
 import $file.example.compress.build
 import $file.example.compress2.build
 import $file.example.compress3.build
@@ -21,7 +21,7 @@ import $file.example.variableRoutes.build
 object cask extends ScalaModule{
   def scalaVersion = "2.12.6"
   def ivyDeps = Agg(
-    ivy"org.scala-lang:scala-reflect:$scalaVersion",
+    ivy"org.scala-lang:scala-reflect:${scalaVersion()}",
     ivy"io.undertow:undertow-core:2.0.11.Final",
     ivy"com.lihaoyi::upickle:0.6.6",
     ivy"com.lihaoyi::scalatags:0.6.7",
@@ -68,41 +68,8 @@ object example extends Module{
   object variableRoutes extends $file.example.variableRoutes.build.AppModule with LocalModule
 }
 
-val isMasterCommit = {
-  sys.env.get("TRAVIS_PULL_REQUEST") == Some("false") &&
-    (sys.env.get("TRAVIS_BRANCH") == Some("master") || sys.env("TRAVIS_TAG") != "")
-}
-
-def gitHead = T.input{
-  sys.env.get("TRAVIS_COMMIT").getOrElse(
-    %%('git, "rev-parse", "HEAD")(pwd).out.string.trim()
-  )
-}
-
-
-def publishVersion = T.input{
-  val tag =
-    try Option(
-      %%('git, 'describe, "--exact-match", "--tags", "--always", gitHead())(pwd).out.string.trim()
-    )
-    catch{case e => None}
-
-  val dirtySuffix = %%('git, 'diff)(pwd).out.string.trim() match{
-    case "" => ""
-    case s => "-DIRTY" + Integer.toHexString(s.hashCode)
-  }
-
-  tag match{
-    case Some(t) => (t, t)
-    case None =>
-      val latestTaggedVersion = %%('git, 'describe, "--abbrev=0", "--always", "--tags")(pwd).out.trim
-
-      val commitsSinceLastTag =
-        %%('git, "rev-list", gitHead(), "--not", latestTaggedVersion, "--count")(pwd).out.trim.toInt
-
-      (latestTaggedVersion, s"$latestTaggedVersion-$commitsSinceLastTag-${gitHead().take(6)}$dirtySuffix")
-  }
-}
+def publishVersion = T.input($file.version.publishVersion)
+def gitHead = T.input($file.version.gitHead)
 
 def uploadToGithub(authKey: String) = T.command{
   val (releaseTag, label) = publishVersion()

@@ -1,6 +1,3 @@
-Cask: a Scala HTTP micro-framework
-==================================
-
 ```scala
 object MinimalApplication extends cask.MainRoutes{
   @cask.get("/")
@@ -17,10 +14,10 @@ object MinimalApplication extends cask.MainRoutes{
 }
 ```
 
-Cask is a simple Scala web framework inspired by Python's
-[Flask](http://flask.pocoo.org/docs/1.0/) project. It aims to bring simplicity,
-flexibility and ease-of-use to Scala webservers, avoiding cryptic DSLs or
-complicated asynchrony.
+[Cask](https://github.com/lihaoyi/cask) is a simple Scala web framework inspired
+by Python's [Flask](http://flask.pocoo.org/docs/1.0/) project. It aims to bring
+simplicity, flexibility and ease-of-use to Scala webservers, avoiding cryptic
+DSLs or complicated asynchrony.
 
 Getting Started
 ---------------
@@ -29,7 +26,8 @@ The easiest way to begin using Cask is by downloading the
 [Mill](http://www.lihaoyi.com/mill/) example project:
 
 - Install [Mill](http://www.lihaoyi.com/mill/)
-- Unzip [XXX](XXX) into a folder. This should give you the following files:
+- Unzip the $$$minimalApplication into a folder. This should
+  give you the following files:
 ```text
 build.sc
 app/src/MinimalExample.scala
@@ -80,8 +78,11 @@ ivy"com.lihaoyi::cask:0.1.0"
 "com.lihaoyi" %% "cask" % "0.1.0"
 ```
 
-Minimal Example
----------------
+Example Projects
+----------------
+
+### Minimal Example
+
 ```scala
 object MinimalApplication extends cask.MainRoutes{
   @cask.get("/")
@@ -97,6 +98,8 @@ object MinimalApplication extends cask.MainRoutes{
   initialize()
 }
 ```
+
+- $$$minimalApplication
 
 The rough outline of how the minimal example works should be easy to understand:
 
@@ -142,11 +145,13 @@ object MinimalRoutes extends cask.Routes{
 object MinimalMain extends cask.Main(MinimalRoutes)
 ```
 
+- $$$minimalApplication2
+- 
 You can split up your routes into separate `cask.Routes` objects as makes sense
 and pass them all into `cask.Main`.
 
-Variable Routes
----------------
+### Variable Routes
+
 
 ```scala
 object VariableRoutes extends cask.MainRoutes{
@@ -169,6 +174,8 @@ object VariableRoutes extends cask.MainRoutes{
 }
 ```
 
+- $$$variableRoutes
+
 You can bind variables to endpoints by declaring them as parameters: these are
 either taken from a path-segment matcher of the same name (e.g. `postId` above),
 or from query-parameters of the same name (e.g. `param` above). You can make
@@ -181,8 +188,8 @@ If you need to capture the entire sub-path of the request, you can set the flag
 matter). This will make the route match any sub-path of the prefix given to the
 `@cask` decorator, and give you the remainder to use in your endpoint logic.
 
-Receiving Form-encoded or JSON data
------------------------------------
+### Receiving Form-encoded or JSON data
+
 
 ```scala
 object FormJsonPost extends cask.MainRoutes{
@@ -205,6 +212,8 @@ object FormJsonPost extends cask.MainRoutes{
 }
 ```
 
+- $$$formJsonPost
+
 If you need to handle a JSON-encoded POST request, you can use the
 `@cast.postJson` decorator. This assumes the posted request body is a JSON dict,
 and uses its keys to populate the endpoint's parameters, either as raw
@@ -226,8 +235,8 @@ deserialization into Scala data-types fails, a 400 response is returned
 automatically with a helpful error message.
 
 
-Processing Cookies
-------------------
+### Processing Cookies
+
 
 ```scala
 object Cookies extends cask.MainRoutes{
@@ -256,14 +265,16 @@ object Cookies extends cask.MainRoutes{
 }
 ```
 
+- $$$cookies
+
 Cookies are most easily read by declaring a `: cask.Cookie` parameter; the
 parameter name is used to fetch the cookie you are interested in. Cookies can be
 stored by setting the `cookie` attribute in the response, and deleted simply by
 setting `expires = java.time.Instant.EPOCH` (i.e. to have expired a long time
 ago)
 
-Serving Static Files
---------------------
+### Serving Static Files
+
 ```scala
 object StaticFiles extends cask.MainRoutes{
   @cask.get("/")
@@ -278,13 +289,15 @@ object StaticFiles extends cask.MainRoutes{
 }
 ```
 
+- $$$staticFiles
+
 You can ask Cask to serve static files by defining a `@cask.static` endpoint.
 This will match any subpath of the value returned by the endpoint (e.g. above
 `/static/file.txt`, `/static/folder/file.txt`, etc.) and return the file
 contents from the corresponding file on disk (and 404 otherwise).
 
-Redirects or Aborts
--------------------
+### Redirects or Aborts
+
 ```scala
 object RedirectAbort extends cask.MainRoutes{
   @cask.get("/")
@@ -301,12 +314,14 @@ object RedirectAbort extends cask.MainRoutes{
 }
 ```
 
+- $$$redirectAbort
+
 Cask provides some convenient helpers `cask.Redirect` and `cask.Abort` which you
 can return; these are simple wrappers around `cask.Request`, and simply set up
 the relevant headers or status code for you.
 
-Extending Endpoints with Decorators
------------------------------------
+### Extending Endpoints with Decorators
+
 
 ```scala
 object Decorated extends cask.MainRoutes{
@@ -353,6 +368,8 @@ object Decorated extends cask.MainRoutes{
   initialize()
 }
 ```
+
+- $$$decorateds
 
 You can write extra decorator annotations that stack on top of the existing
 `@cask.get`/`@cask.post` to provide additional arguments or validation. This is
@@ -430,12 +447,14 @@ object Decorated2 extends cask.MainRoutes{
 }
 ```
 
+- $$$decorated2
+
 This is convenient for cases where you want a set of decorators to apply broadly
 across your web application, and do not want to repeat them over and over at
 every single endpoint.
 
-Gzip & Deflated Responses
--------------------------
+### Gzip & Deflated Responses
+
 
 ```scala
 object Compress extends cask.MainRoutes{
@@ -450,6 +469,8 @@ object Compress extends cask.MainRoutes{
 }
 
 ```
+
+- $$$compress
 
 Cask provides a useful `@cask.decorators.compress` decorator that gzips or
 deflates a response body if possible. This is useful if you don't have a proxy
@@ -474,6 +495,8 @@ object Compress2 extends cask.Routes{
 object Compress2Main extends cask.Main(Compress2)
 ```
 
+- $$$compress2
+
 Or globally, in your `cask.Main`:
 
 ```scala
@@ -492,8 +515,10 @@ object Compress3Main extends cask.Main(Compress3){
 }
 ```
 
-TodoMVC Api Server
-------------------
+- $$$compress3
+
+### TodoMVC Api Server
+
 
 ```scala
 object TodoMvcApi extends cask.MainRoutes{
@@ -535,6 +560,8 @@ object TodoMvcApi extends cask.MainRoutes{
 }
 ```
 
+- $$$todoApi
+
 This is a simple self-contained example of using Cask to write an in-memory API
 server for the common [TodoMVC example app](http://todomvc.com/).
 
@@ -543,8 +570,8 @@ etc.. Those can be managed via the normal mechanism for
 [Serving Static Files](#serving-static-files).
 
 
-TodoMVC Database Integration
-----------------------------
+### TodoMVC Database Integration
+
 ```scala
 import cask.internal.Router
 import com.typesafe.config.ConfigFactory
@@ -631,6 +658,8 @@ object TodoMvcDb extends cask.MainRoutes{
 
 ```
 
+- $$$todoDb
+
 This example demonstrates how to use Cask to write a TodoMVC API server that
 persists it's state in a database rather than in memory. We use the
 [Quill](http://getquill.io/) database access library to write a `@transactional`
@@ -648,8 +677,8 @@ be passed into each endpoint function as an additional parameter list as
 described in
 [Extending Endpoints with Decorators](#extending-endpoints-with-decorators).
 
-TodoMVC Full Stack Web
-----------------------
+### TodoMVC Full Stack Web
+
 
 The following code snippet is the complete code for a full-stack TodoMVC
 implementation: including HTML generation for the web UI via
@@ -844,6 +873,8 @@ object Server extends cask.MainRoutes{
   initialize()
 }
 ```
+
+- $$$todo
 
 Main Customization
 ------------------
