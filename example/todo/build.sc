@@ -6,7 +6,8 @@ trait AppModule extends ScalaModule{
   def ivyDeps = Agg(
     ivy"com.lihaoyi::cask:0.0.1",
     ivy"org.xerial:sqlite-jdbc:3.18.0",
-    ivy"io.getquill::quill-jdbc:2.5.4"
+    ivy"io.getquill::quill-jdbc:2.5.4",
+    ivy"com.lihaoyi::scalatags:0.6.7",
   )
 
   object test extends Tests{

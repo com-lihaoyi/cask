@@ -1,9 +1,8 @@
 package cask.main
 
-import java.io.{PrintWriter, StringWriter}
 
 import cask.internal.{Router, Util}
-import fastparse.utils.Utils.literalize
+import cask.internal.Util.literalize
 
 object ErrorMsgs {
 
