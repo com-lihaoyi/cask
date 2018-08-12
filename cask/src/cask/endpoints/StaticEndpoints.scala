@@ -11,10 +11,7 @@ class static(val path: String) extends Endpoint {
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true
   def wrapFunction(ctx: ParamContext, delegate: Delegate): Returned = {
-    delegate(Map()) match{
-      case Router.Result.Success(t) => Router.Result.Success(cask.model.Static(t + "/" + ctx.remaining.mkString("/")))
-      case e: Router.Result.Error => e
-    }
+    delegate(Map()).map(t => cask.model.Static(t + "/" + ctx.remaining.mkString("/")))
   }
 
   def wrapPathSegment(s: String): Input = Seq(s)

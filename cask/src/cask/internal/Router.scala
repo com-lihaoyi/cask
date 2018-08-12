@@ -75,19 +75,25 @@ object Router{
     * Represents what comes out of an attempt to invoke an [[EntryPoint]].
     * Could succeed with a value, but could fail in many different ways.
     */
-  sealed trait Result[+T]
+  sealed trait Result[+T]{
+    def map[V](f: T => V): Result[V]
+  }
   object Result{
 
     /**
       * Invoking the [[EntryPoint]] was totally successful, and returned a
       * result
       */
-    case class Success[T](value: T) extends Result[T]
+    case class Success[T](value: T) extends Result[T]{
+      def map[V](f: T => V) = Success(f(value))
+    }
 
     /**
       * Invoking the [[EntryPoint]] was not successful
       */
-    sealed trait Error extends Result[Nothing]
+    sealed trait Error extends Result[Nothing]{
+      def map[V](f: Nothing => V) = this
+    }
 
 
     object Error{
@@ -316,10 +322,8 @@ class Router[C <: Context](val c: C) {
         $argValuesSymbol: Seq[Map[String, Any]],
         $argSigsSymbol: scala.Seq[scala.Seq[cask.internal.Router.ArgSig[Any, _, _, $ctx]]]
       ) =>
-        cask.internal.Router.validate(Seq(..${readArgs.flatten.toList})) match{
-          case cask.internal.Router.Result.Success(Seq(..${argNames.flatten.toList})) =>
-            cask.internal.Router.Result.Success($convertToResultType($methodCall))
-          case x: cask.internal.Router.Result.Error => x
+        cask.internal.Router.validate(Seq(..${readArgs.flatten.toList})).map{
+          case Seq(..${argNames.flatten.toList}) => $convertToResultType($methodCall)
         }
     )
     """
