@@ -1,4 +1,4 @@
-import mill._, scalalib._
+import mill._, scalalib._, publish._
 import ammonite.ops._, ujson.Js
 import $file.ci.upload, $file.ci.version
 import $file.example.compress.build
@@ -20,7 +20,7 @@ import $file.example.todoApi.build
 import $file.example.todoDb.build
 import $file.example.variableRoutes.build
 
-object cask extends ScalaModule{
+object cask extends ScalaModule with PublishModule {
   def scalaVersion = "2.12.6"
   def ivyDeps = Agg(
     ivy"org.scala-lang:scala-reflect:${scalaVersion()}",
@@ -30,6 +30,19 @@ object cask extends ScalaModule{
   def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.1.7")
   def scalacOptions = Seq("-P:acyclic:force")
   def scalacPluginIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.1.7")
+
+  def publishVersion = build.publishVersion()._2
+
+  def pomSettings = PomSettings(
+    description = artifactName(),
+    organization = "com.lihaoyi",
+    url = "https://github.com/lihaoyi/cask",
+    licenses = Seq(License.MIT),
+    versionControl = VersionControl.github("lihaoyi", "cask"),
+    developers = Seq(
+      Developer("lihaoyi", "Li Haoyi","https://github.com/lihaoyi")
+    )
+  )
 
   object test extends Tests{
 
