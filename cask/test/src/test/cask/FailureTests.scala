@@ -12,12 +12,6 @@ object FailureTests extends TestSuite {
   }
   val tests = Tests{
     'mismatchedDecorators - {
-      object Decorated extends cask.MainRoutes{
-        @cask.get("/hello/:world")
-        def hello(world: String)(extra: Int) = world + extra
-        initialize()
-      }
-
       utest.compileError("""
         object Decorated extends cask.MainRoutes{
           @cask.get("/hello/:world")
