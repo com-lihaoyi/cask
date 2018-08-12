@@ -6,14 +6,14 @@ matrix:
   include:
   - stage: build
     env: CI_SCRIPT=ci/test.sh
-    jdk: oraclejdk8
+    jdk: oraclejdk9
 
   - stage: release
     env: CI_SCRIPT="ci/on-master.py ci/release.sh"
-    jdk: oraclejdk8
+    jdk: oraclejdk9
   - stage: release
     env: CI_SCRIPT="ci/on-master.py ci/publish-docs.sh"
-    jdk: oraclejdk8
+    jdk: oraclejdk9
 
 script:
   - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.2.0/0.2.0-36-f8d1e7 && chmod +x ~/bin/mill
