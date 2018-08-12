@@ -2,4 +2,4 @@
 
 set -eux
 
-mill -i __.test.test
+mill -i __.testLocal
