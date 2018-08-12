@@ -243,6 +243,43 @@ This is convenient for cases where you want a set of decorators to apply broadly
 across your web application, and do not want to repeat them over and over at
 every single endpoint.
 
+### Custom Endpoints
+
+$$$endpoints
+
+When you need more flexibility than decorators allow, you can define your own
+custom `cask.Endpoint`s to replace the default set that Cask provides. This
+allows you to
+
+- Change the expected return type of the annotated function, and how allows you
+  to that type gets processed: the above example trivially expects an allows you
+  to `Int` which becomes the status code, but you could make it e.g.
+  automatically serialize returned objects to JSON responses via your favorite
+  library, or serialize them to bytes via protobufs
+
+- Change where the first parameter list's params are taken from: `@cask.get`
+  takes them from query params, `@cask.postForm` takes them from the
+  form-encoded POST body, and you can write your own endpoint to take the params
+  from where-ever you like: perhaps from the request headers, or a protobuf-
+  encoded request body
+
+- Change how parameters are deserialized: e.g. `@cask.postJson` de-serializes
+  parameters using the [uPickle](https://github.com/lihaoyi/upickle) JSON
+  library, and your own custom endpoint could change that to use another library
+  like [Circe](https://github.com/circe/circe) or
+  [Jackson](https://github.com/FasterXML/jackson-module-scala)
+
+- DRY up common sets of decorators: if all your endpoint functions use the same
+  decorators, you can extract that functionality into a single `cask.Endpoint`
+  to do the job.
+
+Generally you should not be writing custom `cask.Endpoint`s every day, but if
+you find yourself trying to standardize on a way of doing things across your web
+application, it might make sense to write a custom endpoint decorator: to DRY
+things up , separate business logic (inside the annotated function) from
+plumbing (in the endpoint function and decorators), and enforcing a standard of
+how endpoint functions are written.
+
 ### Gzip & Deflated Responses
 
 

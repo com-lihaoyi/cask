@@ -7,6 +7,7 @@ import $file.example.compress3.build
 import $file.example.cookies.build
 import $file.example.decorated.build
 import $file.example.decorated2.build
+import $file.example.endpoints.build
 import $file.example.formJsonPost.build
 import $file.example.httpMethods.build
 import $file.example.minimalApplication.build
@@ -17,7 +18,6 @@ import $file.example.staticFiles.build
 import $file.example.todo.build
 import $file.example.todoApi.build
 import $file.example.todoDb.build
-import $file.example.twirl.build
 import $file.example.variableRoutes.build
 
 object cask extends ScalaModule{
@@ -58,6 +58,7 @@ object example extends Module{
   object cookies extends $file.example.cookies.build.AppModule with LocalModule
   object decorated extends $file.example.decorated.build.AppModule with LocalModule
   object decorated2 extends $file.example.decorated2.build.AppModule with LocalModule
+  object endpoints extends $file.example.endpoints.build.AppModule with LocalModule
   object formJsonPost extends $file.example.formJsonPost.build.AppModule with LocalModule
   object httpMethods extends $file.example.httpMethods.build.AppModule with LocalModule
   object minimalApplication extends $file.example.minimalApplication.build.AppModule with LocalModule
@@ -68,7 +69,6 @@ object example extends Module{
   object todo extends $file.example.todo.build.AppModule with LocalModule
   object todoApi extends $file.example.todoApi.build.AppModule with LocalModule
   object todoDb extends $file.example.todoDb.build.AppModule with LocalModule
-  object twirl extends $file.example.twirl.build.AppModule with LocalModule
   object variableRoutes extends $file.example.variableRoutes.build.AppModule with LocalModule
 }
 
@@ -99,6 +99,7 @@ def uploadToGithub(authKey: String) = T.command{
     $file.example.cookies.build.millSourcePath,
     $file.example.decorated.build.millSourcePath,
     $file.example.decorated2.build.millSourcePath,
+    $file.example.endpoints.build.millSourcePath,
     $file.example.formJsonPost.build.millSourcePath,
     $file.example.httpMethods.build.millSourcePath,
     $file.example.minimalApplication.build.millSourcePath,
@@ -109,7 +110,6 @@ def uploadToGithub(authKey: String) = T.command{
     $file.example.todo.build.millSourcePath,
     $file.example.todoApi.build.millSourcePath,
     $file.example.todoDb.build.millSourcePath,
-    $file.example.twirl.build.millSourcePath,
     $file.example.variableRoutes.build.millSourcePath,
   )
   for(example <- examples){
