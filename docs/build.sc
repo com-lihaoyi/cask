@@ -3,7 +3,7 @@ import $ivy.{`org.pegdown:pegdown:1.6.0`, `com.lihaoyi::scalatags:0.6.5`}
 import $file.pageStyles, pageStyles._
 import $file.pages, pages._
 import scalatags.Text.all._
-import $file.^.version
+import $file.^.ci.version
 import ammonite.ops._
 import collection.JavaConverters._
 import org.pegdown.{PegDownProcessor, ToHtmlSerializer, LinkRenderer, Extensions}

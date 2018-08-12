@@ -1,6 +1,6 @@
 import mill._, scalalib._
 import ammonite.ops._, ujson.Js
-import $file.upload, $file.version
+import $file.ci.upload, $file.ci.version
 import $file.example.compress.build
 import $file.example.compress2.build
 import $file.example.compress3.build
