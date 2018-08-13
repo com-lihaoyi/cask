@@ -13,7 +13,7 @@ trait AppModule extends ScalaModule{
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.6.3",
       ivy"com.lihaoyi::requests::0.1.2",
-      ivy"com.github.andyglow::websocket-scala-client:0.2.4"
+      ivy"org.asynchttpclient:async-http-client:2.5.2"
     )
   }
 }

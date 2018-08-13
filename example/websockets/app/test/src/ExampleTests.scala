@@ -1,8 +1,11 @@
 package app
-import com.github.andyglow.websocket.WebsocketClient
+
+import org.asynchttpclient.ws.{WebSocket, WebSocketListener, WebSocketUpgradeHandler}
 import utest._
 
 object ExampleTests extends TestSuite{
+
+
   def test[T](example: cask.main.BaseMain)(f: String => T): T = {
     val server = io.undertow.Undertow.builder
       .addHttpListener(8080, "localhost")
@@ -16,31 +19,98 @@ object ExampleTests extends TestSuite{
   }
 
   val tests = Tests{
-    'VariableRoutes - test(Websockets){ host =>
+    'Websockets - test(Websockets){ host =>
       @volatile var out = List.empty[String]
-      val cli = WebsocketClient[String]("ws://localhost:8080/connect/haoyi") {
-        case str => out = str :: out
+      val client = org.asynchttpclient.Dsl.asyncHttpClient();
+      try{
+
+        // 4. open websocket
+        val ws: WebSocket = client.prepareGet("ws://localhost:8080/connect/haoyi")
+          .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(
+            new WebSocketListener() {
+
+              override def onTextFrame(payload: String, finalFragment: Boolean, rsv: Int) {
+                out = payload :: out
+              }
+
+              def onOpen(websocket: WebSocket) = ()
+
+              def onClose(websocket: WebSocket, code: Int, reason: String) = ()
+
+              def onError(t: Throwable) = ()
+            }).build()
+          ).get()
+
+        // 5. send messages
+        ws.sendTextFrame("hello")
+        ws.sendTextFrame("world")
+        ws.sendTextFrame("")
+        Thread.sleep(100)
+        out ==> List("haoyi world", "haoyi hello")
+
+        var error: String = ""
+        val cli2 = client.prepareGet("ws://localhost:8080/connect/nobody")
+          .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(
+            new WebSocketListener() {
+
+              def onOpen(websocket: WebSocket) = ()
+
+              def onClose(websocket: WebSocket, code: Int, reason: String) = ()
+
+              def onError(t: Throwable) = {
+                error = t.toString
+              }
+            }).build()
+          ).get()
+
+        assert(error.contains("403"))
+
+      } finally{
+        client.close()
       }
+    }
 
-      // 4. open websocket
-      val ws = cli.open()
+    'Websockets1000 - test(Websockets){ host =>
+      @volatile var out = List.empty[String]
+      val client = org.asynchttpclient.Dsl.asyncHttpClient();
+      val ws = Seq.fill(1000)(client.prepareGet("ws://localhost:8080/connect/haoyi")
+        .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(
+          new WebSocketListener() {
 
-      // 5. send messages
-      ws ! "hello"
-      ws ! "world"
-      ws ! ""
-      Thread.sleep(100)
-      out ==> List("haoyi world", "haoyi hello")
+            override def onTextFrame(payload: String, finalFragment: Boolean, rsv: Int) {
+              out = payload :: out
+            }
 
-      val cli2 = WebsocketClient[String]("ws://localhost:8080/connect/nobody") {
-        case str => out = str :: out
+            def onOpen(websocket: WebSocket) = ()
+
+            def onClose(websocket: WebSocket, code: Int, reason: String) = ()
+
+            def onError(t: Throwable) = ()
+          }).build()
+        ).get())
+
+      try{
+        // 4. open websocket
+
+        // 5. send messages
+        ws.foreach{ w =>
+          w.sendTextFrame("hello")
+          Thread.sleep(1)
+        }
+        ws.foreach { w =>
+          w.sendTextFrame("world")
+          Thread.sleep(1)
+        }
+        ws.foreach { w =>
+          w.sendTextFrame("")
+          Thread.sleep(1)
+        }
+        Thread.sleep(1500)
+        out.length ==> 2000
+
+      }finally{
+        client.close()
       }
-
-      val error =
-        try cli2.open()
-        catch{case e: Throwable => e.getMessage}
-
-      assert(error.toString.contains("Invalid handshake response getStatus: 403 Forbidden"))
     }
 
   }
