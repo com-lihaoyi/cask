@@ -40,7 +40,7 @@ val posts = {
           val g = m.group(1)
           val txt = read(ls(pwd/up/'example/g/'app/'src).head).replace("$", "\\$")
           val downloadLink =
-            s"https://github.com/lihaoyi/cask/releases/download/$releaseTag/$label.$g"
+            s"https://github.com/lihaoyi/cask/releases/download/$releaseTag/$label.$g.zip"
 
           s"""
              |```scala
