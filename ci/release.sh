@@ -8,7 +8,7 @@ gpg --import gpg_key
 
 rm gpg_key
 
-mill mill.scalalib.PublishModule/publishAll \
+mill -i mill.scalalib.PublishModule/publishAll \
     lihaoyi:$SONATYPE_PASSWORD \
     $GPG_PASSWORD \
     --signed true \
