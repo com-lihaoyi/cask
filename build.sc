@@ -58,7 +58,7 @@ object cask extends ScalaModule with PublishModule {
 }
 object example extends Module{
   trait LocalModule extends ScalaModule{
-    def ivyDeps = super.ivyDeps().filter(_ != ivy"com.lihaoyi::cask:0.0.3")
+    def ivyDeps = super.ivyDeps().filter(_ != ivy"com.lihaoyi::cask:0.0.4")
 
     override def millSourcePath = super.millSourcePath / "app"
     def moduleDeps = Seq(cask)
