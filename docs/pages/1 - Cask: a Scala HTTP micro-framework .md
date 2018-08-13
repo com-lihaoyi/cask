@@ -137,6 +137,14 @@ If you need to capture the entire sub-path of the request, you can set the flag
 matter). This will make the route match any sub-path of the prefix given to the
 `@cask` decorator, and give you the remainder to use in your endpoint logic.
 
+### Multi-method Routes
+
+$$$httpMethods
+
+Sometimes, you may want to handle multiple kinds of HTTP requests in the same
+endpoint function, e.g. with code that can accept both GETs and POSTs and decide
+what to do in each case. You can use the `@cask.route` annotation to do so
+
 ### Receiving Form-encoded or JSON data
 
 $$$formJsonPost
