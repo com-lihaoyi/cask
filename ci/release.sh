@@ -11,9 +11,9 @@ rm gpg_key
 mill mill.scalalib.PublishModule/publishAll \
     lihaoyi:$SONATYPE_PASSWORD \
     $GPG_PASSWORD \
+    --signed true
     __.publishArtifacts \
-    --release \
-    true
+    --release true
 
 
 mill uploadToGithub $GITHUB_ACCESS_TOKEN
