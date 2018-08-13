@@ -78,8 +78,13 @@ ivy"com.lihaoyi::cask:0.1.0"
 "com.lihaoyi" %% "cask" % "0.1.0"
 ```
 
-Example Projects
-----------------
+Using Cask
+----------
+
+The following examples will walk you through how to use Cask to accomplish tasks
+common to anyone writing a web application. Each example comes with a
+downloadable example project with code and unit tests, which you can use via the
+same `mill -w app.runBackground` or `mill -w app.test` workflows we saw above.
 
 ### Minimal Example
 

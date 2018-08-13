@@ -134,7 +134,7 @@ def uploadToGithub(authKey: String) = T.command{
     )
 
     %%("zip", "-r", f/"out.zip", f/'folder)(T.ctx().dest)
-    upload.apply(f/"out.zip", releaseTag, label + "/" + example.last, authKey)
+    upload.apply(f/"out.zip", releaseTag, label + "/" + example.last + ".zip", authKey)
   }
 }
 
