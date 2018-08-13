@@ -4,7 +4,7 @@ import mill._, scalalib._
 trait AppModule extends ScalaModule{
   def scalaVersion = "2.12.6"
   def ivyDeps = Agg(
-    ivy"com.lihaoyi::cask:0.0.8",
+    ivy"com.lihaoyi::cask:0.0.9",
   )
 
   object test extends Tests{
