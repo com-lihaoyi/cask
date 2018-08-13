@@ -58,7 +58,7 @@ object cask extends ScalaModule with PublishModule {
 }
 object example extends Module{
   trait LocalModule extends ScalaModule{
-    def ivyDeps = super.ivyDeps().filter(_ != ivy"com.lihaoyi::cask:0.0.6")
+    def ivyDeps = super.ivyDeps().filter(_ != ivy"com.lihaoyi::cask:0.0.7")
 
     override def millSourcePath = super.millSourcePath / "app"
     def moduleDeps = Seq(cask)
@@ -127,9 +127,10 @@ def uploadToGithub(authKey: String) = T.command{
   )
   for(example <- examples){
     val f = tmp.dir()
-    cp(example, f/'folder)
+    val last = example.last + "-" + label
+    cp(example, f/last)
     write.over(
-      f/'folder/"cask",
+      f/last/"cask",
       """#!/usr/bin/env bash
         |
         |if [ ! -f out/mill-cask ]; then
@@ -142,14 +143,14 @@ def uploadToGithub(authKey: String) = T.command{
         |"$(pwd)"/out/mill-cask "$@"
       """.stripMargin
     )
-    %%("chmod", "+x", f/'folder/"cask")(f/'folder)
+    %%("chmod", "+x", f/last/"cask")(f/last)
     write.over(
-      f/'folder/"build.sc",
-      read(f/'folder/"build.sc").replace("trait AppModule ", "object app ")
+      f/last/"build.sc",
+      read(f/last/"build.sc").replace("trait AppModule ", "object app ")
     )
 
-    %%("zip", "-r", f/"out.zip", f/'folder)(f/'folder)
-    upload.apply(f/"out.zip", releaseTag, label + "/" + example.last + ".zip", authKey)
+    %%("zip", "-r", f/"out.zip", f/'last)(f)
+    upload.apply(f/"out.zip", releaseTag, last + ".zip", authKey)
   }
 }
 
