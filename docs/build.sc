@@ -125,14 +125,14 @@ val posts = {
         i(
           " Haoyi is a software engineer, an early contributor to ",
           a(href:="http://www.scala-js.org/")("Scala.js"),
-          ", and the author of many open-source Scala tools such as Mill, the ",
+          ", and the author of many open-source Scala tools such as Cask, the ",
           a(href:="lihaoyi.com/Ammonite", "Ammonite REPL"), " and ",
           a(href:="https://github.com/lihaoyi/fastparse", "FastParse"), ". "
         )
       ),
       p(
         i(
-          "If you've enjoy using Mill, or enjoyed using Haoyi's other open ",
+          "If you've enjoy using Cask, or enjoyed using Haoyi's other open ",
           "source libraries, please chip in (or get your Company to chip in!) via ",
           a(href:="https://www.patreon.com/lihaoyi", "Patreon"), " so he can ", "continue his open-source work"
         )

@@ -20,11 +20,10 @@ DSLs or complicated asynchrony.
 Getting Started
 ---------------
 
-The easiest way to begin using Cask is by downloading the
-[Mill](http://www.lihaoyi.com/mill/) example project:
+The easiest way to begin using Cask is by downloading the example project above.
 
-- Unzip one of the example projects available on this page (e.g. above) into a
-  folder. This should give you the following files:
+Unzip one of the example projects available on this page (e.g. above) into a
+folder. This should give you the following files:
 
 ```text
 build.sc

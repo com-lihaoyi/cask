@@ -113,16 +113,16 @@ def navBar(homePage: Boolean, contentHeaders: Seq[(String, Int)], pageHeaders: S
     h1(
       textAlign.center,
       a(
-        img(
-          src := {homePage match{
-            case false => s"../logo-white.svg"
-            case true => "logo-white.svg"
-          }},
-          height := 30,
-          marginTop := -5
-        ),
+//        img(
+//          src := {homePage match{
+//            case false => s"../logo-white.svg"
+//            case true => "logo-white.svg"
+//          }},
+//          height := 30,
+//          marginTop := -5
+//        ),
         color := "#f8f8f8",
-        " Mill",
+        " Cask",
         href := (if (homePage) "" else ".."),
         Styles.subtleLink,
         NarrowStyles.flexFont,
