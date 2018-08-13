@@ -13,14 +13,14 @@ object Websockets extends cask.MainRoutes{
         channel.getReceiveSetter.set(
           new AbstractReceiveListener() {
             override def onFullTextMessage(channel: WebSocketChannel, message: BufferedTextMessage) = {
-              val data = message.getData
-              if (data == "") channel.close()
-              else WebSockets.sendTextBlocking(userName + " " + data, channel)
+              message.getData match{
+                case "" => channel.close()
+                case data => WebSockets.sendTextBlocking(userName + " " + data, channel)
+              }
             }
           }
         )
         channel.resumeReceives()
-
       }
     }
   }

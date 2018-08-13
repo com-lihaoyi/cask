@@ -26,7 +26,7 @@ object JsReader{
     }
   }
 }
-class postJson(val path: String, override val subpath: Boolean = false) extends Endpoint with HttpDecorator{
+class postJson(val path: String, override val subpath: Boolean = false) extends Endpoint{
   type Output = Response
   val methods = Seq("post")
   type Input = ujson.Js.Value

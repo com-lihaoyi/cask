@@ -43,7 +43,7 @@ object FormReader{
     def read(ctx: ParamContext, label: String, input: Seq[FormEntry]) = input.map(_.asInstanceOf[FormFile])
   }
 }
-class postForm(val path: String, override val subpath: Boolean = false) extends Endpoint with HttpDecorator{
+class postForm(val path: String, override val subpath: Boolean = false) extends Endpoint {
   type Output = Response
 
   val methods = Seq("post")

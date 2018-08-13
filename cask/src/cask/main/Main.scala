@@ -53,8 +53,8 @@ abstract class BaseMain{
     )
   }
 
-  def genericWebsocketHandler(exchange0: HttpServerExchange) =
-    hello(exchange0, "websocket", ParamContext(exchange0, _), exchange0.getRequestPath).foreach{ r =>
+  def websocketEndpointHandler(exchange0: HttpServerExchange) =
+    invokeEndpointFunction(exchange0, "websocket", exchange0.getRequestPath).foreach{ r =>
       r.asInstanceOf[WebsocketResult] match{
         case l: WebsocketResult.Listener =>
           io.undertow.Handlers.websocket(l.value).handleRequest(exchange0)
@@ -67,10 +67,9 @@ abstract class BaseMain{
     new HttpHandler() {
       def handleRequest(exchange: HttpServerExchange): Unit = {
         if (exchange.getRequestHeaders.getFirst("Upgrade") == "websocket") {
-
-          genericWebsocketHandler(exchange)
+          websocketEndpointHandler(exchange)
         } else {
-          defaultHttpHandler.handleRequest(exchange)
+          httpEndpointHandler.handleRequest(exchange)
         }
       }
     }
@@ -82,24 +81,24 @@ abstract class BaseMain{
       }
     }
   )
-  def defaultHttpHandler =  new BlockingHandler(
+
+  def httpEndpointHandler =  new BlockingHandler(
     new HttpHandler() {
       def handleRequest(exchange: HttpServerExchange) = {
-        hello(exchange, exchange.getRequestMethod.toString.toLowerCase(), ParamContext(exchange, _), exchange.getRequestPath).foreach{ r =>
+        invokeEndpointFunction(exchange, exchange.getRequestMethod.toString.toLowerCase(), exchange.getRequestPath).foreach{ r =>
           writeResponse(exchange, r.asInstanceOf[Response])
         }
       }
     }
   )
 
-  def hello(exchange0: HttpServerExchange, effectiveMethod: String, ctx0: Seq[String] => ParamContext, path: String) = {
+  def invokeEndpointFunction(exchange0: HttpServerExchange, effectiveMethod: String, path: String) = {
     routeTries(effectiveMethod).lookup(Util.splitPath(path).toList, Map()) match{
       case None =>
         writeResponse(exchange0, handleNotFound())
         None
       case Some(((routes, metadata), extBindings, remaining)) =>
         val ctx = ParamContext(exchange0, remaining)
-        val ctx1 = ctx0(remaining)
         def rec(remaining: List[Decorator],
                 bindings: List[Map[String, Any]]): Router.Result[Any] = try {
           remaining match {
@@ -110,7 +109,7 @@ abstract class BaseMain{
               metadata.endpoint.wrapFunction(ctx, epBindings =>
                 metadata.entryPoint
                   .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
-                  .invoke(routes, ctx1, (epBindings ++ extBindings.mapValues(metadata.endpoint.wrapPathSegment)) :: bindings.reverse)
+                  .invoke(routes, ctx, (epBindings ++ extBindings.mapValues(metadata.endpoint.wrapPathSegment)) :: bindings.reverse)
                   .asInstanceOf[Router.Result[Nothing]]
               )
           }

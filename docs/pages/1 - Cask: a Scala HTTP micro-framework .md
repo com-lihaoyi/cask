@@ -319,6 +319,13 @@ Returning a `cask.Response` immediately closes the websocket connection, and is
 useful if you want to e.g. return a 404 or 403 due to the initial request being
 invalid.
 
+Cask intentionally provides a relatively low-level websocket interface. It
+leaves it up to you to manage open channels, react to incoming messages, or
+pro-actively send them out, mostly using the underlying Undertow webserver
+interface. While Cask does not model streams, backpressure, iteratees, or
+provide any higher level API, it should not be difficult to take the Cask API
+and build whatever higher-level abstractions you prefer to use.
+
 ### TodoMVC Api Server
 
 
@@ -396,9 +403,7 @@ need some low-level functionality not exposed by the Cask API, you can override
 `defaultHandler` to make use of Undertow's own
 [handler API](http://undertow.io/undertow-docs/undertow-docs-2.0.0/index.html#built-in-handlers)
 for customizing your webserver. This allows for things that Cask itself doesn't
-internally support: asynchronous requests & response,
-[Websockets](http://undertow.io/undertow-docs/undertow-docs-2.0.0/index.html#websockets),
-etc.
+internally support.
 
 ### def port: Int = 8080, def host: String = "localhost"
 

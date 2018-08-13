@@ -105,7 +105,7 @@ object ExampleTests extends TestSuite{
           w.sendTextFrame("")
           Thread.sleep(1)
         }
-        Thread.sleep(1500)
+        Thread.sleep(2000)
         out.length ==> 2000
 
       }finally{
