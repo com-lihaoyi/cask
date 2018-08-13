@@ -11,8 +11,8 @@ rm gpg_key
 mill mill.scalalib.PublishModule/publishAll \
     lihaoyi:$SONATYPE_PASSWORD \
     $GPG_PASSWORD \
-    --signed true
-    __.publishArtifacts \
+    --signed true \
+    --publishArtifacts __.publishArtifacts \
     --release true
 
 
