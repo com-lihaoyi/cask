@@ -62,7 +62,7 @@ case class Abort(code: Int) extends Response {
   override def cookies = Nil
 }
 
-case class Static(path: String) extends Response {
+case class StaticFile(path: String) extends Response {
   val relPath = java.nio.file.Paths.get(path)
   val (data0, statusCode0) =
     if (java.nio.file.Files.exists(relPath) && java.nio.file.Files.isRegularFile(relPath)){
@@ -70,6 +70,22 @@ case class Static(path: String) extends Response {
     }else{
       ("": Response.Data, 404)
     }
+  override def data = data0
+
+  override def statusCode = statusCode0
+
+  override def headers = Nil
+
+  override def cookies = Nil
+}
+
+case class StaticResource(path: String, resourceRoot: ClassLoader) extends Response {
+  val relPath = java.nio.file.Paths.get(path)
+  val (data0, statusCode0) = resourceRoot.getResourceAsStream(path) match{
+    case null => ("": Response.Data, 404)
+    case res => (res: Response.Data, 200)
+  }
+
   override def data = data0
 
   override def statusCode = statusCode0

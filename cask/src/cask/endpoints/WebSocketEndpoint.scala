@@ -38,7 +38,7 @@ object WebsocketResult{
   implicit class Listener(val value: WebSocketConnectionCallback) extends WebsocketResult
 }
 
-class websocket(val path: String, subpath: Boolean = false) extends cask.main.BaseEndpoint{
+class websocket(val path: String, override val subpath: Boolean = false) extends cask.main.BaseEndpoint{
   type Output = WebsocketResult
   val methods = Seq("websocket")
   type Input = Seq[String]

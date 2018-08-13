@@ -19,7 +19,10 @@ object ExampleTests extends TestSuite{
   val tests = Tests{
 
     'StaticFiles - test(StaticFiles){ host =>
-      requests.get(s"$host/static/example.txt").text() ==>
+      requests.get(s"$host/static/file/example.txt").text() ==>
+        "the quick brown fox jumps over the lazy dog"
+
+      requests.get(s"$host/static/resource/example.txt").text() ==>
         "the quick brown fox jumps over the lazy dog"
     }
 

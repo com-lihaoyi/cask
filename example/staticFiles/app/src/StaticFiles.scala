@@ -5,8 +5,11 @@ object StaticFiles extends cask.MainRoutes{
     "Hello!"
   }
 
-  @cask.static("/static")
-  def staticRoutes() = "cask/test/resources/cask"
+  @cask.staticFiles("/static/file")
+  def staticFileRoutes() = "app/resources/cask"
+
+  @cask.staticResources("/static/resource")
+  def staticResourceRoutes() = "cask"
 
   initialize()
 }

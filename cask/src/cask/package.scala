@@ -30,7 +30,8 @@ package object cask {
   type post = endpoints.post
   type put = endpoints.put
   type route = endpoints.route
-  type static = endpoints.static
+  type staticFiles = endpoints.staticFiles
+  type staticResources = endpoints.staticResources
   type postJson = endpoints.postJson
   type postForm = endpoints.postForm
 

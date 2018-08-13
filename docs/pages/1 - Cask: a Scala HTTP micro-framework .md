@@ -65,6 +65,15 @@ can run using:
 ./cask -w app.test
 ```
 
+To configure your Cask application to work with IntelliJ, you can use:
+
+```bash
+./cask mill.scalalib.GenIdea/idea
+```
+
+This will need to be re-run when you re-configure your `build.sc` file, e.g.
+when adding additional modules or third-party dependencies.
+
 Cask is just a Scala library, and you can use Cask in any existing Scala project
 via the following coordinates:
 
@@ -188,10 +197,13 @@ ago)
 
 $$$staticFiles
 
-You can ask Cask to serve static files by defining a `@cask.static` endpoint.
+You can ask Cask to serve static files by defining a `@cask.staticFiles` endpoint.
 This will match any subpath of the value returned by the endpoint (e.g. above
 `/static/file.txt`, `/static/folder/file.txt`, etc.) and return the file
 contents from the corresponding file on disk (and 404 otherwise).
+
+Similarly, `@cask.staticResources` attempts to serve a request based on the JVM
+resource path, returning the data if a resource is present and a 404 otherwise.
 
 ### Redirects or Aborts
 
