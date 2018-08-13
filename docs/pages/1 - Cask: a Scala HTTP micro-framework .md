@@ -23,8 +23,6 @@ Getting Started
 The easiest way to begin using Cask is by downloading the
 [Mill](http://www.lihaoyi.com/mill/) example project:
 
-- Install [Mill](http://www.lihaoyi.com/mill/)
-
 - Unzip one of the example projects available on this page (e.g. above) into a
   folder. This should give you the following files:
 
@@ -37,7 +35,7 @@ app/test/src/ExampleTests.scala
 - `cd` into the folder, and run
 
 ```bash
-mill -w app.runBackground
+./cask -w app.runBackground
 ```
 
 This will server up the Cask application on `http://localhost:8080`. You can
@@ -64,7 +62,7 @@ These HTTP calls are part of the test suite for the example project, which you
 can run using:
 
 ```bash
-mill -w app.test
+./cask -w app.test
 ```
 
 Cask is just a Scala library, and you can use Cask in any existing Scala project
@@ -78,13 +76,19 @@ ivy"com.lihaoyi::cask:0.1.0"
 "com.lihaoyi" %% "cask" % "0.1.0"
 ```
 
+The `./cask` command is just a wrapper around the
+[Mill build tool](http://www.lihaoyi.com/mill/); the `build.sc` files you see in
+all examples are Mill build files, and you can use your own installation of Mill
+instead of `./cask` if you wish. All normal Mill commands and functionality
+works for `./cask`.
+
 Using Cask
 ----------
 
 The following examples will walk you through how to use Cask to accomplish tasks
 common to anyone writing a web application. Each example comes with a
 downloadable example project with code and unit tests, which you can use via the
-same `mill -w app.runBackground` or `mill -w app.test` workflows we saw above.
+same `./cask -w app.runBackground` or `./cask -w app.test` workflows we saw above.
 
 ### Minimal Example
 

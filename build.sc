@@ -58,7 +58,7 @@ object cask extends ScalaModule with PublishModule {
 }
 object example extends Module{
   trait LocalModule extends ScalaModule{
-    def ivyDeps = super.ivyDeps().filter(_ != ivy"com.lihaoyi::cask:0.0.5")
+    def ivyDeps = super.ivyDeps().filter(_ != ivy"com.lihaoyi::cask:0.0.6")
 
     override def millSourcePath = super.millSourcePath / "app"
     def moduleDeps = Seq(cask)
@@ -128,6 +128,21 @@ def uploadToGithub(authKey: String) = T.command{
   for(example <- examples){
     val f = tmp.dir()
     cp(example, f/'folder)
+    write.over(
+      f/'folder/"cask",
+      """#!/usr/bin/env bash
+        |
+        |if [ ! -f out/mill-cask ]; then
+        |  echo "Initializing Cask/Mill build tool for the first time"
+        |  mkdir -p out &&
+        |  (echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.2.6/0.2.6) > out/mill-cask
+        |fi
+        |
+        |chmod +x out/mill-cask
+        |"$(pwd)"/out/mill-cask "$@"
+      """.stripMargin
+    )
+    %%("chmod", "+x", f/'folder/"cask")(f/'folder)
     write.over(
       f/'folder/"build.sc",
       read(f/'folder/"build.sc").replace("trait AppModule ", "object app ")

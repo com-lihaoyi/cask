@@ -4,7 +4,7 @@ import mill._, scalalib._
 trait AppModule extends ScalaModule{
   def scalaVersion = "2.12.6"
   def ivyDeps = Agg(
-    ivy"com.lihaoyi::cask:0.0.5",
+    ivy"com.lihaoyi::cask:0.0.6",
     ivy"org.xerial:sqlite-jdbc:3.18.0",
     ivy"io.getquill::quill-jdbc:2.5.4",
     ivy"com.lihaoyi::scalatags:0.6.7",
