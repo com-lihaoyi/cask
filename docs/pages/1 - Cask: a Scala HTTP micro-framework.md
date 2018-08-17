@@ -1,5 +1,8 @@
-[![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 
+
+[![Build Status][travis-badge]][travis-link]
+[![Gitter Chat][gitter-badge]][gitter-link]
+[![Patreon][patreon-badge]][patreon-link]
 
 
 [travis-badge]: https://travis-ci.org/lihaoyi/cask.svg
@@ -90,15 +93,12 @@ all examples are Mill build files, and you can use your own installation of Mill
 instead of `./cask` if you wish. All normal Mill commands and functionality
 works for `./cask`.
 
-Using Cask
-----------
-
 The following examples will walk you through how to use Cask to accomplish tasks
 common to anyone writing a web application. Each example comes with a
 downloadable example project with code and unit tests, which you can use via the
 same `./cask -w app.runBackground` or `./cask -w app.test` workflows we saw above.
 
-### Minimal Example
+## Minimal Example
 
 $$$minimalApplication
 
@@ -133,7 +133,7 @@ $$$minimalApplication2
 You can split up your routes into separate `cask.Routes` objects as makes sense
 and pass them all into `cask.Main`.
 
-### Variable Routes
+## Variable Routes
 
 $$$variableRoutes
 
@@ -149,7 +149,7 @@ If you need to capture the entire sub-path of the request, you can set the flag
 matter). This will make the route match any sub-path of the prefix given to the
 `@cask` decorator, and give you the remainder to use in your endpoint logic.
 
-### Multi-method Routes
+## Multi-method Routes
 
 $$$httpMethods
 
@@ -157,7 +157,7 @@ Sometimes, you may want to handle multiple kinds of HTTP requests in the same
 endpoint function, e.g. with code that can accept both GETs and POSTs and decide
 what to do in each case. You can use the `@cask.route` annotation to do so
 
-### Receiving Form-encoded or JSON data
+## Receiving Form-encoded or JSON data
 
 $$$formJsonPost
 
@@ -182,7 +182,7 @@ deserialization into Scala data-types fails, a 400 response is returned
 automatically with a helpful error message.
 
 
-### Processing Cookies
+## Processing Cookies
 
 $$$cookies
 
@@ -192,7 +192,7 @@ stored by setting the `cookie` attribute in the response, and deleted simply by
 setting `expires = java.time.Instant.EPOCH` (i.e. to have expired a long time
 ago)
 
-### Serving Static Files
+## Serving Static Files
 
 $$$staticFiles
 
@@ -204,7 +204,7 @@ contents from the corresponding file on disk (and 404 otherwise).
 Similarly, `@cask.staticResources` attempts to serve a request based on the JVM
 resource path, returning the data if a resource is present and a 404 otherwise.
 
-### Redirects or Aborts
+## Redirects or Aborts
 
 $$$redirectAbort
 
@@ -212,7 +212,7 @@ Cask provides some convenient helpers `cask.Redirect` and `cask.Abort` which you
 can return; these are simple wrappers around `cask.Request`, and simply set up
 the relevant headers or status code for you.
 
-### HTML Rendering
+## HTML Rendering
 
 Cask doesn't come bundled with HTML templating functionality, but it makes it
 really easy to use community-standard libraries like
@@ -223,7 +223,7 @@ adding the relevant `ivy"com.lihaoyi::scalatags:0.6.7"` dependency to your
 $$$scalatags
 
 
-### Extending Endpoints with Decorators
+## Extending Endpoints with Decorators
 
 
 $$$decorated
@@ -271,7 +271,7 @@ This is convenient for cases where you want a set of decorators to apply broadly
 across your web application, and do not want to repeat them over and over at
 every single endpoint.
 
-### Custom Endpoints
+## Custom Endpoints
 
 $$$endpoints
 
@@ -308,7 +308,7 @@ things up , separate business logic (inside the annotated function) from
 plumbing (in the endpoint function and decorators), and enforcing a standard of
 how endpoint functions are written.
 
-### Gzip & Deflated Responses
+## Gzip & Deflated Responses
 
 
 $$$compress
@@ -327,7 +327,7 @@ Or globally, in your `cask.Main`:
 
 $$$compress3
 
-### Websockets
+## Websockets
 
 $$$websockets
 
@@ -354,7 +354,7 @@ interface. While Cask does not model streams, backpressure, iteratees, or
 provide any higher level API, it should not be difficult to take the Cask API
 and build whatever higher-level abstractions you prefer to use.
 
-### TodoMVC Api Server
+## TodoMVC Api Server
 
 
 $$$todoApi
@@ -367,7 +367,7 @@ etc.. Those can be managed via the normal mechanism for
 [Serving Static Files](#serving-static-files).
 
 
-### TodoMVC Database Integration
+## TodoMVC Database Integration
 
 $$$todoDb
 
@@ -388,7 +388,7 @@ be passed into each endpoint function as an additional parameter list as
 described in
 [Extending Endpoints with Decorators](#extending-endpoints-with-decorators).
 
-### TodoMVC Full Stack Web
+## TodoMVC Full Stack Web
 
 
 The following code snippet is the complete code for a full-stack TodoMVC
@@ -405,51 +405,3 @@ can build upon to create your own Cask web application architected however you
 would like.
 
 $$$todo
-
-Main Customization
-------------------
-
-Apart from the code used to configure and define your routes and endpoints, Cask
-also allows global configuration for things that apply to the entire web server.
-This can be done by overriding the following methods on `cask.Main` or
-`cask.MainRoutes`:
-
-### def debugMode: Boolean = true
-
-Makes the Cask report verbose error messages and stack traces if an endpoint
-fails; useful for debugging, should be disabled for production.
-
-### def main
-
-The cask program entrypoint. By default just spins up a webserver, but you can
-override it to do whatever you like before or after the webserver runs.
-
-### def defaultHandler
-
-Cask is built on top of the [Undertow](http://undertow.io/) web server. If you
-need some low-level functionality not exposed by the Cask API, you can override
-`defaultHandler` to make use of Undertow's own
-[handler API](http://undertow.io/undertow-docs/undertow-docs-2.0.0/index.html#built-in-handlers)
-for customizing your webserver. This allows for things that Cask itself doesn't
-internally support.
-
-### def port: Int = 8080, def host: String = "localhost"
-
-The host & port to attach your webserver to.
-
-### def handleNotFound
-
-The response to serve when the incoming request does not match any of the routes
-or endpoints; defaults to a typical 404
-
-### def handleEndpointError
-
-The response to serve when the incoming request matches a route and endpoint,
-but then fails for other reasons. Defaults to 400 for mismatched or invalid
-endpoint arguments and 500 for exceptions in the endpoint body, and provides
-useful stack traces or metadata for debugging if `debugMode = true`.
-
-### def mainDecorators
-
-Any `cask.Decorator`s that you want to apply to all routes and all endpoints in
-the entire web application

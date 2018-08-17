@@ -53,26 +53,58 @@ abstract class BaseMain{
     )
   }
 
-  def websocketEndpointHandler(exchange0: HttpServerExchange) =
-    invokeEndpointFunction(exchange0, "websocket", exchange0.getRequestPath).foreach{ r =>
-      r.asInstanceOf[WebsocketResult] match{
-        case l: WebsocketResult.Listener =>
-          io.undertow.Handlers.websocket(l.value).handleRequest(exchange0)
-        case r: WebsocketResult.Response =>
-          writeResponseHandler(r).handleRequest(exchange0)
-      }
-    }
 
-  def defaultHandler =
+  def defaultHandler = new BlockingHandler(
     new HttpHandler() {
       def handleRequest(exchange: HttpServerExchange): Unit = {
-        if (exchange.getRequestHeaders.getFirst("Upgrade") == "websocket") {
-          websocketEndpointHandler(exchange)
+        val (effectiveMethod, runner) = if (exchange.getRequestHeaders.getFirst("Upgrade") == "websocket") {
+          "websocket" -> ((r: Any) =>
+            r.asInstanceOf[WebsocketResult] match{
+              case l: WebsocketResult.Listener =>
+                io.undertow.Handlers.websocket(l.value).handleRequest(exchange)
+              case r: WebsocketResult.Response =>
+                writeResponseHandler(r).handleRequest(exchange)
+            }
+            )
         } else {
-          httpEndpointHandler.handleRequest(exchange)
+          exchange.getRequestMethod.toString.toLowerCase() -> ((r: Any) => writeResponse(exchange, r.asInstanceOf[Response]))
         }
+
+        routeTries(effectiveMethod).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match {
+          case None =>
+            writeResponse(exchange, handleNotFound())
+          case Some(((routes, metadata), extBindings, remaining)) =>
+            val ctx = ParamContext(exchange, remaining)
+            def rec(remaining: List[Decorator],
+                    bindings: List[Map[String, Any]]): Router.Result[Any] = try {
+              remaining match {
+                case head :: rest =>
+                  head.wrapFunction(ctx, args => rec(rest, args :: bindings).asInstanceOf[Router.Result[head.Output]])
+
+                case Nil =>
+                  metadata.endpoint.wrapFunction(ctx, epBindings =>
+                    metadata.entryPoint
+                      .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
+                      .invoke(routes, ctx, (epBindings ++ extBindings.mapValues(metadata.endpoint.wrapPathSegment)) :: bindings.reverse)
+                      .asInstanceOf[Router.Result[Nothing]]
+                  )
+              }
+              // Make sure we wrap any exceptions that bubble up from decorator
+              // bodies, so outer decorators do not need to worry about their
+              // delegate throwing on them
+            }catch{case e: Throwable => Router.Result.Error.Exception(e) }
+
+            rec((metadata.decorators ++ routes.decorators ++ mainDecorators).toList, Nil)match{
+              case Router.Result.Success(res) => runner(res)
+              case e: Router.Result.Error =>
+                writeResponse(exchange, handleEndpointError(exchange, routes, metadata, e))
+                None
+            }
+        }
+
       }
     }
+  )
 
   def writeResponseHandler(r: WebsocketResult.Response) = new BlockingHandler(
     new HttpHandler {
@@ -81,52 +113,6 @@ abstract class BaseMain{
       }
     }
   )
-
-  def httpEndpointHandler =  new BlockingHandler(
-    new HttpHandler() {
-      def handleRequest(exchange: HttpServerExchange) = {
-        invokeEndpointFunction(exchange, exchange.getRequestMethod.toString.toLowerCase(), exchange.getRequestPath).foreach{ r =>
-          writeResponse(exchange, r.asInstanceOf[Response])
-        }
-      }
-    }
-  )
-
-  def invokeEndpointFunction(exchange0: HttpServerExchange, effectiveMethod: String, path: String) = {
-    routeTries(effectiveMethod).lookup(Util.splitPath(path).toList, Map()) match{
-      case None =>
-        writeResponse(exchange0, handleNotFound())
-        None
-      case Some(((routes, metadata), extBindings, remaining)) =>
-        val ctx = ParamContext(exchange0, remaining)
-        def rec(remaining: List[Decorator],
-                bindings: List[Map[String, Any]]): Router.Result[Any] = try {
-          remaining match {
-            case head :: rest =>
-              head.wrapFunction(ctx, args => rec(rest, args :: bindings).asInstanceOf[Router.Result[head.Output]])
-
-            case Nil =>
-              metadata.endpoint.wrapFunction(ctx, epBindings =>
-                metadata.entryPoint
-                  .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
-                  .invoke(routes, ctx, (epBindings ++ extBindings.mapValues(metadata.endpoint.wrapPathSegment)) :: bindings.reverse)
-                  .asInstanceOf[Router.Result[Nothing]]
-              )
-          }
-          // Make sure we wrap any exceptions that bubble up from decorator
-          // bodies, so outer decorators do not need to worry about their
-          // delegate throwing on them
-        }catch{case e: Throwable => Router.Result.Error.Exception(e) }
-
-        rec((metadata.decorators ++ routes.decorators ++ mainDecorators).toList, Nil)match{
-          case Router.Result.Success(res) => Some(res)
-          case e: Router.Result.Error =>
-            writeResponse(exchange0, handleEndpointError(exchange0, routes, metadata, e))
-            None
-        }
-    }
-
-  }
 
   def handleEndpointError(exchange: HttpServerExchange,
                           routes: Routes,
