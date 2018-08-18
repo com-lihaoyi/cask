@@ -38,6 +38,5 @@ package object cask {
   type Main = main.Main
   type Decorator = main.Decorator
   type Endpoint = main.Endpoint
-  type BaseDecorator = main.HttpDecorator
 
 }

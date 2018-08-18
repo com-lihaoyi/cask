@@ -1,7 +1,7 @@
 package cask.endpoints
 
 import cask.internal.{Router, Util}
-import cask.main.{Endpoint, HttpDecorator, Routes}
+import cask.main.Endpoint
 import cask.model._
 import io.undertow.server.handlers.form.FormParserFactory
 

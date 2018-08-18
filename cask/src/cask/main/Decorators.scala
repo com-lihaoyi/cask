@@ -5,7 +5,9 @@ import cask.internal.Router.ArgReader
 import cask.model.{Request, Response}
 
 
-trait Endpoint extends BaseEndpoint with HttpDecorator
+trait Endpoint extends BaseEndpoint {
+  type Returned = Router.Result[Response]
+}
 /**
   * Used to annotate a single Cask endpoint function; similar to a [[Decorator]]
   * but with additional metadata and capabilities.
@@ -51,9 +53,6 @@ trait BaseDecorator{
   def wrapFunction(ctx: Request, delegate: Delegate): Returned
   def getParamParser[T](implicit p: InputParser[T]) = p
 }
-trait HttpDecorator extends BaseDecorator{
-  type Returned = Router.Result[Response]
-}
 
 /**
   * A decorator allows you to annotate a function to wrap it, via
@@ -66,8 +65,8 @@ trait HttpDecorator extends BaseDecorator{
   * to `wrapFunction`, which takes a `Map` representing any additional argument
   * lists (if any).
   */
-trait Decorator extends HttpDecorator {
-
+trait Decorator extends BaseDecorator{
+  type Returned = Router.Result[Response]
   type Input = Any
   type Output = Response
   type InputParser[T] = NoOpParser[Input, T]

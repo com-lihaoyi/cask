@@ -5,9 +5,6 @@ import cask.internal.{Router, Util}
 import cask.internal.Util.literalize
 
 object ErrorMsgs {
-
-
-
   def getLeftColWidth(items: Seq[Router.ArgSig[_, _, _,_]]) = {
     items.map(_.name.length + 2) match{
       case Nil => 0

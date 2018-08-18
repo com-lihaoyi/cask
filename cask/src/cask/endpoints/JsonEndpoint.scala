@@ -3,8 +3,7 @@ package cask.endpoints
 import java.io.ByteArrayOutputStream
 
 import cask.internal.{Router, Util}
-import cask.internal.Router.EntryPoint
-import cask.main.{Endpoint, HttpDecorator, Routes}
+import cask.main.Endpoint
 import cask.model.{Request, Response}
 
 

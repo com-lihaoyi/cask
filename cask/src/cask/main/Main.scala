@@ -9,9 +9,21 @@ import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.server.handlers.BlockingHandler
 import io.undertow.util.HttpString
 
+/**
+  * A combination of [[cask.Main]] and [[cask.Routes]], ideal for small
+  * one-file web applications.
+  */
 class MainRoutes extends BaseMain with Routes{
   def allRoutes = Seq(this)
 }
+
+/**
+  * Defines the main entrypoint and configuration of the Cask web application.
+  *
+  * You can pass in an arbitrary number of [[cask.Routes]] objects for it to
+  * serve, and override various properties on [[Main]] in order to configure
+  * application-wide properties.
+  */
 class Main(servers0: Routes*) extends BaseMain{
   def allRoutes = servers0.toSeq
 }
