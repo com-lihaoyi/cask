@@ -2,7 +2,7 @@ package cask.main
 
 import cask.internal.Router
 import cask.internal.Router.ArgReader
-import cask.model.{ParamContext, Response}
+import cask.model.{Request, Response}
 
 
 trait Endpoint extends BaseEndpoint with HttpDecorator
@@ -44,11 +44,11 @@ trait BaseEndpoint extends BaseDecorator{
 
 trait BaseDecorator{
   type Input
-  type InputParser[T] <: ArgReader[Input, T, ParamContext]
+  type InputParser[T] <: ArgReader[Input, T, Request]
   type Output
   type Delegate = Map[String, Input] => Router.Result[Output]
   type Returned <: Router.Result[Any]
-  def wrapFunction(ctx: ParamContext, delegate: Delegate): Returned
+  def wrapFunction(ctx: Request, delegate: Delegate): Returned
   def getParamParser[T](implicit p: InputParser[T]) = p
 }
 trait HttpDecorator extends BaseDecorator{
@@ -73,10 +73,10 @@ trait Decorator extends HttpDecorator {
   type InputParser[T] = NoOpParser[Input, T]
 }
 
-class NoOpParser[Input, T] extends ArgReader[Input, T, ParamContext] {
+class NoOpParser[Input, T] extends ArgReader[Input, T, Request] {
   def arity = 1
 
-  def read(ctx: ParamContext, label: String, input: Input) = input.asInstanceOf[T]
+  def read(ctx: Request, label: String, input: Input) = input.asInstanceOf[T]
 }
 object NoOpParser{
   implicit def instance[Input, T] = new NoOpParser[Input, T]

@@ -1,7 +1,7 @@
 package cask.main
 
 import cask.internal.Router.EntryPoint
-import cask.model.ParamContext
+import cask.model.Request
 
 import scala.reflect.macros.blackbox.Context
 import language.experimental.macros
@@ -43,7 +43,7 @@ object Routes{
           m.asInstanceOf[MethodSymbol],
           weakTypeOf[T],
           q"${annotObjectSyms.head}.convertToResultType",
-          tq"cask.ParamContext",
+          tq"cask.Request",
           annotObjectSyms.map(annotObjectSym => q"$annotObjectSym.getParamParser"),
           annotObjectSyms.map(annotObjectSym => tq"$annotObjectSym.Input")
 

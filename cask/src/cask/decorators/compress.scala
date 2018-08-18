@@ -3,11 +3,11 @@ import java.io.{ByteArrayOutputStream, OutputStream}
 import java.util.zip.{DeflaterOutputStream, GZIPOutputStream}
 
 import cask.internal.Router
-import cask.model.{ParamContext, Response}
+import cask.model.{Request, Response}
 
 import collection.JavaConverters._
 class compress extends cask.Decorator{
-  def wrapFunction(ctx: ParamContext, delegate: Delegate) = {
+  def wrapFunction(ctx: Request, delegate: Delegate) = {
     val acceptEncodings = ctx.exchange.getRequestHeaders.get("Accept-Encoding").asScala.flatMap(_.split(", "))
     delegate(Map()).map{ v =>
       val (newData, newHeaders) = if (acceptEncodings.exists(_.toLowerCase == "gzip")) {

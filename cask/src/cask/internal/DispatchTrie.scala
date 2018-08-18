@@ -36,15 +36,20 @@ object DispatchTrie{
     }else{
       DispatchTrie[T](
         current = terminals.headOption.map(x => x._2 -> x._3),
-        children = continuations.map{ case (k, vs) =>
-          if (!k.startsWith("::")) (k, construct(index + 1, vs))
-          else (k, DispatchTrie(Some(vs.head._2 -> vs.head._3), Map()))
-        }.toMap
+        children = continuations.map{ case (k, vs) => (k, construct(index + 1, vs))}.toMap
       )
     }
   }
 }
 
+/**
+  * A simple Trie that can be compiled from a list of endpoints, to allow
+  * endpoint lookup in O(length-of-request-path) time. Lookup returns the
+  * [[T]] this trie contains, as well as a map of bound wildcards (path
+  * segments starting with `:`) and any remaining un-used path segments
+  * (only when `current._2 == true`, indicating this route allows trailing
+  * segments)
+  */
 case class DispatchTrie[T](current: Option[(T, Boolean)],
                            children: Map[String, DispatchTrie[T]]){
   final def lookup(remainingInput: List[String],

@@ -1,12 +1,11 @@
 package test.cask
 
-import cask.internal.Router
-import cask.model.{ParamContext, Response}
+import cask.model.Request
 import utest._
 
 object FailureTests extends TestSuite {
   class myDecorator extends cask.Decorator {
-    def wrapFunction(ctx: ParamContext, delegate: Delegate): Returned = {
+    def wrapFunction(ctx: Request, delegate: Delegate): Returned = {
       delegate(Map("extra" -> 31337))
     }
   }

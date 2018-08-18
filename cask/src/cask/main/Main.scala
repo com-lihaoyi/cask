@@ -74,7 +74,7 @@ abstract class BaseMain{
           case None =>
             writeResponse(exchange, handleNotFound())
           case Some(((routes, metadata), extBindings, remaining)) =>
-            val ctx = ParamContext(exchange, remaining)
+            val ctx = Request(exchange, remaining)
             def rec(remaining: List[Decorator],
                     bindings: List[Map[String, Any]]): Router.Result[Any] = try {
               remaining match {
@@ -84,7 +84,7 @@ abstract class BaseMain{
                 case Nil =>
                   metadata.endpoint.wrapFunction(ctx, epBindings =>
                     metadata.entryPoint
-                      .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.ParamContext]]
+                      .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.Request]]
                       .invoke(routes, ctx, (epBindings ++ extBindings.mapValues(metadata.endpoint.wrapPathSegment)) :: bindings.reverse)
                       .asInstanceOf[Router.Result[Nothing]]
                   )

@@ -2,10 +2,10 @@ package object cask {
   // model
   type Response = model.Response
   val Response = model.Response
-  type Abort = model.Abort
   val Abort = model.Abort
-  type Redirect = model.Redirect
   val Redirect = model.Redirect
+  val StaticFile = model.StaticFile
+  val StaticResource = model.StaticResource
   type FormEntry = model.FormEntry
   val FormEntry = model.FormEntry
   type FormValue = model.FormValue
@@ -14,12 +14,8 @@ package object cask {
   val FormFile = model.FormFile
   type Cookie = model.Cookie
   val Cookie = model.Cookie
-  type Subpath = model.Subpath
-  val Subpath = model.Subpath
   type Request = model.Request
   val Request = model.Request
-  type ParamContext = model.ParamContext
-  val ParamContext = model.ParamContext
 
   // endpoints
   type websocket = endpoints.websocket

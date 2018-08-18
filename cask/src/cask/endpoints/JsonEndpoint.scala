@@ -5,15 +5,15 @@ import java.io.ByteArrayOutputStream
 import cask.internal.{Router, Util}
 import cask.internal.Router.EntryPoint
 import cask.main.{Endpoint, HttpDecorator, Routes}
-import cask.model.{ParamContext, Response}
+import cask.model.{Request, Response}
 
 
-sealed trait JsReader[T] extends Router.ArgReader[ujson.Js.Value, T, cask.model.ParamContext]
+sealed trait JsReader[T] extends Router.ArgReader[ujson.Js.Value, T, cask.model.Request]
 object JsReader{
   implicit def defaultJsReader[T: upickle.default.Reader] = new JsReader[T]{
     def arity = 1
 
-    def read(ctx: cask.model.ParamContext, label: String, input: ujson.Js.Value): T = {
+    def read(ctx: cask.model.Request, label: String, input: ujson.Js.Value): T = {
       implicitly[upickle.default.Reader[T]].apply(input)
     }
   }
@@ -21,7 +21,7 @@ object JsReader{
   implicit def paramReader[T: ParamReader] = new JsReader[T] {
     override def arity = 0
 
-    override def read(ctx: cask.model.ParamContext, label: String, v: ujson.Js.Value) = {
+    override def read(ctx: cask.model.Request, label: String, v: ujson.Js.Value) = {
       implicitly[ParamReader[T]].read(ctx, label, Nil)
     }
   }
@@ -31,7 +31,7 @@ class postJson(val path: String, override val subpath: Boolean = false) extends 
   val methods = Seq("post")
   type Input = ujson.Js.Value
   type InputParser[T] = JsReader[T]
-  def wrapFunction(ctx: ParamContext,
+  def wrapFunction(ctx: Request,
                        delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
     val obj = for{
       str <-

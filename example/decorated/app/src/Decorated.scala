@@ -4,12 +4,12 @@ object Decorated extends cask.MainRoutes{
     override def toString = "[haoyi]"
   }
   class loggedIn extends cask.Decorator {
-    def wrapFunction(ctx: cask.ParamContext, delegate: Delegate): Returned = {
+    def wrapFunction(ctx: cask.Request, delegate: Delegate): Returned = {
       delegate(Map("user" -> new User()))
     }
   }
   class withExtra extends cask.Decorator {
-    def wrapFunction(ctx: cask.ParamContext, delegate: Delegate): Returned = {
+    def wrapFunction(ctx: cask.Request, delegate: Delegate): Returned = {
       delegate(Map("extra" -> 31337))
     }
   }

@@ -1,25 +1,22 @@
 package cask.endpoints
 
 import cask.internal.Router
-import cask.model.{ParamContext, Subpath}
+import cask.model.Request
 import io.undertow.server.HttpServerExchange
 import io.undertow.websockets.WebSocketConnectionCallback
-trait WebsocketParam[T] extends Router.ArgReader[Seq[String], T, cask.model.ParamContext]
+trait WebsocketParam[T] extends Router.ArgReader[Seq[String], T, cask.model.Request]
 
 object WebsocketParam{
-  class NilParam[T](f: (ParamContext, String) => T) extends WebsocketParam[T]{
+  class NilParam[T](f: (Request, String) => T) extends WebsocketParam[T]{
     def arity = 0
-    def read(ctx: ParamContext, label: String, v: Seq[String]): T = f(ctx, label)
+    def read(ctx: Request, label: String, v: Seq[String]): T = f(ctx, label)
   }
   implicit object HttpExchangeParam extends NilParam[HttpServerExchange](
     (ctx, label) => ctx.exchange
   )
-  implicit object SubpathParam extends NilParam[Subpath](
-    (ctx, label) => new Subpath(ctx.remaining)
-  )
   class SimpleParam[T](f: String => T) extends WebsocketParam[T]{
     def arity = 1
-    def read(ctx: cask.model.ParamContext, label: String, v: Seq[String]): T = f(v.head)
+    def read(ctx: cask.model.Request, label: String, v: Seq[String]): T = f(v.head)
   }
 
   implicit object StringParam extends SimpleParam[String](x => x)
@@ -44,7 +41,7 @@ class websocket(val path: String, override val subpath: Boolean = false) extends
   type Input = Seq[String]
   type InputParser[T] = WebsocketParam[T]
   type Returned = Router.Result[WebsocketResult]
-  def wrapFunction(ctx: ParamContext, delegate: Delegate): Returned = delegate(Map())
+  def wrapFunction(ctx: Request, delegate: Delegate): Returned = delegate(Map())
 
   def wrapPathSegment(s: String): Input = Seq(s)
 

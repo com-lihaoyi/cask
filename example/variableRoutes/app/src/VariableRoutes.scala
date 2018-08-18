@@ -11,8 +11,8 @@ object VariableRoutes extends cask.MainRoutes{
   }
 
   @cask.get("/path", subpath = true)
-  def showSubpath(subPath: cask.Subpath) = {
-    s"Subpath ${subPath.value}"
+  def showSubpath(request: cask.Request) = {
+    s"Subpath ${request.remainingPathSegments}"
   }
 
   initialize()

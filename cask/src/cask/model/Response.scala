@@ -4,22 +4,24 @@ import java.io.{InputStream, OutputStream, OutputStreamWriter}
 
 import cask.internal.Util
 
-
-trait Response{
-  def data: Response.Data
-  def statusCode: Int
-  def headers: Seq[(String, String)]
-  def cookies: Seq[Cookie]
-}
+/**
+  * The basic response returned by a HTTP endpoint.
+  *
+  * Note that [[data]] by default can take in a wide range of types: strings,
+  * bytes, uPickle JSON-convertable types or arbitrary input streams. You can
+  * also construct your own implementations of `Response.Data`.
+  */
+case class Response(
+  data: Response.Data,
+  statusCode: Int,
+  headers: Seq[(String, String)],
+  cookies: Seq[Cookie]
+)
 object Response{
   def apply(data: Data,
             statusCode: Int = 200,
             headers: Seq[(String, String)] = Nil,
-            cookies: Seq[Cookie] = Nil) = Simple(data, statusCode, headers, cookies)
-  case class Simple(data: Data,
-                    statusCode: Int = 200,
-                    headers: Seq[(String, String)] = Nil,
-                    cookies: Seq[Cookie] = Nil) extends Response
+            cookies: Seq[Cookie] = Nil) = new Response(data, statusCode, headers, cookies)
 
   implicit def dataResponse[T](t: T)(implicit c: T => Data) = Response(t)
   trait Data{
@@ -43,59 +45,33 @@ object Response{
     }
   }
 }
-case class Redirect(url: String)  extends Response{
-  override def data = ""
-
-  override def statusCode = 301
-
-  override def headers = Seq("Location" -> url)
-
-  override def cookies = Nil
+object Redirect{
+  def apply(url: String) = Response("", 301, Seq("Location" -> url), Nil)
 }
-case class Abort(code: Int) extends Response {
-  override def data = ""
-
-  override def statusCode = code
-
-  override def headers = Nil
-
-  override def cookies = Nil
+object Abort{
+  def apply(code: Int) = Response("", code, Nil, Nil)
 }
-
-case class StaticFile(path: String) extends Response {
-  val relPath = java.nio.file.Paths.get(path)
-  val (data0, statusCode0) =
-    if (java.nio.file.Files.exists(relPath) && java.nio.file.Files.isRegularFile(relPath)){
-      (java.nio.file.Files.newInputStream(relPath): Response.Data, 200)
-    }else{
-      ("": Response.Data, 404)
-    }
-  override def data = data0
-
-  override def statusCode = statusCode0
-
-  override def headers = Nil
-
-  override def cookies = Nil
-}
-
-case class StaticResource(path: String, resourceRoot: ClassLoader) extends Response {
-  val relPath = java.nio.file.Paths.get(path)
-  val (data0, statusCode0) = resourceRoot.getResourceAsStream(path) match{
-    case null => ("": Response.Data, 404)
-    case res => (res: Response.Data, 200)
+object StaticFile{
+  def apply(path: String) = {
+    val relPath = java.nio.file.Paths.get(path)
+    val (data0, statusCode0) =
+      if (java.nio.file.Files.exists(relPath) && java.nio.file.Files.isRegularFile(relPath)){
+        (java.nio.file.Files.newInputStream(relPath): Response.Data, 200)
+      }else{
+        ("": Response.Data, 404)
+      }
+    Response(data0, statusCode0, Nil, Nil)
   }
-
-  override def data = data0
-
-  override def statusCode = statusCode0
-
-  override def headers = Nil
-
-  override def cookies = Nil
 }
-
-
-
+object StaticResource{
+  def apply(path: String, resourceRoot: ClassLoader) = {
+    val relPath = java.nio.file.Paths.get(path)
+    val (data0, statusCode0) = resourceRoot.getResourceAsStream(path) match{
+      case null => ("": Response.Data, 404)
+      case res => (res: Response.Data, 200)
+    }
+    Response(data0, statusCode0, Nil, Nil)
+  }
+}
 
 

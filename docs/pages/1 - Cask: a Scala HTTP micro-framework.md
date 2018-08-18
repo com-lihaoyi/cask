@@ -81,10 +81,10 @@ via the following coordinates:
 
 ```scala
 // Mill
-ivy"com.lihaoyi::cask:0.1.0"
+ivy"com.lihaoyi::cask:0.1.1"
 
 // SBT
-"com.lihaoyi" %% "cask" % "0.1.0"
+"com.lihaoyi" %% "cask" % "0.1.1"
 ```
 
 The `./cask` command is just a wrapper around the
@@ -233,7 +233,7 @@ You can write extra decorator annotations that stack on top of the existing
 done by implementing the `cask.Decorator` interface and it's `getRawParams`
 function. `getRawParams`:
 
-- Receives a `ParamContext`, which basically gives you full access to the
+- Receives a `Request`, which basically gives you full access to the
   underlying undertow HTTP connection so you can pick out whatever data you
   would like
 
