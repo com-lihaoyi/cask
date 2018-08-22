@@ -1,8 +1,8 @@
 import ammonite.ops.{%%, pwd}
 
 val isMasterCommit = {
-  sys.env.get("TRAVIS_PULL_REQUEST") == Some("false") &&
-    (sys.env.get("TRAVIS_BRANCH") == Some("master") || sys.env("TRAVIS_TAG") != "")
+  sys.env.get("TRAVIS_PULL_REQUEST").contains("false") &&
+    (sys.env.get("TRAVIS_BRANCH").contains("master") || sys.env("TRAVIS_TAG") != "")
 }
 
 def gitHead =
