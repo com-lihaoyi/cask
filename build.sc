@@ -18,6 +18,7 @@ import $file.example.staticFiles.build
 import $file.example.todo.build
 import $file.example.todoApi.build
 import $file.example.todoDb.build
+import $file.example.twirl.build
 import $file.example.variableRoutes.build
 import $file.example.websockets.build
 
@@ -50,7 +51,7 @@ object cask extends ScalaModule with PublishModule {
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.6.3",
-      ivy"com.lihaoyi::requests::0.1.2",
+      ivy"com.lihaoyi::requests::0.1.3",
       ivy"org.xerial:sqlite-jdbc:3.18.0",
       ivy"io.getquill::quill-jdbc:2.5.4"
     )
@@ -80,6 +81,7 @@ object example extends Module{
   object todo extends $file.example.todo.build.AppModule with LocalModule
   object todoApi extends $file.example.todoApi.build.AppModule with LocalModule
   object todoDb extends $file.example.todoDb.build.AppModule with LocalModule
+  object twirl extends $file.example.twirl.build.AppModule with LocalModule
   object variableRoutes extends $file.example.variableRoutes.build.AppModule with LocalModule
   object websockets extends $file.example.websockets.build.AppModule with LocalModule
 }
@@ -122,6 +124,7 @@ def uploadToGithub(authKey: String) = T.command{
     $file.example.todo.build.millSourcePath,
     $file.example.todoApi.build.millSourcePath,
     $file.example.todoDb.build.millSourcePath,
+    $file.example.twirl.build.millSourcePath,
     $file.example.variableRoutes.build.millSourcePath,
     $file.example.websockets.build.millSourcePath,
   )
@@ -136,7 +139,7 @@ def uploadToGithub(authKey: String) = T.command{
         |if [ ! -f out/mill-cask ]; then
         |  echo "Initializing Cask/Mill build tool for the first time"
         |  mkdir -p out &&
-        |  (echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.2.6/0.2.6-13-b9b133) > out/mill-cask
+        |  (echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.2.6/0.2.6-19-807e47) > out/mill-cask
         |fi
         |
         |chmod +x out/mill-cask

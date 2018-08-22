@@ -81,10 +81,10 @@ via the following coordinates:
 
 ```scala
 // Mill
-ivy"com.lihaoyi::cask:0.1.1"
+ivy"com.lihaoyi::cask:0.1.3"
 
 // SBT
-"com.lihaoyi" %% "cask" % "0.1.1"
+"com.lihaoyi" %% "cask" % "0.1.3"
 ```
 
 The `./cask` command is just a wrapper around the
@@ -222,7 +222,22 @@ adding the relevant `ivy"com.lihaoyi::scalatags:0.6.7"` dependency to your
 
 $$$scalatags
 
+If you prefer to use the
+[Twirl](https://www.playframework.com/documentation/2.6.x/ScalaTemplates)
+templating engine, you can use that too:
 
+$$$twirl
+
+With the following `app/views/hello.scala.html`:
+```html
+@(titleTxt: String)
+<html>
+    <body>
+        <h1>@titleTxt</h1>
+        <p>I am cow</p>
+    </body>
+</html>
+```
 ## Extending Endpoints with Decorators
 
 
