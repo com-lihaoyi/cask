@@ -11,7 +11,11 @@ class staticFiles(val path: String) extends Endpoint{
   override def subpath = true
   def wrapFunction(ctx: Request, delegate: Delegate): Returned = {
     delegate(Map()).map(t =>
-      cask.model.StaticFile(t + "/" + ctx.remainingPathSegments.filter(s => s != "." && s != "..").mkString("/"))
+      cask.model.StaticFile(
+        (cask.internal.Util.splitPath(t) ++ ctx.remainingPathSegments)
+          .filter(s => s != "." && s != "..")
+          .mkString("/")
+      )
     )
   }
 
@@ -26,7 +30,12 @@ class staticResources(val path: String, resourceRoot: ClassLoader = getClass.get
   override def subpath = true
   def wrapFunction(ctx: Request, delegate: Delegate): Returned = {
     delegate(Map()).map(t =>
-      cask.model.StaticResource(t + "/" + ctx.remainingPathSegments.filter(s => s != "." && s != "..").mkString("/"), resourceRoot)
+      cask.model.StaticResource(
+        (cask.internal.Util.splitPath(t) ++ ctx.remainingPathSegments)
+          .filter(s => s != "." && s != "..")
+          .mkString("/"),
+        resourceRoot
+      )
     )
   }
 
