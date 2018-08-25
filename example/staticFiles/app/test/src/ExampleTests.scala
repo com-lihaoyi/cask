@@ -24,6 +24,11 @@ object ExampleTests extends TestSuite{
 
       requests.get(s"$host/static/resource/example.txt").text() ==>
         "the quick brown fox jumps over the lazy dog"
+
+      requests.get(s"$host/static/resource2/cask/example.txt").text() ==>
+        "the quick brown fox jumps over the lazy dog"
+
+      requests.get(s"$host/static/file/../../../build.sc").statusCode ==> 404
     }
 
   }

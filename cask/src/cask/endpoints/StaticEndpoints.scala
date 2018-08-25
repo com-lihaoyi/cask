@@ -10,7 +10,9 @@ class staticFiles(val path: String) extends Endpoint{
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true
   def wrapFunction(ctx: Request, delegate: Delegate): Returned = {
-    delegate(Map()).map(t => cask.model.StaticFile(t + "/" + ctx.remainingPathSegments.mkString("/")))
+    delegate(Map()).map(t =>
+      cask.model.StaticFile(t + "/" + ctx.remainingPathSegments.filter(s => s != "." && s != "..").mkString("/"))
+    )
   }
 
   def wrapPathSegment(s: String): Input = Seq(s)
@@ -24,7 +26,7 @@ class staticResources(val path: String, resourceRoot: ClassLoader = getClass.get
   override def subpath = true
   def wrapFunction(ctx: Request, delegate: Delegate): Returned = {
     delegate(Map()).map(t =>
-      cask.model.StaticResource(t + "/" + ctx.remainingPathSegments.mkString("/"), resourceRoot)
+      cask.model.StaticResource(t + "/" + ctx.remainingPathSegments.filter(s => s != "." && s != "..").mkString("/"), resourceRoot)
     )
   }
 
