@@ -139,7 +139,7 @@ def uploadToGithub(authKey: String) = T.command{
         |if [ ! -f out/mill-cask ]; then
         |  echo "Initializing Cask/Mill build tool for the first time"
         |  mkdir -p out &&
-        |  (echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.2.6/0.2.6-19-807e47) > out/mill-cask
+        |  (echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.2.6/0.2.6-27-613878) > out/mill-cask
         |fi
         |
         |chmod +x out/mill-cask
