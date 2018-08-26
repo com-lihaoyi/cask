@@ -31,3 +31,7 @@ complicated asynchrony.
 
 
 - [Documentation](http://www.lihaoyi.com/cask/)
+
+Cask is profiled using the
+[JProfiler Java Profiler](https://www.ej-technologies.com/products/jprofiler/overview.html),
+courtesy of EJ Technologies
