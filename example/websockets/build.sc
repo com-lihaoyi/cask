@@ -4,7 +4,7 @@ import mill._, scalalib._
 trait AppModule extends ScalaModule{
   def scalaVersion = "2.12.6"
   def ivyDeps = Agg(
-    ivy"com.lihaoyi::cask:0.1.1",
+    ivy"com.lihaoyi::cask:0.1.9",
   )
 
   object test extends Tests{
@@ -12,7 +12,7 @@ trait AppModule extends ScalaModule{
 
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.6.3",
-      ivy"com.lihaoyi::requests::0.1.8",
+      ivy"com.lihaoyi::requests::0.1.5",
       ivy"org.asynchttpclient:async-http-client:2.5.2"
     )
   }

@@ -7,7 +7,7 @@ trait AppModule extends ScalaModule with mill.twirllib.TwirlModule{
 
   def generatedSources = T{ Seq(compileTwirl().classes) }
   def ivyDeps = Agg(
-    ivy"com.lihaoyi::cask:0.1.1",
+    ivy"com.lihaoyi::cask:0.1.9",
     ivy"com.lihaoyi::scalatags:0.6.7",
     ivy"com.typesafe.play::twirl-api:${twirlVersion()}",
   )
@@ -17,7 +17,7 @@ trait AppModule extends ScalaModule with mill.twirllib.TwirlModule{
 
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.6.3",
-      ivy"com.lihaoyi::requests::0.1.8",
+      ivy"com.lihaoyi::requests::0.1.5",
     )
   }
 }

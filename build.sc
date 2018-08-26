@@ -51,7 +51,7 @@ object cask extends ScalaModule with PublishModule {
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.6.3",
-      ivy"com.lihaoyi::requests::0.1.8",
+      ivy"com.lihaoyi::requests::0.1.5",
       ivy"org.xerial:sqlite-jdbc:3.18.0",
       ivy"io.getquill::quill-jdbc:2.5.4"
     )
@@ -59,7 +59,7 @@ object cask extends ScalaModule with PublishModule {
 }
 object example extends Module{
   trait LocalModule extends ScalaModule{
-    def ivyDeps = super.ivyDeps().filter(_ != ivy"com.lihaoyi::cask:0.1.1")
+    def ivyDeps = super.ivyDeps().filter(_ != ivy"com.lihaoyi::cask:0.1.9")
 
     override def millSourcePath = super.millSourcePath / "app"
     def moduleDeps = Seq(cask)
