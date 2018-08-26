@@ -54,8 +54,34 @@ object Util {
   def pluralize(s: String, n: Int) = {
     if (n == 1) s else s + "s"
   }
-  def splitPath(p: String) = {
-    p.dropWhile(_ == '/').reverse.dropWhile(_ == '/').reverse.split('/').filter(_.nonEmpty)
+
+  /**
+    * Splits a string into path segments; automatically removes all
+    * leading/trailing slashes, and ignores empty path segments.
+    *
+    * Written imperatively for performance since it's used all over the place.
+    */
+  def splitPath(p: String): IndexedSeq[String] = {
+    val pLength = p.length
+    var i = 0
+    while(i < pLength && p(i) == '/') i += 1
+    var segmentStart = i
+    val out = mutable.ArrayBuffer.empty[String]
+
+    def complete() = {
+      if (i != segmentStart) {
+        val s = p.substring(segmentStart, i)
+        out += s
+      }
+      segmentStart = i + 1
+    }
+
+    while(i < pLength){
+      if (p(i) == '/') complete()
+      i += 1
+    }
+    complete()
+    out
   }
 
   def stackTraceString(e: Throwable) = {

@@ -13,12 +13,16 @@ trait WebEndpoint extends Endpoint{
   type InputParser[T] = QueryParamReader[T]
   def wrapFunction(ctx: Request,
                        delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
-    delegate(
-      ctx.exchange.getQueryParameters
-        .asScala
-        .map{case (k, vs) => (k, vs.asScala.toArray.toSeq)}
-        .toMap
-    )
+
+    val b = Map.newBuilder[String, Seq[String]]
+    val queryParams = ctx.exchange.getQueryParameters
+    for(k <- queryParams.keySet().iterator().asScala){
+      val deque = queryParams.get(k)
+      val arr = new Array[String](deque.size)
+      deque.toArray(arr)
+      b += (k -> (arr: Seq[String]))
+    }
+    delegate(b.result())
   }
   def wrapPathSegment(s: String) = Seq(s)
 }

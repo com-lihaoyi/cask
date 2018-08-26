@@ -2,6 +2,7 @@ package cask.internal
 
 import language.experimental.macros
 import scala.annotation.StaticAnnotation
+import scala.collection.mutable
 import scala.reflect.macros.blackbox.Context
 
 /**
@@ -44,14 +45,25 @@ object Router{
                               argSignatures: Seq[Seq[ArgSig[_, T, _, C]]],
                               doc: Option[String],
                               invoke0: (T, C, Seq[Map[String, Any]], Seq[Seq[ArgSig[Any, _, _, C]]]) => Result[Any]){
+
+    val firstArgs = argSignatures.head
+      .map(x => x.name -> x)
+      .toMap[String, Router.ArgSig[_, T, _, C]]
+
     def invoke(target: T,
                ctx: C,
                paramLists: Seq[Map[String, Any]]): Result[Any] = {
 
-      val unknown = paramLists.head.keySet -- argSignatures.head.map(_.name).toSet
-      val missing = argSignatures.head.filter(as =>
-        as.reads.arity != 0 && !paramLists.head.contains(as.name) && as.default.isEmpty
-      )
+      val missing = mutable.Buffer.empty[Router.ArgSig[_, T, _, C]]
+
+      val unknown = paramLists.head.keys.filter(!firstArgs.contains(_))
+
+      for(k <- firstArgs.keys) {
+        if (!paramLists.head.contains(k)) {
+          val as = firstArgs(k)
+          if (as.reads.arity != 0 && as.default.isEmpty) missing.append(as)
+        }
+      }
 
       if (missing.nonEmpty || unknown.nonEmpty) Result.Error.MismatchedArguments(missing, unknown.toSeq)
       else {
@@ -313,9 +325,9 @@ class Router[C <: Context](val c: C) {
       ${method.name.toString},
       ${argSigs.toList},
       ${methodDoc match{
-      case None => q"scala.None"
-      case Some(s) => q"scala.Some($s)"
-    }},
+        case None => q"scala.None"
+        case Some(s) => q"scala.Some($s)"
+      }},
       (
         $baseArgSym: $curCls,
         $ctxSymbol: $ctx,

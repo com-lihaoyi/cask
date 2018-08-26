@@ -78,26 +78,33 @@ abstract class BaseMain{
                 writeResponseHandler(r).handleRequest(exchange)
             }
             )
-        } else {
-          exchange.getRequestMethod.toString.toLowerCase() -> ((r: Any) => writeResponse(exchange, r.asInstanceOf[Response]))
-        }
+        } else (
+          exchange.getRequestMethod.toString.toLowerCase(),
+          (r: Any) => writeResponse(exchange, r.asInstanceOf[Response])
+        )
 
         routeTries(effectiveMethod).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match {
-          case None =>
-            writeResponse(exchange, handleNotFound())
-          case Some(((routes, metadata), extBindings, remaining)) =>
+          case None => writeResponse(exchange, handleNotFound())
+          case Some(((routes, metadata), routeBindings, remaining)) =>
             val ctx = Request(exchange, remaining)
             def rec(remaining: List[Decorator],
                     bindings: List[Map[String, Any]]): Router.Result[Any] = try {
               remaining match {
                 case head :: rest =>
-                  head.wrapFunction(ctx, args => rec(rest, args :: bindings).asInstanceOf[Router.Result[head.Output]])
+                  head.wrapFunction(
+                    ctx,
+                    args => rec(rest, args :: bindings).asInstanceOf[Router.Result[head.Output]]
+                  )
 
                 case Nil =>
-                  metadata.endpoint.wrapFunction(ctx, epBindings =>
+                  metadata.endpoint.wrapFunction(ctx, endpointBindings =>
                     metadata.entryPoint
                       .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.Request]]
-                      .invoke(routes, ctx, (epBindings ++ extBindings.mapValues(metadata.endpoint.wrapPathSegment)) :: bindings.reverse)
+                      .invoke(
+                        routes, ctx,
+                        (endpointBindings ++ routeBindings.mapValues(metadata.endpoint.wrapPathSegment))
+                        :: bindings.reverse
+                      )
                       .asInstanceOf[Router.Result[Nothing]]
                   )
               }
