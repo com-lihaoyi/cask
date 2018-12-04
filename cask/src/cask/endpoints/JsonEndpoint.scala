@@ -7,20 +7,21 @@ import cask.main.Endpoint
 import cask.model.{Request, Response}
 
 
-sealed trait JsReader[T] extends Router.ArgReader[ujson.Js.Value, T, cask.model.Request]
+sealed trait JsReader[T] extends Router.ArgReader[ujson.Value, T, cask.model.Request]
 object JsReader{
   implicit def defaultJsReader[T: upickle.default.Reader] = new JsReader[T]{
     def arity = 1
 
-    def read(ctx: cask.model.Request, label: String, input: ujson.Js.Value): T = {
-      implicitly[upickle.default.Reader[T]].apply(input)
+    def read(ctx: cask.model.Request, label: String, input: ujson.Value): T = {
+      val reader = implicitly[upickle.default.Reader[T]]
+      upickle.default.read[T](input)(reader)
     }
   }
 
   implicit def paramReader[T: ParamReader] = new JsReader[T] {
     override def arity = 0
 
-    override def read(ctx: cask.model.Request, label: String, v: ujson.Js.Value) = {
+    override def read(ctx: cask.model.Request, label: String, v: ujson.Value) = {
       implicitly[ParamReader[T]].read(ctx, label, Nil)
     }
   }

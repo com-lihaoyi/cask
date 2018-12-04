@@ -27,7 +27,7 @@ object cask extends ScalaModule with PublishModule {
   def ivyDeps = Agg(
     ivy"org.scala-lang:scala-reflect:${scalaVersion()}",
     ivy"io.undertow:undertow-core:2.0.13.Final",
-    ivy"com.lihaoyi::upickle:0.6.6",
+    ivy"com.lihaoyi::upickle:0.7.1",
   )
   def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.1.7")
   def scalacOptions = Seq("-P:acyclic:force")
@@ -50,10 +50,10 @@ object cask extends ScalaModule with PublishModule {
 
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.6.3",
+      ivy"com.lihaoyi::utest::0.6.6",
       ivy"com.lihaoyi::requests::0.1.5",
       ivy"org.xerial:sqlite-jdbc:3.18.0",
-      ivy"io.getquill::quill-jdbc:2.5.4"
+      ivy"io.getquill::quill-jdbc:2.6.0"
     )
   }
 }
