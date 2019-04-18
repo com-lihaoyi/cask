@@ -162,7 +162,7 @@ what to do in each case. You can use the `@cask.route` annotation to do so
 $$$formJsonPost
 
 If you need to handle a JSON-encoded POST request, you can use the
-`@cast.postJson` decorator. This assumes the posted request body is a JSON dict,
+`@cask.postJson` decorator. This assumes the posted request body is a JSON dict,
 and uses its keys to populate the endpoint's parameters, either as raw
 `ujson.Js.Value`s or deserialized into `Seq[Int]`s or other things.
 Deserialization is handled using the
@@ -347,7 +347,7 @@ $$$compress3
 $$$websockets
 
 Cask's Websocket endpoints are very similar to Cask's HTTP endpoints. Annotated
-with `@cask.websocket` instead of `@cask.get` or `@cast.post`, the primary
+with `@cask.websocket` instead of `@cask.get` or `@cask.post`, the primary
 difference is that instead of only returning a `cask.Response`, you now have an
 option of returning a `io.undertow.websockets.WebSocketConnectionCallback`.
 
