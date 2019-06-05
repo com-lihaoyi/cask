@@ -30,7 +30,7 @@ flexibility and ease-of-use to Scala webservers, avoiding cryptic DSLs or
 complicated asynchrony.
 
 
-- [Documentation](http://www.lihaoyi.com/cask/)
+- [Documentation](https://www.lihaoyi.com/cask/)
 
 Cask is profiled using the
 [JProfiler Java Profiler](https://www.ej-technologies.com/products/jprofiler/overview.html),
