@@ -2,10 +2,10 @@ package cask.internal
 import collection.mutable
 object DispatchTrie{
   def construct[T](index: Int,
-                   inputs: Seq[(IndexedSeq[String], T, Boolean)]): DispatchTrie[T] = {
-    val continuations = mutable.Map.empty[String, mutable.Buffer[(IndexedSeq[String], T, Boolean)]]
+                   inputs: collection.Seq[(collection.IndexedSeq[String], T, Boolean)]): DispatchTrie[T] = {
+    val continuations = mutable.Map.empty[String, mutable.Buffer[(collection.IndexedSeq[String], T, Boolean)]]
 
-    val terminals = mutable.Buffer.empty[(IndexedSeq[String], T, Boolean)]
+    val terminals = mutable.Buffer.empty[(collection.IndexedSeq[String], T, Boolean)]
 
     for((path, endPoint, allowSubpath) <- inputs) {
       if (path.length < index) () // do nothing

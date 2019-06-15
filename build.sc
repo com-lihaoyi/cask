@@ -17,21 +17,21 @@ import $file.example.scalatags.build
 import $file.example.staticFiles.build
 import $file.example.todo.build
 import $file.example.todoApi.build
-import $file.example.todoDb.build
+//import $file.example.todoDb.build
 import $file.example.twirl.build
 import $file.example.variableRoutes.build
 import $file.example.websockets.build
 
 object cask extends ScalaModule with PublishModule {
-  def scalaVersion = "2.12.6"
+  def scalaVersion = "2.13.0"
   def ivyDeps = Agg(
     ivy"org.scala-lang:scala-reflect:${scalaVersion()}",
     ivy"io.undertow:undertow-core:2.0.13.Final",
-    ivy"com.lihaoyi::upickle:0.7.1",
+    ivy"com.lihaoyi::upickle:0.7.5",
   )
-  def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.1.7")
+  def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.2.0")
   def scalacOptions = Seq("-P:acyclic:force")
-  def scalacPluginIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.1.7")
+  def scalacPluginIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.2.0")
 
   def publishVersion = build.publishVersion()._2
 
@@ -50,10 +50,10 @@ object cask extends ScalaModule with PublishModule {
 
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.6.6",
-      ivy"com.lihaoyi::requests::0.1.5",
-      ivy"org.xerial:sqlite-jdbc:3.18.0",
-      ivy"io.getquill::quill-jdbc:2.6.0"
+      ivy"com.lihaoyi::utest::0.6.9",
+      ivy"com.lihaoyi::requests::0.2.0",
+//      ivy"org.xerial:sqlite-jdbc:3.18.0",
+//      ivy"io.getquill::quill-jdbc:2.6.0"
     )
   }
 }
@@ -78,9 +78,9 @@ object example extends Module{
   object redirectAbort extends $file.example.redirectAbort.build.AppModule with LocalModule
   object scalatags extends $file.example.scalatags.build.AppModule with LocalModule
   object staticFiles extends $file.example.staticFiles.build.AppModule with LocalModule
-  object todo extends $file.example.todo.build.AppModule with LocalModule
+//  object todo extends $file.example.todo.build.AppModule with LocalModule
   object todoApi extends $file.example.todoApi.build.AppModule with LocalModule
-  object todoDb extends $file.example.todoDb.build.AppModule with LocalModule
+//  object todoDb extends $file.example.todoDb.build.AppModule with LocalModule
   object twirl extends $file.example.twirl.build.AppModule with LocalModule
   object variableRoutes extends $file.example.variableRoutes.build.AppModule with LocalModule
   object websockets extends $file.example.websockets.build.AppModule with LocalModule
@@ -93,17 +93,16 @@ def uploadToGithub(authKey: String) = T.command{
   val (releaseTag, label) = publishVersion()
 
   if (releaseTag == label){
-    scalaj.http.Http("https://api.github.com/repos/lihaoyi/cask/releases")
-      .postData(
-        ujson.write(
-          Js.Obj(
-            "tag_name" -> releaseTag,
-            "name" -> releaseTag
-          )
+    requests.post(
+      "https://api.github.com/repos/lihaoyi/cask/releases",
+      data = ujson.write(
+        Js.Obj(
+          "tag_name" -> releaseTag,
+          "name" -> releaseTag
         )
-      )
-      .header("Authorization", "token " + authKey)
-      .asString
+      ),
+      headers = Seq("Authorization" -> s"token $authKey")
+    )
   }
 
   val examples = Seq(
@@ -121,9 +120,9 @@ def uploadToGithub(authKey: String) = T.command{
     $file.example.redirectAbort.build.millSourcePath,
     $file.example.scalatags.build.millSourcePath,
     $file.example.staticFiles.build.millSourcePath,
-    $file.example.todo.build.millSourcePath,
+//    $file.example.todo.build.millSourcePath,
     $file.example.todoApi.build.millSourcePath,
-    $file.example.todoDb.build.millSourcePath,
+//    $file.example.todoDb.build.millSourcePath,
     $file.example.twirl.build.millSourcePath,
     $file.example.variableRoutes.build.millSourcePath,
     $file.example.websockets.build.millSourcePath,
@@ -139,7 +138,7 @@ def uploadToGithub(authKey: String) = T.command{
         |if [ ! -f out/mill-cask ]; then
         |  echo "Initializing Cask/Mill build tool for the first time"
         |  mkdir -p out &&
-        |  (echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.2.6/0.2.6-27-613878) > out/mill-cask
+        |  (echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.4.1/0.4.1-4-158d11) > out/mill-cask
         |fi
         |
         |chmod +x out/mill-cask

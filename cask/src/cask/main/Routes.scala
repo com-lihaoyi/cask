@@ -12,7 +12,7 @@ object Routes{
                                  entryPoint: EntryPoint[T, _])
   case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
   object RoutesEndpointsMetadata{
-    implicit def initialize[T] = macro initializeImpl[T]
+    implicit def initialize[T]: RoutesEndpointsMetadata[T] = macro initializeImpl[T]
     implicit def initializeImpl[T: c.WeakTypeTag](c: Context): c.Expr[RoutesEndpointsMetadata[T]] = {
       import c.universe._
       val router = new cask.internal.Router[c.type](c)

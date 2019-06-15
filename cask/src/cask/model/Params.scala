@@ -17,10 +17,10 @@ case class Request(exchange: HttpServerExchange, remainingPathSegments: Seq[Stri
     Util.transferTo(data, baos)
     baos.toByteArray
   }
-  lazy val queryParams: Map[String, Seq[String]] = {
+  lazy val queryParams: Map[String, collection.Seq[String]] = {
     exchange.getQueryParameters.asScala.mapValues(_.asScala.toArray.toSeq).toMap
   }
-  lazy val headers: Map[String, Seq[String]] = {
+  lazy val headers: Map[String, collection.Seq[String]] = {
     exchange.getRequestHeaders.asScala
       .map{ header => header.getHeaderName.toString.toLowerCase -> header.asScala }
       .toMap

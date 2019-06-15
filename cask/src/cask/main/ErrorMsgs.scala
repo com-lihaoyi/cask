@@ -44,7 +44,7 @@ object ErrorMsgs {
       for((lhs, rhs) <- args)
         yield {
           val lhsPadded = lhs.padTo(leftColWidth, ' ')
-          val rhsPadded = rhs.lines.mkString("\n")
+          val rhsPadded = rhs.linesIterator.mkString("\n")
           s"$leftIndentStr  $lhsPadded  $rhsPadded"
         }
     val mainDocSuffix = main.doc match{

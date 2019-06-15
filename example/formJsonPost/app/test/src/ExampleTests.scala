@@ -19,7 +19,7 @@ object ExampleTests extends TestSuite{
   val tests = Tests{
     'FormJsonPost - test(FormJsonPost){ host =>
       requests.post(s"$host/json", data = """{"value1": true, "value2": [3]}""").text() ==>
-        "OK true Vector(3)"
+        "OK true List(3)"
 
       requests.post(
         s"$host/form",

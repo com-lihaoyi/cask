@@ -1,14 +1,14 @@
 import mill._, scalalib._
-import $ivy.`com.lihaoyi::mill-contrib-twirllib:0.2.6-27-613878`
+import $ivy.`com.lihaoyi::mill-contrib-twirllib:0.4.1-4-158d11`
 
 trait AppModule extends ScalaModule with mill.twirllib.TwirlModule{
-  def scalaVersion = "2.12.6"
-  def twirlVersion = "1.3.15"
+  def scalaVersion = "2.13.0"
+  def twirlVersion = "1.5.0-M1"
 
   def generatedSources = T{ Seq(compileTwirl().classes) }
   def ivyDeps = Agg(
     ivy"com.lihaoyi::cask:0.1.9",
-    ivy"com.lihaoyi::scalatags:0.6.7",
+    ivy"com.lihaoyi::scalatags:0.7.0",
     ivy"com.typesafe.play::twirl-api:${twirlVersion()}",
   )
 
@@ -16,8 +16,8 @@ trait AppModule extends ScalaModule with mill.twirllib.TwirlModule{
     def testFrameworks = Seq("utest.runner.Framework")
 
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.6.3",
-      ivy"com.lihaoyi::requests::0.1.5",
+      ivy"com.lihaoyi::utest::0.6.9",
+      ivy"com.lihaoyi::requests::0.2.0",
     )
   }
 }

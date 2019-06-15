@@ -162,7 +162,7 @@ what to do in each case. You can use the `@cask.route` annotation to do so
 $$$formJsonPost
 
 If you need to handle a JSON-encoded POST request, you can use the
-`@cast.postJson` decorator. This assumes the posted request body is a JSON dict,
+`@cask.postJson` decorator. This assumes the posted request body is a JSON dict,
 and uses its keys to populate the endpoint's parameters, either as raw
 `ujson.Js.Value`s or deserialized into `Seq[Int]`s or other things.
 Deserialization is handled using the
@@ -217,7 +217,7 @@ the relevant headers or status code for you.
 Cask doesn't come bundled with HTML templating functionality, but it makes it
 really easy to use community-standard libraries like
 [Scalatags](https://github.com/lihaoyi/scalatags) to render your HTML. Simply
-adding the relevant `ivy"com.lihaoyi::scalatags:0.6.7"` dependency to your
+adding the relevant `ivy"com.lihaoyi::scalatags:0.7.0"` dependency to your
 `build.sc` file is enough to render Scalatags templates:
 
 $$$scalatags
@@ -347,7 +347,7 @@ $$$compress3
 $$$websockets
 
 Cask's Websocket endpoints are very similar to Cask's HTTP endpoints. Annotated
-with `@cask.websocket` instead of `@cask.get` or `@cast.post`, the primary
+with `@cask.websocket` instead of `@cask.get` or `@cask.post`, the primary
 difference is that instead of only returning a `cask.Response`, you now have an
 option of returning a `io.undertow.websockets.WebSocketConnectionCallback`.
 
@@ -382,41 +382,61 @@ etc.. Those can be managed via the normal mechanism for
 [Serving Static Files](#serving-static-files).
 
 
-## TodoMVC Database Integration
+<!--## TodoMVC Database Integration-->
 
-$$$todoDb
+<!--$$$todoDb-->
 
-This example demonstrates how to use Cask to write a TodoMVC API server that
-persists it's state in a database rather than in memory. We use the
-[Quill](http://getquill.io/) database access library to write a `@transactional`
-decorator that automatically opens one transaction per call to an endpoint,
-ensuring that database queries are properly committed on success or rolled-back
-on error. Note that because the default database connector propagates its
-transaction context in a thread-local, `@transactional` does not need to pass
-the `ctx` object into each endpoint as an additional parameter list, and so we
-simply leave it out.
+<!--This example demonstrates how to use Cask to write a TodoMVC API server that-->
+<!--persists it's state in a database rather than in memory. We use the-->
+<!--[Quill](http://getquill.io/) database access library to write a `@transactional`-->
+<!--decorator that automatically opens one transaction per call to an endpoint,-->
+<!--ensuring that database queries are properly committed on success or rolled-back-->
+<!--on error. Note that because the default database connector propagates its-->
+<!--transaction context in a thread-local, `@transactional` does not need to pass-->
+<!--the `ctx` object into each endpoint as an additional parameter list, and so we-->
+<!--simply leave it out.-->
 
-While this example is specific to Quill, you can easily modify the
-`@transactional` decorator to make it work with whatever database access library
-you happen to be using. For libraries which need an implicit transaction, it can
-be passed into each endpoint function as an additional parameter list as
-described in
-[Extending Endpoints with Decorators](#extending-endpoints-with-decorators).
+<!--While this example is specific to Quill, you can easily modify the-->
+<!--`@transactional` decorator to make it <!--## TodoMVC Database Integration-->
 
-## TodoMVC Full Stack Web
+<!--$$$todoDb-->
+
+<!--This example demonstrates how to use Cask to write a TodoMVC API server that-->
+<!--persists it's state in a database rather than in memory. We use the-->
+<!--[Quill](http://getquill.io/) database access library to write a `@transactional`-->
+<!--decorator that automatically opens one transaction per call to an endpoint,-->
+<!--ensuring that database queries are properly committed on success or rolled-back-->
+<!--on error. Note that because the default database connector propagates its-->
+<!--transaction context in a thread-local, `@transactional` does not need to pass-->
+<!--the `ctx` object into each endpoint as an additional parameter list, and so we-->
+<!--simply leave it out.-->
+
+<!--While this example is specific to Quill, you can easily modify the-->
+<!--`@transactional` decorator to make it work with whatever database access library-->
+<!--you happen to be using. For libraries which need an implicit transaction, it can-->
+<!--be passed into each endpoint function as an additional parameter list as-->
+<!--described in-->
+<!--[Extending Endpoints with Decorators](#extending-endpoints-with-decorators).-->
+<!--work with whatever database access library-->
+<!--you happen to be using. For libraries which need an implicit transaction, it can-->
+<!--be passed into each endpoint function as an additional parameter list as-->
+<!--described in-->
+<!--[Extending Endpoints with Decorators](#extending-endpoints-with-decorators).-->
+
+<!--## TodoMVC Full Stack Web-->
 
 
-The following code snippet is the complete code for a full-stack TodoMVC
-implementation: including HTML generation for the web UI via
-[Scalatags](https://github.com/lihaoyi/scalatags), Javascript for the
-interactivity, static file serving, and database integration via
-[Quill](https://github.com/getquill/quill). While slightly long, this example
-should give you a tour of all the things you need to know to use Cask.
+<!--The following code snippet is the complete code for a full-stack TodoMVC-->
+<!--implementation: including HTML generation for the web UI via-->
+<!--[Scalatags](https://github.com/lihaoyi/scalatags), Javascript for the-->
+<!--interactivity, static file serving, and database integration via-->
+<!--[Quill](https://github.com/getquill/quill). While slightly long, this example-->
+<!--should give you a tour of all the things you need to know to use Cask.-->
 
-Note that this is a "boring" server-side-rendered webapp with Ajax interactions,
-without any complex front-end frameworks or libraries: it's purpose is to
-demonstrate a simple working web application of using Cask end-to-end, which you
-can build upon to create your own Cask web application architected however you
-would like.
+<!--Note that this is a "boring" server-side-rendered webapp with Ajax interactions,-->
+<!--without any complex front-end frameworks or libraries: it's purpose is to-->
+<!--demonstrate a simple working web application of using Cask end-to-end, which you-->
+<!--can build upon to create your own Cask web application architected however you-->
+<!--would like.-->
 
-$$$todo
+<!--$$$todo-->

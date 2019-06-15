@@ -61,7 +61,7 @@ object Util {
     *
     * Written imperatively for performance since it's used all over the place.
     */
-  def splitPath(p: String): IndexedSeq[String] = {
+  def splitPath(p: String): collection.IndexedSeq[String] = {
     val pLength = p.length
     var i = 0
     while(i < pLength && p(i) == '/') i += 1
@@ -92,7 +92,7 @@ object Util {
     trace.toString
   }
   def softWrap(s: String, leftOffset: Int, maxWidth: Int) = {
-    val oneLine = s.lines.mkString(" ").split(' ')
+    val oneLine = s.linesIterator.mkString(" ").split(' ')
 
     lazy val indent = " " * leftOffset
 

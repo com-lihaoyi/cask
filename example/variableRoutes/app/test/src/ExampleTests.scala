@@ -27,7 +27,7 @@ object ExampleTests extends TestSuite{
 
 
       requests.get(s"$host/post/123?param=xyz&param=abc").text() ==>
-        "Post 123 ArrayBuffer(xyz, abc)"
+        "Post 123 ArraySeq(xyz, abc)"
 
       requests.get(s"$host/post/123").text() ==>
         """Missing argument: (param: Seq[String])

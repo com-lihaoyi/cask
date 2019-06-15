@@ -65,7 +65,7 @@ object Router{
         }
       }
 
-      if (missing.nonEmpty || unknown.nonEmpty) Result.Error.MismatchedArguments(missing, unknown.toSeq)
+      if (missing.nonEmpty || unknown.nonEmpty) Result.Error.MismatchedArguments(missing.toSeq, unknown.toSeq)
       else {
         try invoke0(
           target,

@@ -44,7 +44,7 @@ abstract class BaseMain{
     .map { method =>
       method -> DispatchTrie.construct[(Routes, Routes.EndpointMetadata[_])](0,
         for ((route, metadata) <- routeList if metadata.endpoint.methods.contains(method))
-        yield (Util.splitPath(metadata.endpoint.path): IndexedSeq[String], (route, metadata), metadata.endpoint.subpath)
+        yield (Util.splitPath(metadata.endpoint.path): collection.IndexedSeq[String], (route, metadata), metadata.endpoint.subpath)
       )
     }.toMap
 
