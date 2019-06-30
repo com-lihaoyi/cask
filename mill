@@ -20,6 +20,7 @@ if [ ! -x "$MILL_EXEC_PATH" ] ; then
   MILL_DOWNLOAD_URL="https://github.com/lihaoyi/mill/releases/download/${MILL_VERSION%%-*}/$MILL_VERSION"
   curl --fail -L -o "$DOWNLOAD_FILE" "$MILL_DOWNLOAD_URL"
   chmod +x "$DOWNLOAD_FILE"
+  mkdir -p "$MILL_DOWNLOAD_PATH"
   mv "$DOWNLOAD_FILE" "$MILL_EXEC_PATH"
   unset DOWNLOAD_FILE
   unset MILL_DOWNLOAD_URL
