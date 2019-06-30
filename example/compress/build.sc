@@ -4,6 +4,8 @@ import mill._, scalalib._
 trait AppModule extends ScalaModule{
   def scalaVersion = "2.13.0"
 
+  def ivyDeps = Agg[Dep](
+  )
   object test extends Tests{
     def testFrameworks = Seq("utest.runner.Framework")
 

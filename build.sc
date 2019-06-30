@@ -59,8 +59,6 @@ object cask extends ScalaModule with PublishModule {
 }
 object example extends Module{
   trait LocalModule extends ScalaModule{
-    def ivyDeps = super.ivyDeps().filter(_ != ivy"com.lihaoyi::cask:0.2.1")
-
     override def millSourcePath = super.millSourcePath / "app"
     def moduleDeps = Seq(cask)
   }
@@ -140,9 +138,9 @@ def uploadToGithub(authKey: String) = T.command{
       f / last / "build.sc",
       os.read(f / last / "build.sc")
         .replace("trait AppModule ", "object app ")
-        .replace(
-          "object test",
-          "def ivyDeps = Agg(ivy\"com.lihaoyi::cask:" + releaseTag + "\")\n  object test"
+        .replaceFirst(
+          "def ivyDeps = Agg\\[Dep\\]\\(",
+          "def ivyDeps = Agg(\n    ivy\"com.lihaoyi::cask:" + releaseTag + "\""
         )
     )
 
