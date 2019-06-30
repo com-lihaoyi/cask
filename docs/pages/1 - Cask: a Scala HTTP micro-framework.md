@@ -37,7 +37,7 @@ app/test/src/ExampleTests.scala
 - `cd` into the folder, and run
 
 ```bash
-./cask -w app.runBackground
+./mill -w app.runBackground
 ```
 
 This will server up the Cask application on `http://localhost:8080`. You can
@@ -64,13 +64,13 @@ These HTTP calls are part of the test suite for the example project, which you
 can run using:
 
 ```bash
-./cask -w app.test
+./mill -w app.test
 ```
 
 To configure your Cask application to work with IntelliJ, you can use:
 
 ```bash
-./cask mill.scalalib.GenIdea/idea
+./mill mill.scalalib.GenIdea/idea
 ```
 
 This will need to be re-run when you re-configure your `build.sc` file, e.g.
@@ -87,16 +87,16 @@ ivy"com.lihaoyi::cask:0.1.9"
 "com.lihaoyi" %% "cask" % "0.1.9"
 ```
 
-The `./cask` command is just a wrapper around the
+The `./mill` command is just a wrapper around the
 [Mill build tool](http://www.lihaoyi.com/mill/); the `build.sc` files you see in
 all examples are Mill build files, and you can use your own installation of Mill
-instead of `./cask` if you wish. All normal Mill commands and functionality
-works for `./cask`.
+instead of `./mill` if you wish. All normal Mill commands and functionality
+works for `./mill`.
 
 The following examples will walk you through how to use Cask to accomplish tasks
 common to anyone writing a web application. Each example comes with a
 downloadable example project with code and unit tests, which you can use via the
-same `./cask -w app.runBackground` or `./cask -w app.test` workflows we saw above.
+same `./mill -w app.runBackground` or `./mill -w app.test` workflows we saw above.
 
 ## Minimal Example
 

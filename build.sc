@@ -1,5 +1,5 @@
 import mill._, scalalib._, publish._
-import ammonite.ops._, ujson.Js
+
 import $file.ci.upload, $file.ci.version
 import $file.example.compress.build
 import $file.example.compress2.build
@@ -59,7 +59,7 @@ object cask extends ScalaModule with PublishModule {
 }
 object example extends Module{
   trait LocalModule extends ScalaModule{
-    def ivyDeps = super.ivyDeps().filter(_ != ivy"com.lihaoyi::cask:0.1.9")
+    def ivyDeps = super.ivyDeps().filter(_ != ivy"com.lihaoyi::cask:0.2.1")
 
     override def millSourcePath = super.millSourcePath / "app"
     def moduleDeps = Seq(cask)
@@ -96,7 +96,7 @@ def uploadToGithub(authKey: String) = T.command{
     requests.post(
       "https://api.github.com/repos/lihaoyi/cask/releases",
       data = ujson.write(
-        Js.Obj(
+        ujson.Obj(
           "tag_name" -> releaseTag,
           "name" -> releaseTag
         )
@@ -130,30 +130,25 @@ def uploadToGithub(authKey: String) = T.command{
   for(example <- examples){
     val f = T.ctx().dest
     val last = example.last + "-" + label
-    cp(example, f/last)
-    write.over(
-      f/last/"cask",
-      """#!/usr/bin/env bash
-        |
-        |if [ ! -f out/mill-cask ]; then
-        |  echo "Initializing Cask/Mill build tool for the first time"
-        |  mkdir -p out &&
-        |  (echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.4.1/0.4.1-4-158d11) > out/mill-cask
-        |fi
-        |
-        |chmod +x out/mill-cask
-        |"$(pwd)"/out/mill-cask "$@"
-      """.stripMargin
+    os.copy(example, f / last)
+    os.write.over(
+      f / last / "mill",
+      os.read(os.pwd / "mill")
     )
-    %%("chmod", "+x", f/last/"cask")(f/last)
-    write.over(
-      f/last/"build.sc",
-      read(f/last/"build.sc").replace("trait AppModule ", "object app ")
+    os.proc("chmod", "+x", f/last/"mill").call(f/last)
+    os.write.over(
+      f / last / "build.sc",
+      os.read(f / last / "build.sc")
+        .replace("trait AppModule ", "object app ")
+        .replace(
+          "object test",
+          "def ivyDeps = Agg(ivy\"com.lihaoyi::cask:" + releaseTag + "\")\n  object test"
+        )
     )
 
-    rm(f/"out.zip")
-    %%("zip", "-r", f/"out.zip", last)(f)
-    upload.apply(f/"out.zip", releaseTag, last + ".zip", authKey)
+    os.remove(f / "out.zip")
+    os.proc("zip", "-r", f / "out.zip", last).call(f)
+    upload.apply(f / "out.zip", releaseTag, last + ".zip", authKey)
   }
 }
 

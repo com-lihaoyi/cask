@@ -2,4 +2,4 @@
 
 set -eux
 
-mill -i --disable-ticker __.testLocal
+./mill -i --disable-ticker __.testLocal
