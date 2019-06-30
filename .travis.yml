@@ -5,18 +5,18 @@ dist: trusty
 matrix:
   include:
   - stage: build
-    env: CI_SCRIPT=ci/test.sh
+    script: ci/test.sh
     jdk: oraclejdk9
 
   - stage: build
-    env: CI_SCRIPT=ci/test.sh
+    script: ci/test.sh
     jdk: oraclejdk8
 
   - stage: release
-    env: CI_SCRIPT="ci/on-master.py ci/release.sh"
+    script: "ci/on-master.py ci/release.sh"
     jdk: oraclejdk9
   - stage: release
-    env: CI_SCRIPT="ci/on-master.py ci/publish-docs.sh"
+    script: "ci/on-master.py ci/publish-docs.sh"
     jdk: oraclejdk8
 
 cache:
