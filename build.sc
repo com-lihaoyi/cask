@@ -146,7 +146,7 @@ def uploadToGithub(authKey: String) = T.command{
         )
     )
 
-    os.remove(f / "out.zip")
+    os.remove.all(f / "out.zip")
     os.proc("zip", "-r", f / "out.zip", last).call(f)
     upload.apply(f / "out.zip", releaseTag, last + ".zip", authKey)
   }
