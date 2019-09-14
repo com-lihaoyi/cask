@@ -28,7 +28,7 @@ class Main(servers0: Routes*) extends BaseMain{
   def allRoutes = servers0.toSeq
 }
 abstract class BaseMain{
-  def mainDecorators = Seq.empty[cask.main.Decorator]
+  def mainDecorators = Seq.empty[cask.main.RawDecorator]
   def allRoutes: Seq[Routes]
   def port: Int = 8080
   def host: String = "localhost"
@@ -48,7 +48,7 @@ abstract class BaseMain{
       )
     }.toMap
 
-  def writeResponse(exchange: HttpServerExchange, response: Response) = {
+  def writeResponse(exchange: HttpServerExchange, response: Response.Raw) = {
     response.headers.foreach{case (k, v) =>
       exchange.getResponseHeaders.put(new HttpString(k), v)
     }
@@ -58,7 +58,7 @@ abstract class BaseMain{
     response.data.write(exchange.getOutputStream)
   }
 
-  def handleNotFound(): Response = {
+  def handleNotFound(): Response.Raw = {
     Response(
       s"Error 404: ${Status.codesToStatus(404).reason}",
       statusCode = 404
@@ -68,36 +68,38 @@ abstract class BaseMain{
 
   def defaultHandler = new BlockingHandler(
     new HttpHandler() {
-      def handleRequest(exchange: HttpServerExchange): Unit = {
+      def handleRequest(exchange: HttpServerExchange): Unit = try {
+//        println("Handling Request: " + exchange.getRequestPath)
         val (effectiveMethod, runner) = if (exchange.getRequestHeaders.getFirst("Upgrade") == "websocket") {
           "websocket" -> ((r: Any) =>
             r.asInstanceOf[WebsocketResult] match{
               case l: WebsocketResult.Listener =>
                 io.undertow.Handlers.websocket(l.value).handleRequest(exchange)
-              case r: WebsocketResult.Response =>
+              case r: WebsocketResult.Response[_] =>
                 writeResponseHandler(r).handleRequest(exchange)
             }
-            )
+          )
         } else (
           exchange.getRequestMethod.toString.toLowerCase(),
-          (r: Any) => writeResponse(exchange, r.asInstanceOf[Response])
+          (r: Any) => writeResponse(exchange, r.asInstanceOf[Response.Raw])
         )
 
         routeTries(effectiveMethod).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match {
           case None => writeResponse(exchange, handleNotFound())
           case Some(((routes, metadata), routeBindings, remaining)) =>
             val ctx = Request(exchange, remaining)
-            def rec(remaining: List[Decorator],
+            def rec(remaining: List[RawDecorator],
                     bindings: List[Map[String, Any]]): Router.Result[Any] = try {
               remaining match {
                 case head :: rest =>
                   head.wrapFunction(
                     ctx,
-                    args => rec(rest, args :: bindings).asInstanceOf[Router.Result[head.Output]]
+                    args => rec(rest, args :: bindings)
+                      .asInstanceOf[cask.internal.Router.Result[cask.model.Response.Raw]]
                   )
 
                 case Nil =>
-                  metadata.endpoint.wrapFunction(ctx, endpointBindings =>
+                  metadata.endpoint.wrapFunction(ctx, (endpointBindings: Map[String, Any]) =>
                     metadata.entryPoint
                       .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.Request]]
                       .invoke(
@@ -116,16 +118,21 @@ abstract class BaseMain{
             rec((metadata.decorators ++ routes.decorators ++ mainDecorators).toList, Nil)match{
               case Router.Result.Success(res) => runner(res)
               case e: Router.Result.Error =>
-                writeResponse(exchange, handleEndpointError(exchange, routes, metadata, e))
+                writeResponse(
+                  exchange,
+                  handleEndpointError(exchange, routes, metadata, e).map(Response.Data.StringData)
+                )
                 None
             }
         }
-
+//        println("Completed Request: " + exchange.getRequestPath)
+      }catch{case e: Throwable =>
+          e.printStackTrace()
       }
     }
   )
 
-  def writeResponseHandler(r: WebsocketResult.Response) = new BlockingHandler(
+  def writeResponseHandler(r: WebsocketResult.Response[_]) = new BlockingHandler(
     new HttpHandler {
       def handleRequest(exchange: HttpServerExchange): Unit = {
         writeResponse(exchange, r.value)
@@ -142,15 +149,15 @@ abstract class BaseMain{
       case _: Router.Result.Error.InvalidArguments => 400
       case _: Router.Result.Error.MismatchedArguments => 400
     }
-    Response(
+    val str =
       if (!debugMode) s"Error $statusCode: ${Status.codesToStatus(statusCode).reason}"
       else ErrorMsgs.formatInvokeError(
         routes,
         metadata.entryPoint.asInstanceOf[EntryPoint[cask.main.Routes, _]],
         e
-      ),
-      statusCode = statusCode
-    )
+      )
+    println(str)
+    Response(str, statusCode = statusCode)
 
   }
 

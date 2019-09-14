@@ -1,6 +1,6 @@
 package object cask {
   // model
-  type Response = model.Response
+  type Response[T] = model.Response[T]
   val Response = model.Response
   val Abort = model.Abort
   val Redirect = model.Redirect
@@ -29,6 +29,7 @@ package object cask {
   type staticFiles = endpoints.staticFiles
   type staticResources = endpoints.staticResources
   type postJson = endpoints.postJson
+  type getJson = endpoints.getJson
   type postForm = endpoints.postForm
 
   // main
@@ -36,7 +37,7 @@ package object cask {
   type Routes = main.Routes
   val Routes = main.Routes
   type Main = main.Main
-  type Decorator = main.Decorator
-  type Endpoint = main.Endpoint
+  type RawDecorator = main.RawDecorator
+  type HttpEndpoint[InnerReturned, Input] = main.HttpEndpoint[InnerReturned, Input]
 
 }

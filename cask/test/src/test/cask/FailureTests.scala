@@ -4,8 +4,8 @@ import cask.model.Request
 import utest._
 
 object FailureTests extends TestSuite {
-  class myDecorator extends cask.Decorator {
-    def wrapFunction(ctx: Request, delegate: Delegate): Returned = {
+  class myDecorator extends cask.RawDecorator {
+    def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned = {
       delegate(Map("extra" -> 31337))
     }
   }

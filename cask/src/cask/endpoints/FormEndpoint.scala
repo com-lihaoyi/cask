@@ -1,7 +1,7 @@
 package cask.endpoints
 
 import cask.internal.{Router, Util}
-import cask.main.Endpoint
+import cask.main.HttpEndpoint
 import cask.model._
 import io.undertow.server.handlers.form.FormParserFactory
 
@@ -43,14 +43,13 @@ object FormReader{
     def read(ctx: Request, label: String, input: Seq[FormEntry]) = input.map(_.asInstanceOf[FormFile])
   }
 }
-class postForm(val path: String, override val subpath: Boolean = false) extends Endpoint {
-  type Output = Response
+class postForm(val path: String, override val subpath: Boolean = false)
+  extends HttpEndpoint[Response.Raw, Seq[FormEntry]] {
 
   val methods = Seq("post")
-  type Input = Seq[FormEntry]
   type InputParser[T] = FormReader[T]
   def wrapFunction(ctx: Request,
-                       delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
+                       delegate: Delegate): Router.Result[Response.Raw] = {
     try {
       val formData = FormParserFactory.builder().build().createParser(ctx.exchange).parseBlocking()
       delegate(
@@ -62,11 +61,12 @@ class postForm(val path: String, override val subpath: Boolean = false) extends 
       )
     } catch{case e: Exception =>
       Router.Result.Success(cask.model.Response(
-        "Unable to parse form data: " + e + "\n" + Util.stackTraceString(e)
+        "Unable to parse form data: " + e + "\n" + Util.stackTraceString(e),
+        statusCode = 400
       ))
     }
   }
 
-  def wrapPathSegment(s: String): Input = Seq(FormValue(s, new io.undertow.util.HeaderMap))
+  def wrapPathSegment(s: String): Seq[FormEntry] = Seq(FormValue(s, new io.undertow.util.HeaderMap))
 }
 

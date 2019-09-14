@@ -1,7 +1,7 @@
 package app
 object FormJsonPost extends cask.MainRoutes{
   @cask.postJson("/json")
-  def jsonEndpoint(value1: ujson.Js.Value, value2: Seq[Int]) = {
+  def jsonEndpoint(value1: ujson.Value, value2: Seq[Int]) = {
     "OK " + value1 + " " + value2
   }
 

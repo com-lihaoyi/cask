@@ -4,6 +4,7 @@ import java.io.{InputStream, OutputStream, OutputStreamWriter}
 
 import cask.internal.Util
 
+
 /**
   * The basic response returned by a HTTP endpoint.
   *
@@ -11,25 +12,52 @@ import cask.internal.Util
   * bytes, uPickle JSON-convertable types or arbitrary input streams. You can
   * also construct your own implementations of `Response.Data`.
   */
-case class Response(
-  data: Response.Data,
+case class Response[+T](
+  data: T,
   statusCode: Int,
   headers: Seq[(String, String)],
   cookies: Seq[Cookie]
-)
-object Response{
-  def apply(data: Data,
-            statusCode: Int = 200,
-            headers: Seq[(String, String)] = Nil,
-            cookies: Seq[Cookie] = Nil) = new Response(data, statusCode, headers, cookies)
+){
+  def map[V](f: T => V) = new Response(f(data), statusCode, headers, cookies)
+}
 
-  implicit def dataResponse[T](t: T)(implicit c: T => Data) = Response(t)
+object Response {
+  type Raw = Response[Data]
+  def apply[T](data: T,
+               statusCode: Int = 200,
+               headers: Seq[(String, String)] = Nil,
+               cookies: Seq[Cookie] = Nil) = new Response(data, statusCode, headers, cookies)
   trait Data{
     def write(out: OutputStream): Unit
   }
-  object Data{
+  trait DataCompanion[V]{
+    // Put the implicit constructors for Response[Data] into the `Data` companion
+    // object and all subclasses of `Data`, because for some reason putting them in
+    // the `Response` companion object doesn't work properly. For the same unknown
+    // reasons, we cannot have `dataResponse` and `dataResponse2` take two type
+    // params T and V, and instead have to embed the implicit target type as a
+    // parameter of the enclosing trait
+
+    implicit def dataResponse[T](t: T)(implicit c: T => V): Response[V] = {
+      Response(c(t))
+    }
+
+    implicit def dataResponse2[T](t: Response[T])(implicit c: T => V): Response[V] = {
+      t.map(c(_))
+    }
+  }
+  object Data extends DataCompanion[Data]{
+    implicit class UnitData(s: Unit) extends Data{
+      def write(out: OutputStream) = ()
+    }
     implicit class StringData(s: String) extends Data{
       def write(out: OutputStream) = out.write(s.getBytes)
+    }
+    implicit class NumericData[T: Numeric](s: T) extends Data{
+      def write(out: OutputStream) = out.write(s.toString.getBytes)
+    }
+    implicit class BooleanData(s: Boolean) extends Data{
+      def write(out: OutputStream) = out.write(s.toString.getBytes)
     }
     implicit class BytesData(b: Array[Byte]) extends Data{
       def write(out: OutputStream) = out.write(b)
@@ -37,14 +65,9 @@ object Response{
     implicit class StreamData(b: InputStream) extends Data{
       def write(out: OutputStream) = Util.transferTo(b, out)
     }
-    implicit def JsonResponse[T: upickle.default.Writer](t: T) = new Data{
-      def write(out: OutputStream) = implicitly[upickle.default.Writer[T]].write(
-        new ujson.BaseRenderer(new OutputStreamWriter(out)),
-        t
-      )
-    }
   }
 }
+
 object Redirect{
   def apply(url: String) = Response("", 301, Seq("Location" -> url), Nil)
 }

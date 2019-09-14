@@ -4,7 +4,7 @@ import io.undertow.Undertow
 import utest._
 
 object ExampleTests extends TestSuite{
-  def test[T](example: cask.main.BaseMain)(f: String => T): T = {
+  def withServer[T](example: cask.main.BaseMain)(f: String => T): T = {
     val server = Undertow.builder
       .addHttpListener(8080, "localhost")
       .setHandler(example.defaultHandler)
@@ -17,7 +17,7 @@ object ExampleTests extends TestSuite{
   }
 
   val tests = Tests{
-    'HttpMethods - test(HttpMethods){ host =>
+    test("HttpMethods") - withServer(HttpMethods){ host =>
       requests.post(s"$host/login").text() ==> "do_the_login"
       requests.get(s"$host/login").text() ==> "show_the_login_form"
     }

@@ -4,7 +4,7 @@ import io.undertow.Undertow
 import utest._
 
 object ExampleTests extends TestSuite{
-  def test[T](example: cask.main.BaseMain)(f: String => T): T = {
+  def withServer[T](example: cask.main.BaseMain)(f: String => T): T = {
     val server = Undertow.builder
       .addHttpListener(8080, "localhost")
       .setHandler(example.defaultHandler)
@@ -17,7 +17,7 @@ object ExampleTests extends TestSuite{
   }
 
   val tests = Tests{
-    'Decorated - test(Decorated){ host =>
+    test("Decorated") - withServer(Decorated){ host =>
       requests.get(s"$host/hello/woo").text() ==> "woo31337"
       requests.get(s"$host/internal/boo").text() ==> "boo[haoyi]"
       requests.get(s"$host/internal-extra/goo").text() ==> "goo[haoyi]31337"

@@ -1,7 +1,7 @@
 package app
 import utest._
 object ExampleTests extends TestSuite{
-  def test[T](example: cask.main.BaseMain)(f: String => T): T = {
+  def withServer[T](example: cask.main.BaseMain)(f: String => T): T = {
     val server = io.undertow.Undertow.builder
       .addHttpListener(8080, "localhost")
       .setHandler(example.defaultHandler)
@@ -13,7 +13,7 @@ object ExampleTests extends TestSuite{
     res
   }
   val tests = Tests{
-    'TodoServer - test(TodoServer){ host =>
+    test("TodoServer") - withServer(TodoServer){ host =>
       val page = requests.get(host).text()
       assert(page.contains("What needs to be done?"))
     }

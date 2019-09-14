@@ -1,15 +1,13 @@
 package cask.endpoints
 
-import cask.main.Endpoint
+import cask.main.HttpEndpoint
 import cask.model.Request
 
-class staticFiles(val path: String) extends Endpoint{
-  type Output = String
+class staticFiles(val path: String) extends HttpEndpoint[String, Seq[String]]{
   val methods = Seq("get")
-  type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true
-  def wrapFunction(ctx: Request, delegate: Delegate): Returned = {
+  def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned = {
     delegate(Map()).map(t =>
       cask.model.StaticFile(
         (cask.internal.Util.splitPath(t) ++ ctx.remainingPathSegments)
@@ -19,16 +17,15 @@ class staticFiles(val path: String) extends Endpoint{
     )
   }
 
-  def wrapPathSegment(s: String): Input = Seq(s)
+  def wrapPathSegment(s: String): Seq[String] = Seq(s)
 }
 
-class staticResources(val path: String, resourceRoot: ClassLoader = getClass.getClassLoader) extends Endpoint{
-  type Output = String
+class staticResources(val path: String, resourceRoot: ClassLoader = getClass.getClassLoader)
+  extends HttpEndpoint[String, Seq[String]]{
   val methods = Seq("get")
-  type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true
-  def wrapFunction(ctx: Request, delegate: Delegate): Returned = {
+  def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned = {
     delegate(Map()).map(t =>
       cask.model.StaticResource(
         (cask.internal.Util.splitPath(t) ++ ctx.remainingPathSegments)
@@ -39,5 +36,5 @@ class staticResources(val path: String, resourceRoot: ClassLoader = getClass.get
     )
   }
 
-  def wrapPathSegment(s: String): Input = Seq(s)
+  def wrapPathSegment(s: String): Seq[String] = Seq(s)
 }

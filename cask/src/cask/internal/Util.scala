@@ -7,9 +7,14 @@ import scala.collection.mutable
 import java.io.OutputStream
 
 import scala.annotation.switch
+import scala.concurrent.{ExecutionContext, Future, Promise}
 
 object Util {
-
+  def firstFutureOf[T](futures: Seq[Future[T]])(implicit ec: ExecutionContext) = {
+    val p = Promise[T]
+    futures.foreach(_.foreach(p.trySuccess))
+    p.future
+  }
   /**
     * Convert a string to a C&P-able literal. Basically
     * copied verbatim from the uPickle source code.

@@ -1,11 +1,13 @@
 package cask.endpoints
 
-import java.io.ByteArrayOutputStream
+import java.io.{ByteArrayOutputStream, InputStream, OutputStream, OutputStreamWriter}
 
 import cask.internal.{Router, Util}
-import cask.main.Endpoint
+import cask.main.HttpEndpoint
+import cask.model.Response.DataCompanion
 import cask.model.{Request, Response}
 
+import collection.JavaConverters._
 
 sealed trait JsReader[T] extends Router.ArgReader[ujson.Value, T, cask.model.Request]
 object JsReader{
@@ -26,13 +28,24 @@ object JsReader{
     }
   }
 }
-class postJson(val path: String, override val subpath: Boolean = false) extends Endpoint{
-  type Output = Response
+trait JsonData extends Response.Data
+object JsonData extends DataCompanion[JsonData]{
+  implicit class JsonDataImpl[T: upickle.default.Writer](t: T) extends JsonData{
+    def write(out: OutputStream) = {
+      val writer = new OutputStreamWriter(out)
+      implicitly[upickle.default.Writer[T]].write(new ujson.BaseRenderer(writer), t)
+      writer.flush()
+    }
+  }
+}
+
+class postJson(val path: String, override val subpath: Boolean = false)
+  extends HttpEndpoint[Response[JsonData], ujson.Value]{
   val methods = Seq("post")
-  type Input = ujson.Js.Value
   type InputParser[T] = JsReader[T]
+  override type OuterReturned = Router.Result[Response.Raw]
   def wrapFunction(ctx: Request,
-                       delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
+                   delegate: Delegate): Router.Result[Response.Raw] = {
     val obj = for{
       str <-
         try {
@@ -41,21 +54,38 @@ class postJson(val path: String, override val subpath: Boolean = false) extends 
           Right(new String(boas.toByteArray))
         }
         catch{case e: Throwable => Left(cask.model.Response(
-          "Unable to deserialize input JSON text: " + e + "\n" + Util.stackTraceString(e)
+          "Unable to deserialize input JSON text: " + e + "\n" + Util.stackTraceString(e),
+          statusCode = 400
         ))}
       json <-
         try Right(ujson.read(str))
         catch{case e: Throwable => Left(cask.model.Response(
-          "Input text is invalid JSON: " + e + "\n" + Util.stackTraceString(e)
+          "Input text is invalid JSON: " + e + "\n" + Util.stackTraceString(e),
+          statusCode = 400
         ))}
       obj <-
         try Right(json.obj)
-        catch {case e: Throwable => Left(cask.model.Response("Input JSON must be a dictionary"))}
+        catch {case e: Throwable => Left(cask.model.Response(
+          "Input JSON must be a dictionary",
+          statusCode = 400
+        ))}
     } yield obj.toMap
     obj match{
-      case Left(r) => Router.Result.Success(r)
+      case Left(r) => Router.Result.Success(r.map(Response.Data.StringData))
       case Right(params) => delegate(params)
     }
   }
-  def wrapPathSegment(s: String): Input = ujson.Js.Str(s)
+  def wrapPathSegment(s: String): ujson.Value = ujson.Str(s)
+}
+
+class getJson(val path: String, override val subpath: Boolean = false)
+  extends HttpEndpoint[Response[JsonData], Seq[String]]{
+  val methods = Seq("get")
+  type InputParser[T] = QueryParamReader[T]
+  override type OuterReturned = Router.Result[Response.Raw]
+  def wrapFunction(ctx: Request, delegate: Delegate): Router.Result[Response.Raw] = {
+
+    delegate(WebEndpoint.buildMapFromQueryParams(ctx))
+  }
+  def wrapPathSegment(s: String) = Seq(s)
 }
