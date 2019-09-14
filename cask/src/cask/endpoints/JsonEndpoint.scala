@@ -3,7 +3,7 @@ package cask.endpoints
 import java.io.{ByteArrayOutputStream, InputStream, OutputStream, OutputStreamWriter}
 
 import cask.internal.{Router, Util}
-import cask.main.Endpoint
+import cask.main.HttpEndpoint
 import cask.model.Response.DataCompanion
 import cask.model.{Request, Response}
 
@@ -40,7 +40,7 @@ object JsonData extends DataCompanion[JsonData]{
 }
 
 class postJson(val path: String, override val subpath: Boolean = false)
-  extends Endpoint[Response[JsonData], ujson.Value]{
+  extends HttpEndpoint[Response[JsonData], ujson.Value]{
   val methods = Seq("post")
   type InputParser[T] = JsReader[T]
   override type OuterReturned = Router.Result[Response.Raw]
@@ -79,7 +79,7 @@ class postJson(val path: String, override val subpath: Boolean = false)
 }
 
 class getJson(val path: String, override val subpath: Boolean = false)
-  extends Endpoint[Response[JsonData], Seq[String]]{
+  extends HttpEndpoint[Response[JsonData], Seq[String]]{
   val methods = Seq("get")
   type InputParser[T] = QueryParamReader[T]
   override type OuterReturned = Router.Result[Response.Raw]

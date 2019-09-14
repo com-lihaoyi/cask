@@ -28,7 +28,7 @@ class Main(servers0: Routes*) extends BaseMain{
   def allRoutes = servers0.toSeq
 }
 abstract class BaseMain{
-  def mainDecorators = Seq.empty[cask.main.Decorator]
+  def mainDecorators = Seq.empty[cask.main.RawDecorator]
   def allRoutes: Seq[Routes]
   def port: Int = 8080
   def host: String = "localhost"
@@ -88,7 +88,7 @@ abstract class BaseMain{
           case None => writeResponse(exchange, handleNotFound())
           case Some(((routes, metadata), routeBindings, remaining)) =>
             val ctx = Request(exchange, remaining)
-            def rec(remaining: List[Decorator],
+            def rec(remaining: List[RawDecorator],
                     bindings: List[Map[String, Any]]): Router.Result[Any] = try {
               remaining match {
                 case head :: rest =>

@@ -1,9 +1,9 @@
 package cask.endpoints
 
-import cask.main.Endpoint
+import cask.main.HttpEndpoint
 import cask.model.Request
 
-class staticFiles(val path: String) extends Endpoint[String, Seq[String]]{
+class staticFiles(val path: String) extends HttpEndpoint[String, Seq[String]]{
   val methods = Seq("get")
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true
@@ -21,7 +21,7 @@ class staticFiles(val path: String) extends Endpoint[String, Seq[String]]{
 }
 
 class staticResources(val path: String, resourceRoot: ClassLoader = getClass.getClassLoader)
-  extends Endpoint[String, Seq[String]]{
+  extends HttpEndpoint[String, Seq[String]]{
   val methods = Seq("get")
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true

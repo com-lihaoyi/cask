@@ -6,7 +6,7 @@ import cask.internal.Router
 import cask.model.{Request, Response}
 
 import collection.JavaConverters._
-class compress extends cask.Decorator{
+class compress extends cask.RawDecorator{
   def wrapFunction(ctx: Request, delegate: Delegate) = {
     val acceptEncodings = ctx.exchange.getRequestHeaders.get("Accept-Encoding").asScala.flatMap(_.split(", "))
     delegate(Map()).map{ v =>

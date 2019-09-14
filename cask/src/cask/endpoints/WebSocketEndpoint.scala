@@ -14,7 +14,7 @@ object WebsocketResult{
 }
 
 class websocket(val path: String, override val subpath: Boolean = false)
-  extends cask.main.BaseEndpoint[WebsocketResult, Seq[String]]{
+  extends cask.main.Endpoint[WebsocketResult, Seq[String]]{
   val methods = Seq("websocket")
   type InputParser[T] = QueryParamReader[T]
   type OuterReturned = Router.Result[WebsocketResult]

@@ -1,13 +1,13 @@
 package cask.endpoints
 
 import cask.internal.Router
-import cask.main.Endpoint
+import cask.main.HttpEndpoint
 import cask.model.{Request, Response}
 
 import collection.JavaConverters._
 
 
-trait WebEndpoint extends Endpoint[Response.Raw, Seq[String]]{
+trait WebEndpoint extends HttpEndpoint[Response.Raw, Seq[String]]{
   type InputParser[T] = QueryParamReader[T]
   def wrapFunction(ctx: Request,
                        delegate: Delegate): Router.Result[Response.Raw] = {

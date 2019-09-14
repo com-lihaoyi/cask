@@ -4,20 +4,41 @@ import cask.internal.{Conversion, Router}
 import cask.internal.Router.ArgReader
 import cask.model.{Request, Response}
 
-
 /**
-  * Annotates a Cask endpoint that returns a HTTP [[Response]]; similar to a
-  * [[Decorator]] but with additional metadata and capabilities.
+  * A [[Decorator]] allows you to annotate a function to wrap it, via
+  * `wrapFunction`. You can use this to perform additional validation before or
+  * after the function runs, provide an additional parameter list of params,
+  * open/commit/rollback database transactions before/after the function runs,
+  * or even retrying the wrapped function if it fails.
+  *
+  * Calls to the wrapped function are done on the `delegate` parameter passed
+  * to `wrapFunction`, which takes a `Map` representing any additional argument
+  * lists (if any).
   */
-trait Endpoint[InnerReturned, Input] extends BaseEndpoint[InnerReturned, Input] {
-  type OuterReturned = Router.Result[Response.Raw]
+trait Decorator[InnerReturned, Input]{
+  final type InputTypeAlias = Input
+  type InputParser[T] <: ArgReader[Input, T, Request]
+  final type Delegate = Map[String, Input] => Router.Result[InnerReturned]
+  type OuterReturned <: Router.Result[Any]
+  def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned
+  def getParamParser[T](implicit p: InputParser[T]) = p
 }
 
 /**
-  * An [[Endpoint]] that may return something else than a HTTP response, e.g.
+  * A [[RawDecorator]] is a decorator that operates on the raw request and
+  * response stream, before and after the primary [[Endpoint]] does it's job.
+  */
+trait RawDecorator extends Decorator[Response.Raw, Any]{
+  type OuterReturned = Router.Result[Response.Raw]
+  type InputParser[T] = NoOpParser[Any, T]
+}
+
+
+/**
+  * An [[HttpEndpoint]] that may return something else than a HTTP response, e.g.
   * a websocket endpoint which may instead return a websocket event handler
   */
-trait BaseEndpoint[InnerReturned, Input] extends BaseDecorator[InnerReturned, Input]{
+trait Endpoint[InnerReturned, Input] extends Decorator[InnerReturned, Input]{
   /**
     * What is the path that this particular endpoint matches?
     */
@@ -42,7 +63,7 @@ trait BaseEndpoint[InnerReturned, Input] extends BaseDecorator[InnerReturned, In
   }
 
   /**
-    * [[Endpoint]]s are unique among decorators in that they alone can bind
+    * [[HttpEndpoint]]s are unique among decorators in that they alone can bind
     * path segments to parameters, e.g. binding `/hello/:world` to `(world: Int)`.
     * In order to do so, we need to box up the path segment strings into an
     * [[Input]] so they can later be parsed by [[getParamParser]] into an
@@ -53,32 +74,13 @@ trait BaseEndpoint[InnerReturned, Input] extends BaseDecorator[InnerReturned, In
 }
 
 /**
-  * A [[Decorator]] that may deal with values other than HTTP [[Response]]s
+  * Annotates a Cask endpoint that returns a HTTP [[Response]]; similar to a
+  * [[RawDecorator]] but with additional metadata and capabilities.
   */
-trait BaseDecorator[InnerReturned, Input]{
-  final type InputTypeAlias = Input
-  type InputParser[T] <: ArgReader[Input, T, Request]
-  final type Delegate = Map[String, Input] => Router.Result[InnerReturned]
-  type OuterReturned <: Router.Result[Any]
-  def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned
-  def getParamParser[T](implicit p: InputParser[T]) = p
+trait HttpEndpoint[InnerReturned, Input] extends Endpoint[InnerReturned, Input] {
+  type OuterReturned = Router.Result[Response.Raw]
 }
 
-/**
-  * A decorator allows you to annotate a function to wrap it, via
-  * `wrapFunction`. You can use this to perform additional validation before or
-  * after the function runs, provide an additional parameter list of params,
-  * open/commit/rollback database transactions before/after the function runs,
-  * or even retrying the wrapped function if it fails.
-  *
-  * Calls to the wrapped function are done on the `delegate` parameter passed
-  * to `wrapFunction`, which takes a `Map` representing any additional argument
-  * lists (if any).
-  */
-trait Decorator extends BaseDecorator[Response.Raw, Any]{
-  type OuterReturned = Router.Result[Response.Raw]
-  type InputParser[T] = NoOpParser[Any, T]
-}
 
 class NoOpParser[Input, T] extends ArgReader[Input, T, Request] {
   def arity = 1

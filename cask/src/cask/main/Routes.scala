@@ -7,8 +7,8 @@ import scala.reflect.macros.blackbox.Context
 import language.experimental.macros
 
 object Routes{
-  case class EndpointMetadata[T](decorators: Seq[Decorator],
-                                 endpoint: BaseEndpoint[_, _],
+  case class EndpointMetadata[T](decorators: Seq[RawDecorator],
+                                 endpoint: Endpoint[_, _],
                                  entryPoint: EntryPoint[T, _])
   case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
   object RoutesEndpointsMetadata{
@@ -19,15 +19,15 @@ object Routes{
 
       val routeParts = for{
         m <- c.weakTypeOf[T].members
-        val annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[BaseDecorator[_, _]]).reverse
+        val annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[Decorator[_, _]]).reverse
         if annotations.nonEmpty
       } yield {
-        if(!(annotations.head.tree.tpe <:< weakTypeOf[BaseEndpoint[_, _]])) c.abort(
+        if(!(annotations.head.tree.tpe <:< weakTypeOf[Endpoint[_, _]])) c.abort(
           annotations.head.tree.pos,
           s"Last annotation applied to a function must be an instance of Endpoint, " +
           s"not ${annotations.head.tree.tpe}"
         )
-        val allEndpoints = annotations.filter(_.tree.tpe <:< weakTypeOf[BaseEndpoint[_, _]])
+        val allEndpoints = annotations.filter(_.tree.tpe <:< weakTypeOf[Endpoint[_, _]])
         if(allEndpoints.length > 1) c.abort(
           annotations.head.tree.pos,
           s"You can only apply one Endpoint annotation to a function, not " +
@@ -70,7 +70,7 @@ object Routes{
 
 trait Routes{
 
-  def decorators = Seq.empty[cask.main.Decorator]
+  def decorators = Seq.empty[cask.main.RawDecorator]
   private[this] var metadata0: Routes.RoutesEndpointsMetadata[this.type] = null
   def caskMetadata =
     if (metadata0 != null) metadata0
