@@ -43,8 +43,8 @@ object FormReader{
     def read(ctx: Request, label: String, input: Seq[FormEntry]) = input.map(_.asInstanceOf[FormFile])
   }
 }
-class postForm(val path: String, override val subpath: Boolean = false) extends Endpoint {
-  type InnerReturned = Response.Raw
+class postForm(val path: String, override val subpath: Boolean = false)
+  extends Endpoint[Response.Raw] {
 
   val methods = Seq("post")
   type Input = Seq[FormEntry]

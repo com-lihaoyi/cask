@@ -13,8 +13,8 @@ object WebsocketResult{
   implicit class Listener(val value: WebSocketConnectionCallback) extends WebsocketResult
 }
 
-class websocket(val path: String, override val subpath: Boolean = false) extends cask.main.BaseEndpoint{
-  type InnerReturned = WebsocketResult
+class websocket(val path: String, override val subpath: Boolean = false)
+  extends cask.main.BaseEndpoint[WebsocketResult]{
   val methods = Seq("websocket")
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]

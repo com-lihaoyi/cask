@@ -3,8 +3,7 @@ package cask.endpoints
 import cask.main.Endpoint
 import cask.model.Request
 
-class staticFiles(val path: String) extends Endpoint{
-  type InnerReturned = String
+class staticFiles(val path: String) extends Endpoint[String]{
   val methods = Seq("get")
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
@@ -22,8 +21,8 @@ class staticFiles(val path: String) extends Endpoint{
   def wrapPathSegment(s: String): Input = Seq(s)
 }
 
-class staticResources(val path: String, resourceRoot: ClassLoader = getClass.getClassLoader) extends Endpoint{
-  type InnerReturned = String
+class staticResources(val path: String, resourceRoot: ClassLoader = getClass.getClassLoader)
+  extends Endpoint[String]{
   val methods = Seq("get")
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]

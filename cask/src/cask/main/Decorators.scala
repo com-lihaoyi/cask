@@ -9,7 +9,7 @@ import cask.model.{Request, Response}
   * Annotates a Cask endpoint that returns a HTTP [[Response]]; similar to a
   * [[Decorator]] but with additional metadata and capabilities.
   */
-trait Endpoint extends BaseEndpoint {
+trait Endpoint[InnerReturned] extends BaseEndpoint[InnerReturned] {
   type OuterReturned = Router.Result[Response.Raw]
 }
 
@@ -17,7 +17,7 @@ trait Endpoint extends BaseEndpoint {
   * An [[Endpoint]] that may return something else than a HTTP response, e.g.
   * a websocket endpoint which may instead return a websocket event handler
   */
-trait BaseEndpoint extends BaseDecorator{
+trait BaseEndpoint[InnerReturned] extends BaseDecorator[InnerReturned]{
   /**
     * What is the path that this particular endpoint matches?
     */
@@ -55,10 +55,9 @@ trait BaseEndpoint extends BaseDecorator{
 /**
   * A [[Decorator]] that may deal with values other than HTTP [[Response]]s
   */
-trait BaseDecorator{
+trait BaseDecorator[InnerReturned]{
   type Input
   type InputParser[T] <: ArgReader[Input, T, Request]
-  type InnerReturned
   type Delegate = Map[String, Input] => Router.Result[InnerReturned]
   type OuterReturned <: Router.Result[Any]
   def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned
@@ -76,10 +75,9 @@ trait BaseDecorator{
   * to `wrapFunction`, which takes a `Map` representing any additional argument
   * lists (if any).
   */
-trait Decorator extends BaseDecorator{
+trait Decorator extends BaseDecorator[Response.Raw]{
   type OuterReturned = Router.Result[Response.Raw]
   type Input = Any
-  type InnerReturned = Response.Raw
   type InputParser[T] = NoOpParser[Input, T]
 }
 

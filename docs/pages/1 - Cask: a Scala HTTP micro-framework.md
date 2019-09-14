@@ -162,13 +162,13 @@ what to do in each case. You can use the `@cask.route` annotation to do so
 $$$formJsonPost
 
 If you need to handle a JSON-encoded POST request, you can use the
-`@cask.postJson` decorator. This assumes the posted request body is a JSON dict,
-and uses its keys to populate the endpoint's parameters, either as raw
-`ujson.Js.Value`s or deserialized into `Seq[Int]`s or other things.
-Deserialization is handled using the
-[uPickle](https://github.com/lihaoyi/upickle) JSON library, though you could
-write your own version of `postJson` to work with any other JSON library of your
-choice.
+`@cask.postJson` decorator. This assumes the posted request body is a
+JSON dict, and uses its keys to populate the endpoint's parameters,
+either as raw `ujson.Value`s or deserialized into `Seq[Int]`s or other
+things. Deserialization is handled using the
+[uPickle](https://github.com/lihaoyi/upickle) JSON library, though you
+could write your own version of `postJson` to work with any other JSON
+library of your choice.
 
 Similarly, you can mark endpoints as `@cask.postForm`, in which case the
 endpoints params will be taken from the form-encoded POST body either raw (as

@@ -39,8 +39,8 @@ object JsonData extends DataCompanion[JsonData]{
   }
 }
 
-class postJson(val path: String, override val subpath: Boolean = false) extends Endpoint{
-  type InnerReturned = Response[JsonData]
+class postJson(val path: String, override val subpath: Boolean = false)
+  extends Endpoint[Response[JsonData]]{
   val methods = Seq("post")
   type Input = ujson.Value
   type InputParser[T] = JsReader[T]
@@ -79,8 +79,8 @@ class postJson(val path: String, override val subpath: Boolean = false) extends 
   def wrapPathSegment(s: String): Input = ujson.Str(s)
 }
 
-class getJson(val path: String, override val subpath: Boolean = false) extends Endpoint{
-  type InnerReturned = Response[JsonData]
+class getJson(val path: String, override val subpath: Boolean = false)
+  extends Endpoint[Response[JsonData]]{
   val methods = Seq("get")
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]

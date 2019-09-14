@@ -38,6 +38,6 @@ package object cask {
   val Routes = main.Routes
   type Main = main.Main
   type Decorator = main.Decorator
-  type Endpoint = main.Endpoint
+  type Endpoint[InnerReturned] = main.Endpoint[InnerReturned]
 
 }

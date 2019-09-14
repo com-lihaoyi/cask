@@ -94,7 +94,8 @@ abstract class BaseMain{
                 case head :: rest =>
                   head.wrapFunction(
                     ctx,
-                    args => rec(rest, args :: bindings).asInstanceOf[Router.Result[head.InnerReturned]]
+                    args => rec(rest, args :: bindings)
+                      .asInstanceOf[cask.internal.Router.Result[cask.model.Response.Raw]]
                   )
 
                 case Nil =>
