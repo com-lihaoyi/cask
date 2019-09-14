@@ -1,6 +1,6 @@
 package cask.main
 
-import cask.endpoints.WebsocketResult
+import cask.endpoints.{WebsocketResult, WsHandler}
 import cask.model._
 import cask.internal.Router.EntryPoint
 import cask.internal.{DispatchTrie, Router, Util}
@@ -73,6 +73,8 @@ abstract class BaseMain{
         val (effectiveMethod, runner) = if (exchange.getRequestHeaders.getFirst("Upgrade") == "websocket") {
           "websocket" -> ((r: Any) =>
             r.asInstanceOf[WebsocketResult] match{
+              case l: WsHandler =>
+                io.undertow.Handlers.websocket(l).handleRequest(exchange)
               case l: WebsocketResult.Listener =>
                 io.undertow.Handlers.websocket(l.value).handleRequest(exchange)
               case r: WebsocketResult.Response[_] =>

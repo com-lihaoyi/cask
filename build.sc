@@ -21,6 +21,7 @@ import $file.example.todoApi.build
 import $file.example.twirl.build
 import $file.example.variableRoutes.build
 import $file.example.websockets.build
+import $file.example.websockets2.build
 
 object cask extends ScalaModule with PublishModule {
   def scalaVersion = "2.13.0"
@@ -82,6 +83,7 @@ object example extends Module{
   object twirl extends $file.example.twirl.build.AppModule with LocalModule
   object variableRoutes extends $file.example.variableRoutes.build.AppModule with LocalModule
   object websockets extends $file.example.websockets.build.AppModule with LocalModule
+  object websockets2 extends $file.example.websockets2.build.AppModule with LocalModule
 }
 
 def publishVersion = T.input($file.ci.version.publishVersion)
@@ -124,6 +126,7 @@ def uploadToGithub(authKey: String) = T.command{
     $file.example.twirl.build.millSourcePath,
     $file.example.variableRoutes.build.millSourcePath,
     $file.example.websockets.build.millSourcePath,
+    $file.example.websockets2.build.millSourcePath,
   )
   for(example <- examples){
     val f = T.ctx().dest

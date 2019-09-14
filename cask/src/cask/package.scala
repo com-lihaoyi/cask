@@ -40,4 +40,9 @@ package object cask {
   type RawDecorator = main.RawDecorator
   type HttpEndpoint[InnerReturned, Input] = main.HttpEndpoint[InnerReturned, Input]
 
+  type WsHandler = cask.endpoints.WsHandler
+  val WsHandler = cask.endpoints.WsHandler
+  type WsActor = cask.endpoints.WsActor
+  val WsActor = cask.endpoints.WsActor
+  type WsChannelActor = cask.endpoints.WsChannelActor
 }
