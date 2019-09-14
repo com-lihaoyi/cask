@@ -4,6 +4,7 @@ import java.io.{InputStream, OutputStream, OutputStreamWriter}
 
 import cask.internal.Util
 
+
 /**
   * The basic response returned by a HTTP endpoint.
   *
@@ -11,37 +12,48 @@ import cask.internal.Util
   * bytes, uPickle JSON-convertable types or arbitrary input streams. You can
   * also construct your own implementations of `Response.Data`.
   */
-case class Response(
-  data: Response.Data,
+case class Response[T](
+  data: T,
   statusCode: Int,
   headers: Seq[(String, String)],
   cookies: Seq[Cookie]
-)
+){
+  def map[V](f: T => V) = new Response(f(data), statusCode, headers, cookies)
+}
 object Response{
-  def apply(data: Data,
-            statusCode: Int = 200,
-            headers: Seq[(String, String)] = Nil,
-            cookies: Seq[Cookie] = Nil) = new Response(data, statusCode, headers, cookies)
+  type Raw = Response[Data]
+  def apply[T](data: T,
+               statusCode: Int = 200,
+               headers: Seq[(String, String)] = Nil,
+               cookies: Seq[Cookie] = Nil) = new Response(data, statusCode, headers, cookies)
 
-  implicit def dataResponse[T](t: T)(implicit c: T => Data) = Response(t)
+  implicit def dataResponse[T, V](t: T)(implicit c: T => V): Response[V] = {
+    Response[V](t)
+  }
+  implicit def dataResponse2[T, V](t: Response[T])(implicit c: T => V): Response[V] = {
+    t.map(c)
+  }
   trait Data{
     def write(out: OutputStream): Unit
   }
   object Data{
+    implicit class UnitData(s: Unit) extends Data{
+      def write(out: OutputStream) = ()
+    }
     implicit class StringData(s: String) extends Data{
       def write(out: OutputStream) = out.write(s.getBytes)
+    }
+    implicit class NumericData[T: Numeric](s: T) extends Data{
+      def write(out: OutputStream) = out.write(s.toString.getBytes)
+    }
+    implicit class BooleanData(s: Boolean) extends Data{
+      def write(out: OutputStream) = out.write(s.toString.getBytes)
     }
     implicit class BytesData(b: Array[Byte]) extends Data{
       def write(out: OutputStream) = out.write(b)
     }
     implicit class StreamData(b: InputStream) extends Data{
       def write(out: OutputStream) = Util.transferTo(b, out)
-    }
-    implicit def JsonResponse[T: upickle.default.Writer](t: T) = new Data{
-      def write(out: OutputStream) = implicitly[upickle.default.Writer[T]].write(
-        new ujson.BaseRenderer(new OutputStreamWriter(out)),
-        t
-      )
     }
   }
 }

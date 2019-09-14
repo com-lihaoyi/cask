@@ -5,12 +5,17 @@ import cask.internal.Router.ArgReader
 import cask.model.{Request, Response}
 
 
-trait Endpoint extends BaseEndpoint {
-  type Returned = Router.Result[Response]
-}
 /**
-  * Used to annotate a single Cask endpoint function; similar to a [[Decorator]]
-  * but with additional metadata and capabilities.
+  * Annotates a Cask endpoint that returns a HTTP [[Response]]; similar to a
+  * [[Decorator]] but with additional metadata and capabilities.
+  */
+trait Endpoint extends BaseEndpoint {
+  type OuterReturned = Router.Result[Response.Raw]
+}
+
+/**
+  * An [[Endpoint]] that may return something else than a HTTP response, e.g.
+  * a websocket endpoint which may instead return a websocket event handler
   */
 trait BaseEndpoint extends BaseDecorator{
   /**
@@ -31,7 +36,7 @@ trait BaseEndpoint extends BaseDecorator{
     */
   def subpath: Boolean = false
 
-  def convertToResultType(t: Output): Output = t
+  def convertToResultType(t: InnerReturned): InnerReturned = t
 
   /**
     * [[Endpoint]]s are unique among decorators in that they alone can bind
@@ -44,13 +49,16 @@ trait BaseEndpoint extends BaseDecorator{
 
 }
 
+/**
+  * A [[Decorator]] that may deal with values other than HTTP [[Response]]s
+  */
 trait BaseDecorator{
   type Input
   type InputParser[T] <: ArgReader[Input, T, Request]
-  type Output
-  type Delegate = Map[String, Input] => Router.Result[Output]
-  type Returned <: Router.Result[Any]
-  def wrapFunction(ctx: Request, delegate: Delegate): Returned
+  type InnerReturned
+  type Delegate = Map[String, Input] => Router.Result[InnerReturned]
+  type OuterReturned <: Router.Result[Any]
+  def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned
   def getParamParser[T](implicit p: InputParser[T]) = p
 }
 
@@ -66,9 +74,9 @@ trait BaseDecorator{
   * lists (if any).
   */
 trait Decorator extends BaseDecorator{
-  type Returned = Router.Result[Response]
+  type OuterReturned = Router.Result[Response.Raw]
   type Input = Any
-  type Output = Response
+  type InnerReturned = Response.Raw
   type InputParser[T] = NoOpParser[Input, T]
 }
 

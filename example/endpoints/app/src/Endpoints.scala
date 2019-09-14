@@ -2,7 +2,8 @@ package app
 
 class custom(val path: String, val methods: Seq[String]) extends cask.Endpoint{
   type Output = Int
-  def wrapFunction(ctx: cask.Request, delegate: Delegate): Returned = {
+  type InnerReturned = Int
+  def wrapFunction(ctx: cask.Request, delegate: Delegate): OuterReturned = {
     delegate(Map()).map{num =>
       cask.Response("Echo " + num, statusCode = num)
     }

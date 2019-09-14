@@ -50,7 +50,7 @@ object cask extends ScalaModule with PublishModule {
 
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.6.9",
+      ivy"com.lihaoyi::utest::0.7.1",
       ivy"com.lihaoyi::requests::0.2.0",
 //      ivy"org.xerial:sqlite-jdbc:3.18.0",
 //      ivy"io.getquill::quill-jdbc:2.6.0"

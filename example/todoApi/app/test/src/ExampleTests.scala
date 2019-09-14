@@ -4,7 +4,7 @@ import io.undertow.Undertow
 import utest._
 
 object ExampleTests extends TestSuite{
-  def test[T](example: cask.main.BaseMain)(f: String => T): T = {
+  def withServer[T](example: cask.main.BaseMain)(f: String => T): T = {
     val server = Undertow.builder
       .addHttpListener(8080, "localhost")
       .setHandler(example.defaultHandler)
@@ -17,7 +17,7 @@ object ExampleTests extends TestSuite{
   }
 
   val tests = Tests{
-    'TodoMvcApi - test(TodoMvcApi){ host =>
+    test("TodoMvcApi") - withServer(TodoMvcApi){ host =>
       requests.get(s"$host/list/all").text() ==>
         """[{"checked":true,"text":"Get started with Cask"},{"checked":false,"text":"Profit!"}]"""
       requests.get(s"$host/list/active").text() ==>

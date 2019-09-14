@@ -4,7 +4,7 @@ import io.undertow.Undertow
 import utest._
 
 object ExampleTests extends TestSuite{
-  def test[T](example: cask.main.BaseMain)(f: String => T): T = {
+  def withServer[T](example: cask.main.BaseMain)(f: String => T): T = {
     val server = Undertow.builder
       .addHttpListener(8080, "localhost")
       .setHandler(example.defaultHandler)
@@ -17,7 +17,7 @@ object ExampleTests extends TestSuite{
   }
 
   val tests = Tests{
-    'Compress3Main - test(Compress3Main){ host =>
+    test("Compress3Main") - withServer(Compress3Main){ host =>
       val expected = "Hello World! Hello World! Hello World!"
       requests.get(s"$host").text() ==> expected
       assert(

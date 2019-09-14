@@ -8,12 +8,17 @@ import collection.JavaConverters._
 
 
 trait WebEndpoint extends Endpoint{
-  type Output = Response
+  type InnerReturned = Response.Raw
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
   def wrapFunction(ctx: Request,
-                       delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
-
+                       delegate: Delegate): Router.Result[Response.Raw] = {
+    delegate(WebEndpoint.buildMapFromQueryParams(ctx))
+  }
+  def wrapPathSegment(s: String) = Seq(s)
+}
+object WebEndpoint{
+  def buildMapFromQueryParams(ctx: Request) = {
     val b = Map.newBuilder[String, Seq[String]]
     val queryParams = ctx.exchange.getQueryParameters
     for(k <- queryParams.keySet().iterator().asScala){
@@ -22,9 +27,8 @@ trait WebEndpoint extends Endpoint{
       deque.toArray(arr)
       b += (k -> (arr: Seq[String]))
     }
-    delegate(b.result())
+    b.result()
   }
-  def wrapPathSegment(s: String) = Seq(s)
 }
 class get(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("get")

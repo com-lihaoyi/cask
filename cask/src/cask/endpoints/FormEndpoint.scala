@@ -44,13 +44,13 @@ object FormReader{
   }
 }
 class postForm(val path: String, override val subpath: Boolean = false) extends Endpoint {
-  type Output = Response
+  type InnerReturned = Response.Raw
 
   val methods = Seq("post")
   type Input = Seq[FormEntry]
   type InputParser[T] = FormReader[T]
   def wrapFunction(ctx: Request,
-                       delegate: Map[String, Input] => Router.Result[Output]): Router.Result[Response] = {
+                       delegate: Delegate): Router.Result[Response.Raw] = {
     try {
       val formData = FormParserFactory.builder().build().createParser(ctx.exchange).parseBlocking()
       delegate(
@@ -62,7 +62,8 @@ class postForm(val path: String, override val subpath: Boolean = false) extends 
       )
     } catch{case e: Exception =>
       Router.Result.Success(cask.model.Response(
-        "Unable to parse form data: " + e + "\n" + Util.stackTraceString(e)
+        "Unable to parse form data: " + e + "\n" + Util.stackTraceString(e),
+        statusCode = 400
       ))
     }
   }
