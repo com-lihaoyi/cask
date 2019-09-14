@@ -12,7 +12,7 @@ import cask.internal.Util
   * bytes, uPickle JSON-convertable types or arbitrary input streams. You can
   * also construct your own implementations of `Response.Data`.
   */
-case class Response[T](
+case class Response[+T](
   data: T,
   statusCode: Int,
   headers: Seq[(String, String)],
@@ -20,23 +20,33 @@ case class Response[T](
 ){
   def map[V](f: T => V) = new Response(f(data), statusCode, headers, cookies)
 }
-object Response{
+
+object Response {
   type Raw = Response[Data]
   def apply[T](data: T,
                statusCode: Int = 200,
                headers: Seq[(String, String)] = Nil,
                cookies: Seq[Cookie] = Nil) = new Response(data, statusCode, headers, cookies)
-
-  implicit def dataResponse[T, V](t: T)(implicit c: T => V): Response[V] = {
-    Response[V](t)
-  }
-  implicit def dataResponse2[T, V](t: Response[T])(implicit c: T => V): Response[V] = {
-    t.map(c)
-  }
   trait Data{
     def write(out: OutputStream): Unit
   }
-  object Data{
+  trait DataCompanion[V]{
+    // Put the implicit constructors for Response[Data] into the `Data` companion
+    // object and all subclasses of `Data`, because for some reason putting them in
+    // the `Response` companion object doesn't work properly. For the same unknown
+    // reasons, we cannot have `dataResponse` and `dataResponse2` take two type
+    // params T and V, and instead have to embed the implicit target type as a
+    // parameter of the enclosing trait
+
+    implicit def dataResponse[T](t: T)(implicit c: T => V): Response[V] = {
+      Response(c(t))
+    }
+
+    implicit def dataResponse2[T](t: Response[T])(implicit c: T => V): Response[V] = {
+      t.map(c(_))
+    }
+  }
+  object Data extends DataCompanion[Data]{
     implicit class UnitData(s: Unit) extends Data{
       def write(out: OutputStream) = ()
     }
@@ -57,6 +67,7 @@ object Response{
     }
   }
 }
+
 object Redirect{
   def apply(url: String) = Response("", 301, Seq("Location" -> url), Nil)
 }

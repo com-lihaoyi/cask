@@ -4,7 +4,9 @@ import java.io.{ByteArrayOutputStream, InputStream, OutputStream, OutputStreamWr
 
 import cask.internal.{Router, Util}
 import cask.main.Endpoint
+import cask.model.Response.DataCompanion
 import cask.model.{Request, Response}
+
 import collection.JavaConverters._
 
 sealed trait JsReader[T] extends Router.ArgReader[ujson.Value, T, cask.model.Request]
@@ -27,7 +29,7 @@ object JsReader{
   }
 }
 trait JsonData extends Response.Data
-object JsonData{
+object JsonData extends DataCompanion[JsonData]{
   implicit class JsonDataImpl[T: upickle.default.Writer](t: T) extends JsonData{
     def write(out: OutputStream) = {
       val writer = new OutputStreamWriter(out)
@@ -71,7 +73,7 @@ class postJson(val path: String, override val subpath: Boolean = false) extends 
     } yield obj.toMap
     obj match{
       case Left(r) => Router.Result.Success(r.map(Response.Data.StringData))
-      case Right(params) => delegate(params).map(_.data)
+      case Right(params) => delegate(params)
     }
   }
   def wrapPathSegment(s: String): Input = ujson.Str(s)
@@ -83,12 +85,9 @@ class getJson(val path: String, override val subpath: Boolean = false) extends E
   type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
   override type OuterReturned = Router.Result[Response.Raw]
-  def wrapFunction(ctx: Request,
-                   delegate: Delegate): Router.Result[Response.Raw] = {
+  def wrapFunction(ctx: Request, delegate: Delegate): Router.Result[Response.Raw] = {
 
-    val res = delegate(WebEndpoint.buildMapFromQueryParams(ctx))
-
-    res.map(_.data)
+    delegate(WebEndpoint.buildMapFromQueryParams(ctx))
   }
   def wrapPathSegment(s: String) = Seq(s)
 }

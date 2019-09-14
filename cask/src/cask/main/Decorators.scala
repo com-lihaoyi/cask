@@ -1,6 +1,6 @@
 package cask.main
 
-import cask.internal.Router
+import cask.internal.{Conversion, Router}
 import cask.internal.Router.ArgReader
 import cask.model.{Request, Response}
 
@@ -36,7 +36,10 @@ trait BaseEndpoint extends BaseDecorator{
     */
   def subpath: Boolean = false
 
-  def convertToResultType(t: InnerReturned): InnerReturned = t
+  def convertToResultType[T](t: T)
+                            (implicit f: Conversion[T, InnerReturned]): InnerReturned = {
+    f.f(t)
+  }
 
   /**
     * [[Endpoint]]s are unique among decorators in that they alone can bind
