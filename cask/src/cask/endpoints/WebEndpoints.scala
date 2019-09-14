@@ -7,8 +7,7 @@ import cask.model.{Request, Response}
 import collection.JavaConverters._
 
 
-trait WebEndpoint extends Endpoint[Response.Raw]{
-  type Input = Seq[String]
+trait WebEndpoint extends Endpoint[Response.Raw, Seq[String]]{
   type InputParser[T] = QueryParamReader[T]
   def wrapFunction(ctx: Request,
                        delegate: Delegate): Router.Result[Response.Raw] = {

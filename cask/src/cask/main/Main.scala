@@ -99,7 +99,7 @@ abstract class BaseMain{
                   )
 
                 case Nil =>
-                  metadata.endpoint.wrapFunction(ctx, endpointBindings =>
+                  metadata.endpoint.wrapFunction(ctx, (endpointBindings: Map[String, Any]) =>
                     metadata.entryPoint
                       .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.Request]]
                       .invoke(

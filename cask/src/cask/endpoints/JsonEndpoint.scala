@@ -40,9 +40,8 @@ object JsonData extends DataCompanion[JsonData]{
 }
 
 class postJson(val path: String, override val subpath: Boolean = false)
-  extends Endpoint[Response[JsonData]]{
+  extends Endpoint[Response[JsonData], ujson.Value]{
   val methods = Seq("post")
-  type Input = ujson.Value
   type InputParser[T] = JsReader[T]
   override type OuterReturned = Router.Result[Response.Raw]
   def wrapFunction(ctx: Request,
@@ -76,13 +75,12 @@ class postJson(val path: String, override val subpath: Boolean = false)
       case Right(params) => delegate(params)
     }
   }
-  def wrapPathSegment(s: String): Input = ujson.Str(s)
+  def wrapPathSegment(s: String): ujson.Value = ujson.Str(s)
 }
 
 class getJson(val path: String, override val subpath: Boolean = false)
-  extends Endpoint[Response[JsonData]]{
+  extends Endpoint[Response[JsonData], Seq[String]]{
   val methods = Seq("get")
-  type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
   override type OuterReturned = Router.Result[Response.Raw]
   def wrapFunction(ctx: Request, delegate: Delegate): Router.Result[Response.Raw] = {

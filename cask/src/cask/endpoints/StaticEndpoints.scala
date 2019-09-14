@@ -3,9 +3,8 @@ package cask.endpoints
 import cask.main.Endpoint
 import cask.model.Request
 
-class staticFiles(val path: String) extends Endpoint[String]{
+class staticFiles(val path: String) extends Endpoint[String, Seq[String]]{
   val methods = Seq("get")
-  type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true
   def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned = {
@@ -18,13 +17,12 @@ class staticFiles(val path: String) extends Endpoint[String]{
     )
   }
 
-  def wrapPathSegment(s: String): Input = Seq(s)
+  def wrapPathSegment(s: String): Seq[String] = Seq(s)
 }
 
 class staticResources(val path: String, resourceRoot: ClassLoader = getClass.getClassLoader)
-  extends Endpoint[String]{
+  extends Endpoint[String, Seq[String]]{
   val methods = Seq("get")
-  type Input = Seq[String]
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true
   def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned = {
@@ -38,5 +36,5 @@ class staticResources(val path: String, resourceRoot: ClassLoader = getClass.get
     )
   }
 
-  def wrapPathSegment(s: String): Input = Seq(s)
+  def wrapPathSegment(s: String): Seq[String] = Seq(s)
 }

@@ -44,10 +44,9 @@ object FormReader{
   }
 }
 class postForm(val path: String, override val subpath: Boolean = false)
-  extends Endpoint[Response.Raw] {
+  extends Endpoint[Response.Raw, Seq[FormEntry]] {
 
   val methods = Seq("post")
-  type Input = Seq[FormEntry]
   type InputParser[T] = FormReader[T]
   def wrapFunction(ctx: Request,
                        delegate: Delegate): Router.Result[Response.Raw] = {
@@ -68,6 +67,6 @@ class postForm(val path: String, override val subpath: Boolean = false)
     }
   }
 
-  def wrapPathSegment(s: String): Input = Seq(FormValue(s, new io.undertow.util.HeaderMap))
+  def wrapPathSegment(s: String): Seq[FormEntry] = Seq(FormValue(s, new io.undertow.util.HeaderMap))
 }
 
