@@ -13,6 +13,12 @@ fails; useful for debugging, should be disabled for production.
 The cask program entrypoint. By default just spins up a webserver, but you can
 override it to do whatever you like before or after the webserver runs.
 
+## def log
+
+A logger that gets passed around the application. Used for convenient debug
+logging, as well as logging exceptions either to the terminal or to a
+centralized exception handler.
+
 ## def defaultHandler
 
 Cask is built on top of the [Undertow](http://undertow.io/) web server. If you
@@ -41,4 +47,5 @@ useful stack traces or metadata for debugging if `debugMode = true`.
 ## def mainDecorators
 
 Any `cask.Decorator`s that you want to apply to all routes and all endpoints in
-the entire web application
+the entire web application. Useful for inserting application-wide
+instrumentation, logging, security-checks, and similar things.

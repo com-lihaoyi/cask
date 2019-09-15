@@ -349,21 +349,30 @@ $$$websockets
 Cask's Websocket endpoints are very similar to Cask's HTTP endpoints. Annotated
 with `@cask.websocket` instead of `@cask.get` or `@cask.post`, the primary
 difference is that instead of only returning a `cask.Response`, you now have an
-option of returning a `io.undertow.websockets.WebSocketConnectionCallback`.
+option of returning a `cask.WsHandler`.
 
-The `WebSocketConnectionCallback` allows you to pro-actively start sending
-websocket messages once a connection has been made, and it lets you register a
-`AbstractReceiveListener` that allows you to react to any messages the client on
-the other side of the websocket connection sends you. You can use these two APIs
-to perform full bi-directional, asynchronous communications, as websockets are
-intended to be used for.
+The `cask.WsHandler` allows you to pro-actively start sending websocket messages
+once a connection has been made, via the `channel: WsChannelActor` it exposes,
+and lets you react to messages via the `cask.WsActor` you create. You can use
+these two APIs to perform full bi-directional, asynchronous communications, as
+websockets are intended to be used for. Note that all messages received on a
+each individual Websocket connection by your `cask.WsActor` are handled in a
+single-threaded fashion by default: this means you can work with local mutable
+state in your `@cask.websocket` endpoint without worrying about race conditions
+or multithreading. If you want further parallelism, you can explicitly spin off
+`scala.concurrent.Future`s or other `cask.BatchActor`s to perform that parallel
+processing.
 
 Returning a `cask.Response` immediately closes the websocket connection, and is
 useful if you want to e.g. return a 404 or 403 due to the initial request being
 invalid.
 
-Cask intentionally provides a relatively low-level websocket interface. It
-leaves it up to you to manage open channels, react to incoming messages, or
+Cask also provides a lower-lever websocket interface, which allows you directly
+work with the underlying `io.undertow.websockets.WebSocketConnectionCallback`:
+
+$$$websockets2
+
+It leaves it up to you to manage open channels, react to incoming messages, or
 pro-actively send them out, mostly using the underlying Undertow webserver
 interface. While Cask does not model streams, backpressure, iteratees, or
 provide any higher level API, it should not be difficult to take the Cask API

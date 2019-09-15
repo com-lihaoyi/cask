@@ -38,8 +38,16 @@ abstract class Main{
   def routeTries = Main.prepareRouteTries(allRoutes)
 
   def defaultHandler = new BlockingHandler(
-    new Main.DefaultHandler(routeTries, mainDecorators, debugMode)
+    new Main.DefaultHandler(routeTries, mainDecorators, debugMode, handleNotFound, handleEndpointError)
   )
+
+  def handleNotFound() = Main.defaultHandleNotFound()
+
+  def handleEndpointError(routes: Routes,
+                          metadata: EndpointMetadata[_],
+                          e: Router.Result.Error) = {
+    Main.defaultHandleError(routes, metadata, e, debugMode)
+  }
 
   def main(args: Array[String]): Unit = {
     val server = Undertow.builder
@@ -48,12 +56,15 @@ abstract class Main{
       .build
     server.start()
   }
+
 }
 
 object Main{
   class DefaultHandler(routeTries: Map[String, DispatchTrie[(Routes, EndpointMetadata[_])]],
                        mainDecorators: Seq[RawDecorator],
-                       debugMode: Boolean)
+                       debugMode: Boolean,
+                       handleNotFound: () => Response.Raw,
+                       handleError: (Routes, EndpointMetadata[_], Router.Result.Error) => Response.Raw)
                       (implicit log: Logger) extends HttpHandler() {
     def handleRequest(exchange: HttpServerExchange): Unit = try {
       //        println("Handling Request: " + exchange.getRequestPath)
@@ -91,13 +102,7 @@ object Main{
             case e: Router.Result.Error =>
               Main.writeResponse(
                 exchange,
-                Main.handleEndpointError(
-                  exchange,
-                  routes,
-                  metadata,
-                  e,
-                  debugMode
-                ).map(Response.Data.StringData)
+                handleError(routes, metadata, e)
               )
               None
           }
@@ -108,7 +113,7 @@ object Main{
     }
   }
 
-  def handleNotFound(): Response.Raw = {
+  def defaultHandleNotFound(): Response.Raw = {
     Response(
       s"Error 404: ${Status.codesToStatus(404).reason}",
       statusCode = 404
@@ -138,12 +143,11 @@ object Main{
     response.data.write(exchange.getOutputStream)
   }
 
-  def handleEndpointError(exchange: HttpServerExchange,
-                          routes: Routes,
-                          metadata: EndpointMetadata[_],
-                          e: Router.Result.Error,
-                          debugMode: Boolean)
-                         (implicit log: Logger) = {
+  def defaultHandleError(routes: Routes,
+                         metadata: EndpointMetadata[_],
+                         e: Router.Result.Error,
+                         debugMode: Boolean)
+                        (implicit log: Logger) = {
     e match {
       case e: Router.Result.Error.Exception => log.exception(e.t)
       case _ => // do nothing
