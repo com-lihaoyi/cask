@@ -4,6 +4,8 @@ import cask.endpoints.{WebsocketResult, WsHandler}
 import cask.model._
 import cask.internal.Router.EntryPoint
 import cask.internal.{DispatchTrie, Router, Util}
+import cask.main
+import cask.util.Logger
 import io.undertow.Undertow
 import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.server.handlers.BlockingHandler
@@ -25,26 +27,107 @@ class MainRoutes extends Main with Routes{
   * application-wide properties.
   */
 abstract class Main{
-  def mainDecorators = Seq.empty[cask.main.RawDecorator]
+  def mainDecorators: Seq[cask.main.RawDecorator] = Nil
   def allRoutes: Seq[Routes]
   def port: Int = 8080
   def host: String = "localhost"
   def debugMode: Boolean = true
+
   implicit def log = new cask.util.Logger.Console()
-  lazy val routeList = for{
-    routes <- allRoutes
-    route <- routes.caskMetadata.value.map(x => x: EndpointMetadata[_])
-  } yield (routes, route)
 
+  def routeTries = Main.prepareRouteTries(allRoutes)
 
-  lazy val routeTries = Seq("get", "put", "post", "websocket")
-    .map { method =>
-      method -> DispatchTrie.construct[(Routes, EndpointMetadata[_])](0,
-        for ((route, metadata) <- routeList if metadata.endpoint.methods.contains(method))
-        yield (Util.splitPath(metadata.endpoint.path): collection.IndexedSeq[String], (route, metadata), metadata.endpoint.subpath)
+  def defaultHandler = new BlockingHandler(
+    new Main.DefaultHandler(routeTries, mainDecorators, debugMode)
+  )
+
+  def main(args: Array[String]): Unit = {
+    val server = Undertow.builder
+      .addHttpListener(port, host)
+      .setHandler(defaultHandler)
+      .build
+    server.start()
+  }
+}
+
+object Main{
+  class DefaultHandler(routeTries: Map[String, DispatchTrie[(Routes, EndpointMetadata[_])]],
+                       mainDecorators: Seq[RawDecorator],
+                       debugMode: Boolean)
+                      (implicit log: Logger) extends HttpHandler() {
+    def handleRequest(exchange: HttpServerExchange): Unit = try {
+      //        println("Handling Request: " + exchange.getRequestPath)
+      val (effectiveMethod, runner) = if (exchange.getRequestHeaders.getFirst("Upgrade") == "websocket") {
+        Tuple2(
+          "websocket",
+          (r: Any) =>
+            r.asInstanceOf[WebsocketResult] match{
+              case l: WsHandler =>
+                io.undertow.Handlers.websocket(l).handleRequest(exchange)
+              case l: WebsocketResult.Listener =>
+                io.undertow.Handlers.websocket(l.value).handleRequest(exchange)
+              case r: WebsocketResult.Response[Response.Data] =>
+                Main.writeResponse(exchange, r.value)
+            }
+        )
+      } else Tuple2(
+        exchange.getRequestMethod.toString.toLowerCase(),
+        (r: Any) => Main.writeResponse(exchange, r.asInstanceOf[Response.Raw])
       )
-    }.toMap
 
+      routeTries(effectiveMethod).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match {
+        case None => Main.writeResponse(exchange, handleNotFound())
+        case Some(((routes, metadata), routeBindings, remaining)) =>
+          Decorator.invoke(
+            Request(exchange, remaining),
+            metadata.endpoint,
+            metadata.entryPoint.asInstanceOf[EntryPoint[Routes, _]],
+            routes,
+            routeBindings,
+            (mainDecorators ++ routes.decorators ++ metadata.decorators).toList,
+            Nil
+          ) match{
+            case Router.Result.Success(res) => runner(res)
+            case e: Router.Result.Error =>
+              Main.writeResponse(
+                exchange,
+                Main.handleEndpointError(
+                  exchange,
+                  routes,
+                  metadata,
+                  e,
+                  debugMode
+                ).map(Response.Data.StringData)
+              )
+              None
+          }
+      }
+      //        println("Completed Request: " + exchange.getRequestPath)
+    }catch{case e: Throwable =>
+      e.printStackTrace()
+    }
+  }
+
+  def handleNotFound(): Response.Raw = {
+    Response(
+      s"Error 404: ${Status.codesToStatus(404).reason}",
+      statusCode = 404
+    )
+  }
+
+  def prepareRouteTries(allRoutes: Seq[Routes]) = {
+    val routeList = for{
+      routes <- allRoutes
+      route <- routes.caskMetadata.value.map(x => x: EndpointMetadata[_])
+    } yield (routes, route)
+    Seq("get", "put", "post", "websocket")
+      .map { method =>
+        method -> DispatchTrie.construct[(Routes, EndpointMetadata[_])](0,
+          for ((route, metadata) <- routeList if metadata.endpoint.methods.contains(method))
+            yield (Util.splitPath(metadata.endpoint.path): collection.IndexedSeq[String], (route, metadata), metadata.endpoint.subpath)
+        )
+      }.toMap
+  }
   def writeResponse(exchange: HttpServerExchange, response: Response.Raw) = {
     response.headers.foreach{case (k, v) =>
       exchange.getResponseHeaders.put(new HttpString(k), v)
@@ -55,74 +138,12 @@ abstract class Main{
     response.data.write(exchange.getOutputStream)
   }
 
-  def handleNotFound(): Response.Raw = {
-    Response(
-      s"Error 404: ${Status.codesToStatus(404).reason}",
-      statusCode = 404
-    )
-  }
-
-
-  def defaultHandler = new BlockingHandler(
-    new HttpHandler() {
-      def handleRequest(exchange: HttpServerExchange): Unit = try {
-//        println("Handling Request: " + exchange.getRequestPath)
-        val (effectiveMethod, runner) = if (exchange.getRequestHeaders.getFirst("Upgrade") == "websocket") {
-          "websocket" -> ((r: Any) =>
-            r.asInstanceOf[WebsocketResult] match{
-              case l: WsHandler =>
-                io.undertow.Handlers.websocket(l).handleRequest(exchange)
-              case l: WebsocketResult.Listener =>
-                io.undertow.Handlers.websocket(l.value).handleRequest(exchange)
-              case r: WebsocketResult.Response[_] =>
-                writeResponseHandler(r).handleRequest(exchange)
-            }
-          )
-        } else (
-          exchange.getRequestMethod.toString.toLowerCase(),
-          (r: Any) => writeResponse(exchange, r.asInstanceOf[Response.Raw])
-        )
-
-        routeTries(effectiveMethod).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match {
-          case None => writeResponse(exchange, handleNotFound())
-          case Some(((routes, metadata), routeBindings, remaining)) =>
-            Decorator.invoke(
-              Request(exchange, remaining),
-              metadata.endpoint,
-              metadata.entryPoint.asInstanceOf[EntryPoint[Routes, _]],
-              routes,
-              routeBindings,
-              (mainDecorators ++ routes.decorators ++ metadata.decorators).toList,
-              Nil
-            ) match{
-              case Router.Result.Success(res) => runner(res)
-              case e: Router.Result.Error =>
-                writeResponse(
-                  exchange,
-                  handleEndpointError(exchange, routes, metadata, e).map(Response.Data.StringData)
-                )
-                None
-            }
-        }
-//        println("Completed Request: " + exchange.getRequestPath)
-      }catch{case e: Throwable =>
-          e.printStackTrace()
-      }
-    }
-  )
-
-  def writeResponseHandler(r: WebsocketResult.Response[_]) = new BlockingHandler(
-    new HttpHandler {
-      def handleRequest(exchange: HttpServerExchange): Unit = {
-        writeResponse(exchange, r.value)
-      }
-    }
-  )
-
   def handleEndpointError(exchange: HttpServerExchange,
                           routes: Routes,
                           metadata: EndpointMetadata[_],
-                          e: Router.Result.Error) = {
+                          e: Router.Result.Error,
+                          debugMode: Boolean)
+                         (implicit log: Logger) = {
     e match {
       case e: Router.Result.Error.Exception => log.exception(e.t)
       case _ => // do nothing
@@ -145,14 +166,5 @@ abstract class Main{
 
   }
 
-
-  def main(args: Array[String]): Unit = {
-    val server = Undertow.builder
-      .addHttpListener(port, host)
-      .setHandler(defaultHandler)
-      .build
-    server.start()
-  }
 }
-
 
