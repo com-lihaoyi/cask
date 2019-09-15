@@ -36,13 +36,13 @@ abstract class BaseMain{
 
   lazy val routeList = for{
     routes <- allRoutes
-    route <- routes.caskMetadata.value.map(x => x: Routes.EndpointMetadata[_])
+    route <- routes.caskMetadata.value.map(x => x: EndpointMetadata[_])
   } yield (routes, route)
 
 
   lazy val routeTries = Seq("get", "put", "post", "websocket")
     .map { method =>
-      method -> DispatchTrie.construct[(Routes, Routes.EndpointMetadata[_])](0,
+      method -> DispatchTrie.construct[(Routes, EndpointMetadata[_])](0,
         for ((route, metadata) <- routeList if metadata.endpoint.methods.contains(method))
         yield (Util.splitPath(metadata.endpoint.path): collection.IndexedSeq[String], (route, metadata), metadata.endpoint.subpath)
       )
@@ -91,7 +91,8 @@ abstract class BaseMain{
           case Some(((routes, metadata), routeBindings, remaining)) =>
             Decorator.invoke(
               Request(exchange, remaining),
-              metadata,
+              metadata.endpoint,
+              metadata.entryPoint.asInstanceOf[EntryPoint[Routes, _]],
               routes,
               routeBindings,
               (mainDecorators ++ routes.decorators ++ metadata.decorators).toList,
@@ -123,7 +124,7 @@ abstract class BaseMain{
 
   def handleEndpointError(exchange: HttpServerExchange,
                           routes: Routes,
-                          metadata: Routes.EndpointMetadata[_],
+                          metadata: EndpointMetadata[_],
                           e: Router.Result.Error) = {
     val statusCode = e match {
       case _: Router.Result.Error.Exception => 500

@@ -35,27 +35,28 @@ object Decorator{
    * bindings passed from the router are aggregated with those from the `EndPoint` and
    * used as the first argument list.
    */
-  def invoke(ctx: Request,
-             metadata: Routes.EndpointMetadata[_],
-             routes: Routes,
-             routeBindings: Map[String, String],
-             remainingDecorators: List[RawDecorator],
-             bindings: List[Map[String, Any]]): Router.Result[Any] = try {
+  def invoke[T](ctx: Request,
+                endpoint: Endpoint[_, _],
+                entryPoint: EntryPoint[T, _],
+                routes: T,
+                routeBindings: Map[String, String],
+                remainingDecorators: List[RawDecorator],
+                bindings: List[Map[String, Any]]): Router.Result[Any] = try {
     remainingDecorators match {
       case head :: rest =>
         head.wrapFunction(
           ctx,
-          args => invoke(ctx, metadata, routes, routeBindings, rest, args :: bindings)
+          args => invoke(ctx, endpoint, entryPoint, routes, routeBindings, rest, args :: bindings)
             .asInstanceOf[Router.Result[cask.model.Response.Raw]]
         )
 
       case Nil =>
-        metadata.endpoint.wrapFunction(ctx, { (endpointBindings: Map[String, Any]) =>
-          val mergedEndpointBindings = endpointBindings ++ routeBindings.mapValues(metadata.endpoint.wrapPathSegment)
+        endpoint.wrapFunction(ctx, { (endpointBindings: Map[String, Any]) =>
+          val mergedEndpointBindings = endpointBindings ++ routeBindings.mapValues(endpoint.wrapPathSegment)
           val finalBindings = mergedEndpointBindings :: bindings
 
-          metadata.entryPoint
-            .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.Request]]
+          entryPoint
+            .asInstanceOf[EntryPoint[T, cask.model.Request]]
             .invoke(routes, ctx, finalBindings)
             .asInstanceOf[Router.Result[Nothing]]
         })
