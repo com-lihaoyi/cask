@@ -1,6 +1,8 @@
 package app
 
-object Compress2 extends cask.Routes{
+import cask.util.Logger
+
+case class Compress2()(implicit val log: Logger) extends cask.Routes{
   override def decorators = Seq(new cask.decorators.compress())
 
   @cask.get("/")
@@ -11,4 +13,6 @@ object Compress2 extends cask.Routes{
   initialize()
 }
 
-object Compress2Main extends cask.Main(Compress2)
+object Compress2Main extends cask.Main{
+  val allRoutes = Seq(Compress2())
+}

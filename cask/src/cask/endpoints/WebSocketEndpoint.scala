@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import cask.internal.{BatchActor, Router}
 import cask.model.Request
+import cask.util.Logger
 import io.undertow.websockets.WebSocketConnectionCallback
 import io.undertow.websockets.core.{AbstractReceiveListener, BufferedBinaryMessage, BufferedTextMessage, CloseMessage, WebSocketChannel, WebSockets}
 import io.undertow.websockets.spi.WebSocketHttpExchange
@@ -31,7 +32,8 @@ class websocket(val path: String, override val subpath: Boolean = false)
   def wrapPathSegment(s: String): Seq[String] = Seq(s)
 }
 
-case class WsHandler(f: WsChannelActor => BatchActor[WsActor.Event])(implicit ec: ExecutionContext)
+case class WsHandler(f: WsChannelActor => BatchActor[WsActor.Event])
+                    (implicit ec: ExecutionContext, log: Logger)
 extends WebsocketResult with WebSocketConnectionCallback {
    def onConnect(exchange: WebSocketHttpExchange, channel: WebSocketChannel): Unit = {
      val actor = f(new WsChannelActor(channel))
@@ -67,7 +69,8 @@ extends WebsocketResult with WebSocketConnectionCallback {
   }
 }
 
-class WsChannelActor(channel: WebSocketChannel)(implicit ec: ExecutionContext)
+class WsChannelActor(channel: WebSocketChannel)
+                    (implicit ec: ExecutionContext, log: Logger)
 extends BatchActor[WsActor.Event]{
   def run(items: Seq[WsActor.Event]): Unit = items.foreach{
     case WsActor.Text(value) => WebSockets.sendTextBlocking(value, channel)
@@ -79,7 +82,7 @@ extends BatchActor[WsActor.Event]{
 }
 
 case class WsActor(handle: PartialFunction[WsActor.Event, Unit])
-                  (implicit ec: ExecutionContext)
+                  (implicit ec: ExecutionContext, log: Logger)
 extends BatchActor[WsActor.Event]{
   def run(items: Seq[WsActor.Event]): Unit = {
     items.foreach(handle.applyOrElse(_, (x: WsActor.Event) => ()))

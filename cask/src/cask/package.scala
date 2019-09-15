@@ -1,3 +1,5 @@
+import cask.util.Logger
+
 package object cask {
   // model
   type Response[T] = model.Response[T]
@@ -45,4 +47,8 @@ package object cask {
   type WsActor = cask.endpoints.WsActor
   val WsActor = cask.endpoints.WsActor
   type WsChannelActor = cask.endpoints.WsChannelActor
+
+  // util
+  type Logger = util.Logger
+  val Logger = util.Logger
 }

@@ -13,7 +13,7 @@ import io.undertow.util.HttpString
   * A combination of [[cask.Main]] and [[cask.Routes]], ideal for small
   * one-file web applications.
   */
-class MainRoutes extends BaseMain with Routes{
+class MainRoutes extends Main with Routes{
   def allRoutes = Seq(this)
 }
 
@@ -24,16 +24,13 @@ class MainRoutes extends BaseMain with Routes{
   * serve, and override various properties on [[Main]] in order to configure
   * application-wide properties.
   */
-class Main(servers0: Routes*) extends BaseMain{
-  def allRoutes = servers0.toSeq
-}
-abstract class BaseMain{
+abstract class Main{
   def mainDecorators = Seq.empty[cask.main.RawDecorator]
   def allRoutes: Seq[Routes]
   def port: Int = 8080
   def host: String = "localhost"
   def debugMode: Boolean = true
-
+  implicit def log = new cask.util.Logger.Console()
   lazy val routeList = for{
     routes <- allRoutes
     route <- routes.caskMetadata.value.map(x => x: EndpointMetadata[_])
@@ -126,11 +123,16 @@ abstract class BaseMain{
                           routes: Routes,
                           metadata: EndpointMetadata[_],
                           e: Router.Result.Error) = {
+    e match {
+      case e: Router.Result.Error.Exception => log.exception(e.t)
+      case _ => // do nothing
+    }
     val statusCode = e match {
       case _: Router.Result.Error.Exception => 500
       case _: Router.Result.Error.InvalidArguments => 400
       case _: Router.Result.Error.MismatchedArguments => 400
     }
+
     val str =
       if (!debugMode) s"Error $statusCode: ${Status.codesToStatus(statusCode).reason}"
       else ErrorMsgs.formatInvokeError(
@@ -138,7 +140,7 @@ abstract class BaseMain{
         metadata.entryPoint.asInstanceOf[EntryPoint[cask.main.Routes, _]],
         e
       )
-    println(str)
+
     Response(str, statusCode = statusCode)
 
   }

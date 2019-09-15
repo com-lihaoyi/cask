@@ -1,8 +1,6 @@
 package cask.main
 
-
 import language.experimental.macros
-
 
 trait Routes{
 
@@ -15,5 +13,6 @@ trait Routes{
   protected[this] def initialize()(implicit routes: RoutesEndpointsMetadata[this.type]): Unit = {
     metadata0 = routes
   }
-}
 
+  def log: cask.util.Logger
+}

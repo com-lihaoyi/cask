@@ -1,6 +1,8 @@
 package app
 
-object MinimalRoutes extends cask.Routes{
+import cask.util.Logger
+
+case class MinimalRoutes()(implicit val log: Logger) extends cask.Routes{
   @cask.get("/")
   def hello() = {
     "Hello World!"
@@ -13,4 +15,6 @@ object MinimalRoutes extends cask.Routes{
 
   initialize()
 }
-object MinimalMain extends cask.Main(MinimalRoutes)
+object MinimalRoutesMain extends cask.Main{
+  val allRoutes = Seq(MinimalRoutes())
+}

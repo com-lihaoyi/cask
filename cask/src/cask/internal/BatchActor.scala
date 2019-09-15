@@ -1,5 +1,7 @@
 package cask.internal
 
+import cask.util.Logger
+
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
 
@@ -8,7 +10,8 @@ import scala.concurrent.ExecutionContext
  * of queued items. `run` handles items in batches, to allow for batch
  * processing optimizations to be used where relevant.
  */
-abstract class BatchActor[T]()(implicit ec: ExecutionContext) {
+abstract class BatchActor[T]()(implicit ec: ExecutionContext,
+                               log: Logger) {
   def run(items: Seq[T]): Unit
 
   private val queue = new mutable.Queue[T]()
@@ -24,7 +27,7 @@ abstract class BatchActor[T]()(implicit ec: ExecutionContext) {
   def runWithItems(): Unit = {
     val items = synchronized(queue.dequeueAll(_ => true))
     try run(items)
-    catch{case e: Throwable => e.printStackTrace()}
+    catch{case e: Throwable => log.exception(e)}
     synchronized{
       if (queue.nonEmpty) ec.execute(() => runWithItems())
       else{
