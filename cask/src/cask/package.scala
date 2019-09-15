@@ -51,4 +51,7 @@ package object cask {
   // util
   type Logger = util.Logger
   val Logger = util.Logger
+
+  type BatchActor[T] = util.BatchActor[T]
+
 }

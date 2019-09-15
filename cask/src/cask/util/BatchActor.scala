@@ -1,4 +1,4 @@
-package cask.internal
+package cask.util
 
 import cask.util.Logger
 
