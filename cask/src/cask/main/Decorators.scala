@@ -1,7 +1,7 @@
 package cask.main
 
 import cask.internal.{Conversion, Router}
-import cask.internal.Router.ArgReader
+import cask.internal.Router.{ArgReader, EntryPoint}
 import cask.model.{Request, Response}
 
 /**
@@ -22,6 +22,48 @@ trait Decorator[InnerReturned, Input]{
   type OuterReturned <: Router.Result[Any]
   def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned
   def getParamParser[T](implicit p: InputParser[T]) = p
+}
+object Decorator{
+  /**
+   * A stack of [[Decorator]]s is invoked recursively: each decorator's `wrapFunction`
+   * is invoked around the invocation of all inner decorators, with the inner-most
+   * decorator finally invoking the route's [[EntryPoint.invoke]] function.
+   *
+   * Each decorator (and the final `Endpoint`) contributes a dictionary of name-value
+   * bindings, which are eventually all passed to [[EntryPoint.invoke]]. Each decorator's
+   * dictionary corresponds to a different argument list on [[EntryPoint.invoke]]. The
+   * bindings passed from the router are aggregated with those from the `EndPoint` and
+   * used as the first argument list.
+   */
+  def invoke(ctx: Request,
+             metadata: Routes.EndpointMetadata[_],
+             routes: Routes,
+             routeBindings: Map[String, String],
+             remainingDecorators: List[RawDecorator],
+             bindings: List[Map[String, Any]]): Router.Result[Any] = try {
+    remainingDecorators match {
+      case head :: rest =>
+        head.wrapFunction(
+          ctx,
+          args => invoke(ctx, metadata, routes, routeBindings, rest, args :: bindings)
+            .asInstanceOf[Router.Result[cask.model.Response.Raw]]
+        )
+
+      case Nil =>
+        metadata.endpoint.wrapFunction(ctx, { (endpointBindings: Map[String, Any]) =>
+          val mergedEndpointBindings = endpointBindings ++ routeBindings.mapValues(metadata.endpoint.wrapPathSegment)
+          val finalBindings = mergedEndpointBindings :: bindings
+
+          metadata.entryPoint
+            .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.Request]]
+            .invoke(routes, ctx, finalBindings)
+            .asInstanceOf[Router.Result[Nothing]]
+        })
+    }
+    // Make sure we wrap any exceptions that bubble up from decorator
+    // bodies, so outer decorators do not need to worry about their
+    // delegate throwing on them
+  }catch{case e: Throwable => Router.Result.Error.Exception(e) }
 }
 
 /**

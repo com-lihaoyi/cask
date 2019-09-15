@@ -89,35 +89,14 @@ abstract class BaseMain{
         routeTries(effectiveMethod).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match {
           case None => writeResponse(exchange, handleNotFound())
           case Some(((routes, metadata), routeBindings, remaining)) =>
-            val ctx = Request(exchange, remaining)
-            def rec(remaining: List[RawDecorator],
-                    bindings: List[Map[String, Any]]): Router.Result[Any] = try {
-              remaining match {
-                case head :: rest =>
-                  head.wrapFunction(
-                    ctx,
-                    args => rec(rest, args :: bindings)
-                      .asInstanceOf[cask.internal.Router.Result[cask.model.Response.Raw]]
-                  )
-
-                case Nil =>
-                  metadata.endpoint.wrapFunction(ctx, (endpointBindings: Map[String, Any]) =>
-                    metadata.entryPoint
-                      .asInstanceOf[EntryPoint[cask.main.Routes, cask.model.Request]]
-                      .invoke(
-                        routes, ctx,
-                        (endpointBindings ++ routeBindings.mapValues(metadata.endpoint.wrapPathSegment))
-                        :: bindings.reverse
-                      )
-                      .asInstanceOf[Router.Result[Nothing]]
-                  )
-              }
-              // Make sure we wrap any exceptions that bubble up from decorator
-              // bodies, so outer decorators do not need to worry about their
-              // delegate throwing on them
-            }catch{case e: Throwable => Router.Result.Error.Exception(e) }
-
-            rec((metadata.decorators ++ routes.decorators ++ mainDecorators).toList, Nil)match{
+            Decorator.invoke(
+              Request(exchange, remaining),
+              metadata,
+              routes,
+              routeBindings,
+              (mainDecorators ++ routes.decorators ++ metadata.decorators).toList,
+              Nil
+            ) match{
               case Router.Result.Success(res) => runner(res)
               case e: Router.Result.Error =>
                 writeResponse(

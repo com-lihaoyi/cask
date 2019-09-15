@@ -33,4 +33,3 @@ object FailureTests extends TestSuite {
     }
   }
 }
-
