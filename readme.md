@@ -35,3 +35,28 @@ complicated asynchrony.
 Cask is profiled using the
 [JProfiler Java Profiler](https://www.ej-technologies.com/products/jprofiler/overview.html),
 courtesy of EJ Technologies
+
+## Changelog
+
+### 0.2.5
+
+- Internal refactoring to clean up routing logic
+
+### 0.2.4
+
+- Standardize on a basic `cask.Logger` interface
+- Create a simple actor-based API for handling websockets in `cask.WsHandler`
+  and `cask.WsActor`
+
+### 0.2.3
+
+- `cask.Response` is now covariant
+
+### 0.2.2
+
+- Use standard `./mill` bootstrap script
+
+### 0.2.1
+
+- Support for Scala 2.13.0
+
