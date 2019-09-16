@@ -47,6 +47,9 @@ package object cask {
   type WsActor = cask.endpoints.WsActor
   val WsActor = cask.endpoints.WsActor
   type WsChannelActor = cask.endpoints.WsChannelActor
+  type WsClient = cask.util.WsClient
+  val WsClient = cask.util.WsClient
+  val Ws = cask.util.Ws
 
   // util
   type Logger = util.Logger

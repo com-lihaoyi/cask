@@ -8,6 +8,9 @@ trait Logger {
   def debug(t: sourcecode.Text[Any])(implicit f: sourcecode.File, line: sourcecode.Line): Unit
 }
 object Logger{
+  object Console {
+    implicit object globalLogger extends Console()
+  }
   class Console() extends Logger{
     def exception(t: Throwable): Unit = t.printStackTrace()
 

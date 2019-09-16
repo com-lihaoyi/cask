@@ -6,9 +6,9 @@ object Websockets extends cask.MainRoutes{
     if (userName != "haoyi") cask.Response("", statusCode = 403)
     else cask.WsHandler { channel =>
       cask.WsActor {
-        case cask.WsActor.Text("") => channel.send(cask.WsActor.Close())
-        case cask.WsActor.Text(data) =>
-          channel.send(cask.WsActor.Text(userName + " " + data))
+        case cask.Ws.Text("") => channel.send(cask.Ws.Close())
+        case cask.Ws.Text(data) =>
+          channel.send(cask.Ws.Text(userName + " " + data))
       }
     }
   }

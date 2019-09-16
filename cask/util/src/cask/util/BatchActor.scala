@@ -1,12 +1,10 @@
 package cask.util
 
-import cask.util.Logger
-
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
 
 /**
- * A simple asynchrous actor, allowing safe concurrent asynchronous processing
+ * A simple asynchronous actor, allowing safe concurrent asynchronous processing
  * of queued items. `run` handles items in batches, to allow for batch
  * processing optimizations to be used where relevant.
  */
@@ -16,7 +14,7 @@ abstract class BatchActor[T]()(implicit ec: ExecutionContext,
 
   private val queue = new mutable.Queue[T]()
   private var scheduled = false
-  def send(t: => T): Unit = synchronized{
+  def send(t: T): Unit = synchronized{
     queue.enqueue(t)
     if (!scheduled){
       scheduled = true
@@ -24,7 +22,7 @@ abstract class BatchActor[T]()(implicit ec: ExecutionContext,
     }
   }
 
-  def runWithItems(): Unit = {
+  private[this] def runWithItems(): Unit = {
     val items = synchronized(queue.dequeueAll(_ => true))
     try run(items)
     catch{case e: Throwable => log.exception(e)}
@@ -35,6 +33,5 @@ abstract class BatchActor[T]()(implicit ec: ExecutionContext,
         scheduled = false
       }
     }
-
   }
 }
