@@ -38,6 +38,10 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.2.7
+
+- Cross-publish `cask.util` for Scala.js
+
 ### 0.2.6
 
 - Embed `concurrent.ExecutionContext.global` in `cask.Routes` by default, to be
