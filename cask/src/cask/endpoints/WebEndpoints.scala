@@ -1,8 +1,8 @@
 package cask.endpoints
 
-import cask.internal.Router
-import cask.main.HttpEndpoint
+import cask.router.HttpEndpoint
 import cask.model.{Request, Response}
+import cask.router.{ArgReader, Result}
 
 import collection.JavaConverters._
 
@@ -10,7 +10,7 @@ import collection.JavaConverters._
 trait WebEndpoint extends HttpEndpoint[Response.Raw, Seq[String]]{
   type InputParser[T] = QueryParamReader[T]
   def wrapFunction(ctx: Request,
-                       delegate: Delegate): Router.Result[Response.Raw] = {
+                       delegate: Delegate): Result[Response.Raw] = {
     delegate(WebEndpoint.buildMapFromQueryParams(ctx))
   }
   def wrapPathSegment(s: String) = Seq(s)
@@ -40,7 +40,7 @@ class put(val path: String, override val subpath: Boolean = false) extends WebEn
 class route(val path: String, val methods: Seq[String], override val subpath: Boolean = false) extends WebEndpoint
 
 abstract class QueryParamReader[T]
-  extends Router.ArgReader[Seq[String], T, cask.model.Request]{
+  extends ArgReader[Seq[String], T, cask.model.Request]{
   def arity: Int
   def read(ctx: cask.model.Request, label: String, v: Seq[String]): T
 }

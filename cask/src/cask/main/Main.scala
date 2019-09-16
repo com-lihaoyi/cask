@@ -2,9 +2,9 @@ package cask.main
 
 import cask.endpoints.{WebsocketResult, WsHandler}
 import cask.model._
-import cask.internal.Router.EntryPoint
-import cask.internal.{DispatchTrie, Router, Util}
+import cask.internal.{DispatchTrie, Util}
 import cask.main
+import cask.router.{Decorator, EndpointMetadata, EntryPoint, RawDecorator, Result}
 import cask.util.Logger
 import io.undertow.Undertow
 import io.undertow.server.{HttpHandler, HttpServerExchange}
@@ -27,7 +27,7 @@ class MainRoutes extends Main with Routes{
   * application-wide properties.
   */
 abstract class Main{
-  def mainDecorators: Seq[cask.main.RawDecorator] = Nil
+  def mainDecorators: Seq[RawDecorator] = Nil
   def allRoutes: Seq[Routes]
   def port: Int = 8080
   def host: String = "localhost"
@@ -45,7 +45,7 @@ abstract class Main{
 
   def handleEndpointError(routes: Routes,
                           metadata: EndpointMetadata[_],
-                          e: Router.Result.Error) = {
+                          e: cask.router.Result.Error) = {
     Main.defaultHandleError(routes, metadata, e, debugMode)
   }
 
@@ -64,7 +64,7 @@ object Main{
                        mainDecorators: Seq[RawDecorator],
                        debugMode: Boolean,
                        handleNotFound: () => Response.Raw,
-                       handleError: (Routes, EndpointMetadata[_], Router.Result.Error) => Response.Raw)
+                       handleError: (Routes, EndpointMetadata[_], Result.Error) => Response.Raw)
                       (implicit log: Logger) extends HttpHandler() {
     def handleRequest(exchange: HttpServerExchange): Unit = try {
       //        println("Handling Request: " + exchange.getRequestPath)
@@ -98,8 +98,8 @@ object Main{
             (mainDecorators ++ routes.decorators ++ metadata.decorators).toList,
             Nil
           ) match{
-            case Router.Result.Success(res) => runner(res)
-            case e: Router.Result.Error =>
+            case Result.Success(res) => runner(res)
+            case e: Result.Error =>
               Main.writeResponse(
                 exchange,
                 handleError(routes, metadata, e)
@@ -145,17 +145,17 @@ object Main{
 
   def defaultHandleError(routes: Routes,
                          metadata: EndpointMetadata[_],
-                         e: Router.Result.Error,
+                         e: Result.Error,
                          debugMode: Boolean)
                         (implicit log: Logger) = {
     e match {
-      case e: Router.Result.Error.Exception => log.exception(e.t)
+      case e: Result.Error.Exception => log.exception(e.t)
       case _ => // do nothing
     }
     val statusCode = e match {
-      case _: Router.Result.Error.Exception => 500
-      case _: Router.Result.Error.InvalidArguments => 400
-      case _: Router.Result.Error.MismatchedArguments => 400
+      case _: Result.Error.Exception => 500
+      case _: Result.Error.InvalidArguments => 400
+      case _: Result.Error.MismatchedArguments => 400
     }
 
     val str =

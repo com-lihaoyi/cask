@@ -1,10 +1,12 @@
 package cask.main
 
+import cask.router.RoutesEndpointsMetadata
+
 import language.experimental.macros
 
 trait Routes{
 
-  def decorators = Seq.empty[cask.main.RawDecorator]
+  def decorators = Seq.empty[cask.router.RawDecorator]
   private[this] var metadata0: RoutesEndpointsMetadata[this.type] = null
   def caskMetadata =
     if (metadata0 != null) metadata0

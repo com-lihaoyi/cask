@@ -1,13 +1,14 @@
 package cask.endpoints
 
-import cask.internal.{Router, Util}
-import cask.main.HttpEndpoint
+import cask.internal.Util
+import cask.router.HttpEndpoint
 import cask.model._
+import cask.router.{ArgReader, Result}
 import io.undertow.server.handlers.form.FormParserFactory
 
 import collection.JavaConverters._
 
-sealed trait FormReader[T] extends Router.ArgReader[Seq[FormEntry], T, Request]
+sealed trait FormReader[T] extends ArgReader[Seq[FormEntry], T, Request]
 object FormReader{
   implicit def paramFormReader[T: QueryParamReader] = new FormReader[T]{
     def arity = implicitly[QueryParamReader[T]].arity
@@ -49,7 +50,7 @@ class postForm(val path: String, override val subpath: Boolean = false)
   val methods = Seq("post")
   type InputParser[T] = FormReader[T]
   def wrapFunction(ctx: Request,
-                       delegate: Delegate): Router.Result[Response.Raw] = {
+                       delegate: Delegate): Result[Response.Raw] = {
     try {
       val formData = FormParserFactory.builder().build().createParser(ctx.exchange).parseBlocking()
       delegate(
@@ -60,7 +61,7 @@ class postForm(val path: String, override val subpath: Boolean = false)
           .toMap
       )
     } catch{case e: Exception =>
-      Router.Result.Success(cask.model.Response(
+      Result.Success(cask.model.Response(
         "Unable to parse form data: " + e + "\n" + Util.stackTraceString(e),
         statusCode = 400
       ))

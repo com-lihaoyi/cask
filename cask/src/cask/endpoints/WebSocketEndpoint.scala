@@ -2,8 +2,8 @@ package cask.endpoints
 
 import java.nio.ByteBuffer
 
-import cask.internal.Router
 import cask.model.Request
+import cask.router.Result
 import cask.util.Logger
 import io.undertow.websockets.WebSocketConnectionCallback
 import io.undertow.websockets.core.{AbstractReceiveListener, BufferedBinaryMessage, BufferedTextMessage, CloseMessage, WebSocketChannel, WebSockets}
@@ -21,10 +21,10 @@ object WebsocketResult{
 }
 
 class websocket(val path: String, override val subpath: Boolean = false)
-  extends cask.main.Endpoint[WebsocketResult, Seq[String]]{
+  extends cask.router.Endpoint[WebsocketResult, Seq[String]]{
   val methods = Seq("websocket")
   type InputParser[T] = QueryParamReader[T]
-  type OuterReturned = Router.Result[WebsocketResult]
+  type OuterReturned = Result[WebsocketResult]
   def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned = {
     delegate(WebEndpoint.buildMapFromQueryParams(ctx))
   }

@@ -1,6 +1,6 @@
 package cask.endpoints
 
-import cask.main.HttpEndpoint
+import cask.router.HttpEndpoint
 import cask.model.Request
 
 class staticFiles(val path: String) extends HttpEndpoint[String, Seq[String]]{

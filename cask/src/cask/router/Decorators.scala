@@ -1,8 +1,8 @@
-package cask.main
+package cask.router
 
-import cask.internal.{Conversion, Router}
-import cask.internal.Router.{ArgReader, EntryPoint}
+import cask.internal.Conversion
 import cask.model.{Request, Response}
+import cask.router.{ArgReader, EntryPoint, Result}
 
 /**
   * A [[Decorator]] allows you to annotate a function to wrap it, via
@@ -18,8 +18,8 @@ import cask.model.{Request, Response}
 trait Decorator[InnerReturned, Input]{
   final type InputTypeAlias = Input
   type InputParser[T] <: ArgReader[Input, T, Request]
-  final type Delegate = Map[String, Input] => Router.Result[InnerReturned]
-  type OuterReturned <: Router.Result[Any]
+  final type Delegate = Map[String, Input] => Result[InnerReturned]
+  type OuterReturned <: Result[Any]
   def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned
   def getParamParser[T](implicit p: InputParser[T]) = p
 }
@@ -41,13 +41,13 @@ object Decorator{
                 routes: T,
                 routeBindings: Map[String, String],
                 remainingDecorators: List[RawDecorator],
-                bindings: List[Map[String, Any]]): Router.Result[Any] = try {
+                bindings: List[Map[String, Any]]): Result[Any] = try {
     remainingDecorators match {
       case head :: rest =>
         head.wrapFunction(
           ctx,
           args => invoke(ctx, endpoint, entryPoint, routes, routeBindings, rest, args :: bindings)
-            .asInstanceOf[Router.Result[cask.model.Response.Raw]]
+            .asInstanceOf[Result[cask.model.Response.Raw]]
         )
 
       case Nil =>
@@ -58,13 +58,13 @@ object Decorator{
           entryPoint
             .asInstanceOf[EntryPoint[T, cask.model.Request]]
             .invoke(routes, ctx, finalBindings)
-            .asInstanceOf[Router.Result[Nothing]]
+            .asInstanceOf[Result[Nothing]]
         })
     }
     // Make sure we wrap any exceptions that bubble up from decorator
     // bodies, so outer decorators do not need to worry about their
     // delegate throwing on them
-  }catch{case e: Throwable => Router.Result.Error.Exception(e) }
+  }catch{case e: Throwable => Result.Error.Exception(e) }
 }
 
 /**
@@ -72,7 +72,7 @@ object Decorator{
   * response stream, before and after the primary [[Endpoint]] does it's job.
   */
 trait RawDecorator extends Decorator[Response.Raw, Any]{
-  type OuterReturned = Router.Result[Response.Raw]
+  type OuterReturned = Result[Response.Raw]
   type InputParser[T] = NoOpParser[Any, T]
 }
 
@@ -121,7 +121,7 @@ trait Endpoint[InnerReturned, Input] extends Decorator[InnerReturned, Input]{
   * [[RawDecorator]] but with additional metadata and capabilities.
   */
 trait HttpEndpoint[InnerReturned, Input] extends Endpoint[InnerReturned, Input] {
-  type OuterReturned = Router.Result[Response.Raw]
+  type OuterReturned = Result[Response.Raw]
 }
 
 

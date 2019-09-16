@@ -2,14 +2,15 @@ package cask.endpoints
 
 import java.io.{ByteArrayOutputStream, InputStream, OutputStream, OutputStreamWriter}
 
-import cask.internal.{Router, Util}
-import cask.main.HttpEndpoint
+import cask.internal.Util
+import cask.router.HttpEndpoint
 import cask.model.Response.DataCompanion
 import cask.model.{Request, Response}
+import cask.router.{ArgReader, Result}
 
 import collection.JavaConverters._
 
-sealed trait JsReader[T] extends Router.ArgReader[ujson.Value, T, cask.model.Request]
+sealed trait JsReader[T] extends ArgReader[ujson.Value, T, cask.model.Request]
 object JsReader{
   implicit def defaultJsReader[T: upickle.default.Reader] = new JsReader[T]{
     def arity = 1
@@ -43,9 +44,9 @@ class postJson(val path: String, override val subpath: Boolean = false)
   extends HttpEndpoint[Response[JsonData], ujson.Value]{
   val methods = Seq("post")
   type InputParser[T] = JsReader[T]
-  override type OuterReturned = Router.Result[Response.Raw]
+  override type OuterReturned = Result[Response.Raw]
   def wrapFunction(ctx: Request,
-                   delegate: Delegate): Router.Result[Response.Raw] = {
+                   delegate: Delegate): Result[Response.Raw] = {
     val obj = for{
       str <-
         try {
@@ -71,7 +72,7 @@ class postJson(val path: String, override val subpath: Boolean = false)
         ))}
     } yield obj.toMap
     obj match{
-      case Left(r) => Router.Result.Success(r.map(Response.Data.StringData))
+      case Left(r) => Result.Success(r.map(Response.Data.StringData))
       case Right(params) => delegate(params)
     }
   }
@@ -82,8 +83,8 @@ class getJson(val path: String, override val subpath: Boolean = false)
   extends HttpEndpoint[Response[JsonData], Seq[String]]{
   val methods = Seq("get")
   type InputParser[T] = QueryParamReader[T]
-  override type OuterReturned = Router.Result[Response.Raw]
-  def wrapFunction(ctx: Request, delegate: Delegate): Router.Result[Response.Raw] = {
+  override type OuterReturned = Result[Response.Raw]
+  def wrapFunction(ctx: Request, delegate: Delegate): Result[Response.Raw] = {
 
     delegate(WebEndpoint.buildMapFromQueryParams(ctx))
   }

@@ -2,7 +2,6 @@ package cask.decorators
 import java.io.{ByteArrayOutputStream, OutputStream}
 import java.util.zip.{DeflaterOutputStream, GZIPOutputStream}
 
-import cask.internal.Router
 import cask.model.{Request, Response}
 
 import collection.JavaConverters._

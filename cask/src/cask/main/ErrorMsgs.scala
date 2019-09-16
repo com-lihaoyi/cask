@@ -1,11 +1,12 @@
 package cask.main
 
 
-import cask.internal.{Router, Util}
+import cask.internal.Util
 import cask.internal.Util.literalize
+import cask.router.{ArgSig, EntryPoint, Result}
 
 object ErrorMsgs {
-  def getLeftColWidth(items: Seq[Router.ArgSig[_, _, _,_]]) = {
+  def getLeftColWidth(items: Seq[ArgSig[_, _, _,_]]) = {
     items.map(_.name.length + 2) match{
       case Nil => 0
       case x => x.max
@@ -13,7 +14,7 @@ object ErrorMsgs {
   }
 
   def renderArg[T](base: T,
-                   arg: Router.ArgSig[_, T, _, _],
+                   arg: ArgSig[_, T, _, _],
                    leftOffset: Int,
                    wrappedWidth: Int): (String, String) = {
     val suffix = arg.default match{
@@ -33,7 +34,7 @@ object ErrorMsgs {
   }
 
   def formatMainMethodSignature[T](base: T,
-                                   main: Router.EntryPoint[T, _],
+                                   main: EntryPoint[T, _],
                                    leftIndent: Int,
                                    leftColWidth: Int) = {
     // +2 for space on right of left col
@@ -56,12 +57,12 @@ object ErrorMsgs {
        |${argStrings.map(_ + "\n").mkString}""".stripMargin
   }
 
-  def formatInvokeError[T](base: T, route: Router.EntryPoint[T, _], x: Router.Result.Error): String = {
+  def formatInvokeError[T](base: T, route: EntryPoint[T, _], x: Result.Error): String = {
     def expectedMsg = formatMainMethodSignature(base: T, route, 0, 0)
 
     x match{
-      case Router.Result.Error.Exception(x) => Util.stackTraceString(x)
-      case Router.Result.Error.MismatchedArguments(missing, unknown) =>
+      case Result.Error.Exception(x) => Util.stackTraceString(x)
+      case Result.Error.MismatchedArguments(missing, unknown) =>
         val missingStr =
           if (missing.isEmpty) ""
           else {
@@ -88,14 +89,14 @@ object ErrorMsgs {
            |$expectedMsg
            |""".stripMargin
 
-      case Router.Result.Error.InvalidArguments(x) =>
+      case Result.Error.InvalidArguments(x) =>
         val argumentsStr = Util.pluralize("argument", x.length)
         val thingies = x.map{
-          case Router.Result.ParamError.Invalid(p, v, ex) =>
+          case Result.ParamError.Invalid(p, v, ex) =>
             val literalV = literalize(v)
             val trace = Util.stackTraceString(ex)
             s"${p.name}: ${p.typeString} = $literalV failed to parse with $ex\n$trace"
-          case Router.Result.ParamError.DefaultFailed(p, ex) =>
+          case Result.ParamError.DefaultFailed(p, ex) =>
             val trace = Util.stackTraceString(ex)
             s"${p.name}'s default value failed to evaluate with $ex\n$trace"
         }

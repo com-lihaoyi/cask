@@ -1,11 +1,11 @@
 package cask.endpoints
 
-import cask.internal.Router
+import cask.router.ArgReader
 import cask.model.{Cookie, Request}
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.handlers.form.{FormData, FormParserFactory}
 
-abstract class ParamReader[T] extends Router.ArgReader[Unit, T, cask.model.Request]{
+abstract class ParamReader[T] extends ArgReader[Unit, T, cask.model.Request]{
   def arity: Int
   def read(ctx: cask.model.Request, label: String, v: Unit): T
 }

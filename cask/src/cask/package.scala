@@ -39,8 +39,8 @@ package object cask {
   type Routes = main.Routes
 
   type Main = main.Main
-  type RawDecorator = main.RawDecorator
-  type HttpEndpoint[InnerReturned, Input] = main.HttpEndpoint[InnerReturned, Input]
+  type RawDecorator = router.RawDecorator
+  type HttpEndpoint[InnerReturned, Input] = router.HttpEndpoint[InnerReturned, Input]
 
   type WsHandler = cask.endpoints.WsHandler
   val WsHandler = cask.endpoints.WsHandler

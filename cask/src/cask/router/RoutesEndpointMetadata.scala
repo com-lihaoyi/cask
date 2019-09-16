@@ -1,6 +1,6 @@
-package cask.main
+package cask.router
 
-import cask.internal.Router.EntryPoint
+import cask.router.EntryPoint
 
 import language.experimental.macros
 import scala.reflect.macros.blackbox
@@ -12,7 +12,7 @@ object RoutesEndpointsMetadata{
   implicit def initialize[T]: RoutesEndpointsMetadata[T] = macro initializeImpl[T]
   implicit def initializeImpl[T: c.WeakTypeTag](c: blackbox.Context): c.Expr[RoutesEndpointsMetadata[T]] = {
     import c.universe._
-    val router = new cask.internal.Router[c.type](c)
+    val router = new cask.router.Macros[c.type](c)
 
     val routeParts = for{
       m <- c.weakTypeOf[T].members
@@ -54,7 +54,7 @@ object RoutesEndpointsMetadata{
 
       val res = q"""{
           ..$declarations
-          cask.main.EndpointMetadata(
+          cask.router.EndpointMetadata(
             Seq(..${annotObjectSyms.dropRight(1)}),
             ${annotObjectSyms.last},
             $route
@@ -63,6 +63,6 @@ object RoutesEndpointsMetadata{
       res
     }
 
-    c.Expr[RoutesEndpointsMetadata[T]](q"""cask.main.RoutesEndpointsMetadata(..$routeParts)""")
+    c.Expr[RoutesEndpointsMetadata[T]](q"""cask.router.RoutesEndpointsMetadata(..$routeParts)""")
   }
 }
