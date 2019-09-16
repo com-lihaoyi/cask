@@ -38,6 +38,10 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.2.9
+
+- Provide a simple cross-platform builtin websocket client in `cask.WsClient`
+
 ### 0.2.8
 
 - Make `Routes#log` implicit
