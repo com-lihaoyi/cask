@@ -55,6 +55,7 @@ object cask extends CaskModule {
 
   object util extends Module {
     trait UtilModule extends CaskModule {
+      def artifactName = "cask-util"
       def platformSegment: String
       def millSourcePath = super.millSourcePath / os.up
 
