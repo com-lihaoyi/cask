@@ -1,6 +1,5 @@
 package app
 
-import concurrent.ExecutionContext.Implicits.global
 object Websockets extends cask.MainRoutes{
   @cask.websocket("/connect/:userName")
   def showUserProfile(userName: String): cask.WebsocketResult = {

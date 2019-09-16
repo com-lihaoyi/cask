@@ -38,6 +38,11 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.2.6
+
+- Embed `concurrent.ExecutionContext.global` in `cask.Routes` by default, to be
+  overriden if necessary
+
 ### 0.2.5
 
 - Internal refactoring to clean up routing logic
