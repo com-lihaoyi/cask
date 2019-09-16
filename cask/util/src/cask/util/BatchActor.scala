@@ -1,7 +1,5 @@
 package cask.util
 
-import cask.util.Logger
-
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
 

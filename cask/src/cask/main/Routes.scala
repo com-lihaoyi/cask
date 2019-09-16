@@ -17,5 +17,5 @@ trait Routes{
     metadata0 = routes
   }
 
-  def log: cask.util.Logger
+  implicit def log: cask.util.Logger
 }

@@ -38,6 +38,10 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.2.8
+
+- Make `Routes#log` implicit
+
 ### 0.2.7
 
 - Cross-publish `cask.util` for Scala.js
