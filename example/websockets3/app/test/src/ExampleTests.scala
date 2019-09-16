@@ -4,7 +4,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import org.asynchttpclient.ws.{WebSocket, WebSocketListener, WebSocketUpgradeHandler}
 import utest._
-
+import concurrent.ExecutionContext.Implicits.global
+import cask.Logger.Console.globalLogger
 object ExampleTests extends TestSuite{
 
 
@@ -23,53 +24,28 @@ object ExampleTests extends TestSuite{
   val tests = Tests{
     test("Websockets") - withServer(Websockets3Main){ host =>
       @volatile var out = List.empty[String]
-      val client = org.asynchttpclient.Dsl.asyncHttpClient();
-      try{
+      // 4. open websocket
+      val ws = cask.WsClient.connect("ws://localhost:8080/connect/haoyi"){
+        case cask.Ws.Text(s) => out = s :: out
+      }
 
-        // 4. open websocket
-        val ws: WebSocket = client.prepareGet("ws://localhost:8080/connect/haoyi")
-          .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(
-            new WebSocketListener() {
-
-              override def onTextFrame(payload: String, finalFragment: Boolean, rsv: Int) {
-                out = payload :: out
-              }
-
-              def onOpen(websocket: WebSocket) = ()
-
-              def onClose(websocket: WebSocket, code: Int, reason: String) = ()
-
-              def onError(t: Throwable) = ()
-            }).build()
-          ).get()
-
+      try {
         // 5. send messages
-        ws.sendTextFrame("hello")
-        ws.sendTextFrame("world")
-        ws.sendTextFrame("")
+        ws.send(cask.Ws.Text("hello"))
+        ws.send(cask.Ws.Text("world"))
+        ws.send(cask.Ws.Text(""))
         Thread.sleep(100)
         out ==> List("haoyi world", "haoyi hello")
 
         var error: String = ""
-        val cli2 = client.prepareGet("ws://localhost:8080/connect/nobody")
-          .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(
-            new WebSocketListener() {
-
-              def onOpen(websocket: WebSocket) = ()
-
-              def onClose(websocket: WebSocket, code: Int, reason: String) = ()
-
-              def onError(t: Throwable) = {
-                error = t.toString
-              }
-            }).build()
-          ).get()
+        val ws2 = cask.WsClient.connect("ws://localhost:8080/connect/nobody") {
+          case cask.Ws.Text(s) => out = s :: out
+          case cask.Ws.Error(t) => error += t.toString
+          case cask.Ws.Close(code, reason) => error += reason
+        }
 
         assert(error.contains("403"))
-
-      } finally{
-        client.close()
-      }
+      }finally ws.close()
     }
   }
 }
