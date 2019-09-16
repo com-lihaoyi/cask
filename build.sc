@@ -1,4 +1,4 @@
-import mill._, scalalib._, publish._
+import mill._, scalalib._, scalajslib._, publish._
 
 import $file.ci.upload, $file.ci.version
 import $file.example.compress.build
@@ -23,18 +23,8 @@ import $file.example.variableRoutes.build
 import $file.example.websockets.build
 import $file.example.websockets2.build
 
-object cask extends ScalaModule with PublishModule {
+trait CaskModule extends ScalaModule with PublishModule{
   def scalaVersion = "2.13.0"
-  def ivyDeps = Agg(
-    ivy"org.scala-lang:scala-reflect:${scalaVersion()}",
-    ivy"io.undertow:undertow-core:2.0.13.Final",
-    ivy"com.lihaoyi::upickle:0.7.5",
-    ivy"com.lihaoyi::sourcecode:0.1.7",
-    ivy"com.lihaoyi::pprint:0.5.5"
-  )
-  def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.2.0")
-  def scalacOptions = Seq("-P:acyclic:force")
-  def scalacPluginIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.2.0")
 
   def publishVersion = build.publishVersion()._2
 
@@ -48,6 +38,44 @@ object cask extends ScalaModule with PublishModule {
       Developer("lihaoyi", "Li Haoyi","https://github.com/lihaoyi")
     )
   )
+}
+
+object cask extends CaskModule {
+  def moduleDeps = Seq(util.jvm)
+
+  def ivyDeps = Agg(
+    ivy"org.scala-lang:scala-reflect:${scalaVersion()}",
+    ivy"io.undertow:undertow-core:2.0.13.Final",
+    ivy"com.lihaoyi::upickle:0.7.5"
+  )
+  def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.2.0")
+  def scalacOptions = Seq("-P:acyclic:force")
+  def scalacPluginIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.2.0")
+
+
+  object util extends Module {
+    trait UtilModule extends CaskModule {
+      def platformSegment: String
+      def millSourcePath = super.millSourcePath / os.up
+
+      def sources = T.sources(
+        millSourcePath / "src",
+        millSourcePath / s"src-$platformSegment"
+      )
+      def ivyDeps = Agg(
+        ivy"com.lihaoyi::sourcecode:0.1.7",
+        ivy"com.lihaoyi::pprint:0.5.5"
+      )
+    }
+
+    object js extends UtilModule with ScalaJSModule{
+      def platformSegment = "js"
+      def scalaJSVersion = "0.6.28"
+    }
+    object jvm extends UtilModule{
+      def platformSegment = "jvm"
+    }
+  }
 
   object test extends Tests{
 
