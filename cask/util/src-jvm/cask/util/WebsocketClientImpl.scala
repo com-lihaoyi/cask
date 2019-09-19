@@ -26,7 +26,9 @@ abstract class WebsocketClientImpl(url: String) extends WebsocketBase{
   }
   def onClose(code: Int, reason: String): Unit
   def onError(ex: Exception): Unit
-  def close(): Unit = websocket.close()
+  def close(): Unit = {
+    if (!closed) websocket.close()
+  }
   def isClosed() = websocket.isClosed()
   class Client() extends WebSocketClient(new java.net.URI(url)){
     def onOpen(handshakedata: ServerHandshake) = {
