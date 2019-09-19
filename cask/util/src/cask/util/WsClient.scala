@@ -14,7 +14,6 @@ class WsClient(impl: WebsocketBase)
     case Ws.Close(_, _) => impl.close()
     case Ws.ChannelClosed() => impl.close()
   }
-  def close() = impl.close()
 }
 
 object WsClient{
