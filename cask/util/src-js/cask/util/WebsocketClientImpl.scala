@@ -7,7 +7,7 @@ abstract class WebsocketClientImpl(url: String) extends WebsocketBase{
   var closed = false
   def connect(): Unit = {
     websocket = new dom.WebSocket(url)
-    closed = false
+    assert(closed == false)
     websocket.onopen = (e: dom.Event) => onOpen()
     websocket.onmessage = (e: dom.MessageEvent) => onMessage(e.data.asInstanceOf[String])
     websocket.onclose = (e: dom.CloseEvent) => {
