@@ -4,8 +4,9 @@ import org.java_websocket.handshake.ServerHandshake
 
 abstract class WebsocketClientImpl(url: String) extends WebsocketBase{
   var websocket: Client = null
-
+  var closed = false
   def connect(): Unit = {
+    closed = false
     websocket = new Client()
     websocket.connect()
   }
@@ -32,7 +33,10 @@ abstract class WebsocketClientImpl(url: String) extends WebsocketBase{
       WebsocketClientImpl.this.onOpen()
     }
     def onMessage(message: String) = WebsocketClientImpl.this.onMessage(message)
-    def onClose(code: Int, reason: String, remote: Boolean) = WebsocketClientImpl.this.onClose(code, reason)
+    def onClose(code: Int, reason: String, remote: Boolean) = {
+      closed = true
+      WebsocketClientImpl.this.onClose(code, reason)
+    }
     def onError(ex: Exception) = WebsocketClientImpl.this.onError(ex)
 
   }
