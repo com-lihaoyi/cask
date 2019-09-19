@@ -6,7 +6,7 @@ abstract class WebsocketClientImpl(url: String) extends WebsocketBase{
   var websocket: Client = null
   var closed = false
   def connect(): Unit = {
-    closed = false
+    assert(closed == false)
     websocket = new Client()
     websocket.connect()
   }
