@@ -28,6 +28,8 @@ abstract class WebsocketClientImpl(url: String) extends WebsocketBase{
   def onError(ex: Exception): Unit
   def onMessage(value: String): Unit
   def onClose(code: Int, reason: String): Unit
-  def close(): Unit = websocket.close()
+  def close(): Unit = {
+    if (!closed) websocket.close()
+  }
   def isClosed() = closed
 }
