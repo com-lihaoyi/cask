@@ -38,6 +38,10 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.3.0
+
+- Fix crashes in `cask.WebsocketClientImpl`
+
 ### 0.2.9
 
 - Provide a simple cross-platform builtin websocket client in `cask.WsClient`
