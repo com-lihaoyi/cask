@@ -4,7 +4,7 @@ import cask.router.EntryPoint
 
 import language.experimental.macros
 import scala.reflect.macros.blackbox
-case class EndpointMetadata[T](decorators: Seq[RawDecorator],
+case class EndpointMetadata[T](decorators: Seq[Decorator[_, _, _]],
                                endpoint: Endpoint[_, _, _],
                                entryPoint: EntryPoint[T, _])
 case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
