@@ -11,7 +11,7 @@ class compress extends cask.RawDecorator{
       .toSeq
       .flatMap(_.asScala)
       .flatMap(_.split(", "))
-    delegate(Map()).map{ v =>
+    delegate(Map()).transform{ case v: cask.Response[_]  =>
       val (newData, newHeaders) = if (acceptEncodings.exists(_.toLowerCase == "gzip")) {
         new Response.Data {
           def write(out: OutputStream): Unit = {

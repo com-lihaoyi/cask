@@ -85,7 +85,6 @@ class getJson(val path: String, override val subpath: Boolean = false)
   type InputParser[T] = QueryParamReader[T]
   override type OuterReturned = Result[Response.Raw]
   def wrapFunction(ctx: Request, delegate: Delegate): Result[Response.Raw] = {
-
     delegate(WebEndpoint.buildMapFromQueryParams(ctx))
   }
   def wrapPathSegment(s: String) = Seq(s)

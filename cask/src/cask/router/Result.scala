@@ -9,6 +9,7 @@ package cask.router
  */
 sealed trait Result[+T]{
   def map[V](f: T => V): Result[V]
+  def transform[V](f: PartialFunction[T, V]): Result[V]
 }
 object Result{
 
@@ -18,6 +19,10 @@ object Result{
    */
   case class Success[T](value: T) extends Result[T]{
     def map[V](f: T => V) = Success(f(value))
+    def transform[V](f: PartialFunction[T, V]) = f.lift(value) match {
+      case None => Success(value).asInstanceOf[Result[V]]
+      case Some(res) => Success(res)
+    }
   }
 
   /**
@@ -25,6 +30,7 @@ object Result{
    */
   sealed trait Error extends Result[Nothing]{
     def map[V](f: Nothing => V) = this
+    def transform[V](f: PartialFunction[Nothing, V]) = this
   }
 
 
