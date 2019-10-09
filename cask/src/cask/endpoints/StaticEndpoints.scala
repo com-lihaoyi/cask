@@ -1,6 +1,6 @@
 package cask.endpoints
 
-import cask.router.HttpEndpoint
+import cask.router.{HttpEndpoint, Result}
 import cask.model.Request
 object StaticUtil{
   def makePath(t: String, ctx: Request) = {
@@ -14,7 +14,7 @@ class staticFiles(val path: String, headers: Seq[(String, String)] = Nil) extend
   val methods = Seq("get")
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true
-  def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned = {
+  def wrapFunction(ctx: Request, delegate: Delegate) = {
     delegate(Map()).map(t => cask.model.StaticFile(StaticUtil.makePath(t, ctx), headers))
   }
 
@@ -28,7 +28,7 @@ class staticResources(val path: String,
   val methods = Seq("get")
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true
-  def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned = {
+  def wrapFunction(ctx: Request, delegate: Delegate) = {
     delegate(Map()).map(t =>
       cask.model.StaticResource(StaticUtil.makePath(t, ctx), resourceRoot, headers)
     )

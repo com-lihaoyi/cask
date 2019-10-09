@@ -44,7 +44,7 @@ class postJson(val path: String, override val subpath: Boolean = false)
   extends HttpEndpoint[Response[JsonData], ujson.Value]{
   val methods = Seq("post")
   type InputParser[T] = JsReader[T]
-  override type OuterReturned = Result[Response.Raw]
+
   def wrapFunction(ctx: Request,
                    delegate: Delegate): Result[Response.Raw] = {
     val obj = for{
@@ -83,7 +83,7 @@ class getJson(val path: String, override val subpath: Boolean = false)
   extends HttpEndpoint[Response[JsonData], Seq[String]]{
   val methods = Seq("get")
   type InputParser[T] = QueryParamReader[T]
-  override type OuterReturned = Result[Response.Raw]
+
   def wrapFunction(ctx: Request, delegate: Delegate): Result[Response.Raw] = {
     delegate(WebEndpoint.buildMapFromQueryParams(ctx))
   }

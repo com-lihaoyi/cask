@@ -21,11 +21,11 @@ object WebsocketResult{
 }
 
 class websocket(val path: String, override val subpath: Boolean = false)
-  extends cask.router.Endpoint[WebsocketResult, Seq[String]]{
+  extends cask.router.Endpoint[WebsocketResult, WebsocketResult, Seq[String]]{
   val methods = Seq("websocket")
   type InputParser[T] = QueryParamReader[T]
   type OuterReturned = Result[WebsocketResult]
-  def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned = {
+  def wrapFunction(ctx: Request, delegate: Delegate) = {
     delegate(WebEndpoint.buildMapFromQueryParams(ctx))
   }
 

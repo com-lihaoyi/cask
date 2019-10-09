@@ -16,7 +16,7 @@ object TodoServer extends cask.MainRoutes{
 
   class transactional extends cask.RawDecorator{
     class TransactionFailed(val value: cask.router.Result.Error) extends Exception
-    def wrapFunction(pctx: cask.Request, delegate: Delegate): OuterReturned = {
+    def wrapFunction(pctx: cask.Request, delegate: Delegate) = {
       try ctx.transaction(
         delegate(Map()) match{
           case cask.router.Result.Success(t) => cask.router.Result.Success(t)

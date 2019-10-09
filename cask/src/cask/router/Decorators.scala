@@ -14,12 +14,11 @@ import cask.model.{Request, Response}
   * to `wrapFunction`, which takes a `Map` representing any additional argument
   * lists (if any).
   */
-trait Decorator[InnerReturned, Input]{
+trait Decorator[OuterReturned, InnerReturned, Input]{
   final type InputTypeAlias = Input
   type InputParser[T] <: ArgReader[Input, T, Request]
   final type Delegate = Map[String, Input] => Result[InnerReturned]
-  type OuterReturned <: Result[Any]
-  def wrapFunction(ctx: Request, delegate: Delegate): OuterReturned
+  def wrapFunction(ctx: Request, delegate: Delegate): Result[OuterReturned]
   def getParamParser[T](implicit p: InputParser[T]) = p
 }
 object Decorator{
@@ -35,15 +34,15 @@ object Decorator{
    * used as the first argument list.
    */
   def invoke[T](ctx: Request,
-                endpoint: Endpoint[_, _],
+                endpoint: Endpoint[_, _, _],
                 entryPoint: EntryPoint[T, _],
                 routes: T,
                 routeBindings: Map[String, String],
-                remainingDecorators: List[Decorator[_, _]],
+                remainingDecorators: List[Decorator[_, _, _]],
                 bindings: List[Map[String, Any]]): Result[Any] = try {
     remainingDecorators match {
       case head :: rest =>
-        head.asInstanceOf[Decorator[Any, Any]].wrapFunction(
+        head.asInstanceOf[Decorator[Any, Any, Any]].wrapFunction(
           ctx,
           args => invoke(ctx, endpoint, entryPoint, routes, routeBindings, rest, args :: bindings)
             .asInstanceOf[Result[Nothing]]
@@ -70,8 +69,7 @@ object Decorator{
   * A [[RawDecorator]] is a decorator that operates on the raw request and
   * response stream, before and after the primary [[Endpoint]] does it's job.
   */
-trait RawDecorator extends Decorator[Response.Raw, Any]{
-  type OuterReturned = Result[Response.Raw]
+trait RawDecorator extends Decorator[Response.Raw, Response.Raw, Any]{
   type InputParser[T] = NoOpParser[Any, T]
 }
 
@@ -80,7 +78,8 @@ trait RawDecorator extends Decorator[Response.Raw, Any]{
   * An [[HttpEndpoint]] that may return something else than a HTTP response, e.g.
   * a websocket endpoint which may instead return a websocket event handler
   */
-trait Endpoint[InnerReturned, Input] extends Decorator[InnerReturned, Input]{
+trait Endpoint[OuterReturned, InnerReturned, Input]
+  extends Decorator[OuterReturned, InnerReturned, Input]{
   /**
     * What is the path that this particular endpoint matches?
     */
@@ -119,9 +118,7 @@ trait Endpoint[InnerReturned, Input] extends Decorator[InnerReturned, Input]{
   * Annotates a Cask endpoint that returns a HTTP [[Response]]; similar to a
   * [[RawDecorator]] but with additional metadata and capabilities.
   */
-trait HttpEndpoint[InnerReturned, Input] extends Endpoint[InnerReturned, Input] {
-  type OuterReturned = Result[Response.Raw]
-}
+trait HttpEndpoint[InnerReturned, Input] extends Endpoint[Response.Raw, InnerReturned, Input]
 
 
 class NoOpParser[Input, T] extends ArgReader[Input, T, Request] {
