@@ -38,6 +38,17 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.3.1
+
+- Mismatched decorator types applied to a single method is now a compile error
+
+- `staticFiles` and `staticResources` now allows you to specify response headers
+
+- Allow `cask.decorators.compress` to be used as a `cask.Routes` or `cask.Main`
+  decorator without crashing on websocket responses
+
+- Allow decorators to be defined and used for non-`cask.Response` results
+
 ### 0.3.0
 
 - Fix crashes in `cask.WebsocketClientImpl`
