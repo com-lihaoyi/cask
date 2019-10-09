@@ -378,6 +378,12 @@ interface. While Cask does not model streams, backpressure, iteratees, or
 provide any higher level API, it should not be difficult to take the Cask API
 and build whatever higher-level abstractions you prefer to use.
 
+If you are separating your `cask.Routes` from your `cask.Main`, you need to
+inject in a `cask.Logger` to handle errors reported when handling websocket
+requests:
+
+$$$websockets3
+
 ## TodoMVC Api Server
 
 

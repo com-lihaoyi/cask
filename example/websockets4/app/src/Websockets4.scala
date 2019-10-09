@@ -1,0 +1,22 @@
+package app
+
+case class Websockets4()(implicit val log: cask.Logger) extends cask.Routes{
+  @cask.decorators.compress // make sure compress decorator passes non-requests through correctly
+  @cask.websocket("/connect/:userName")
+  def showUserProfile(userName: String): cask.WebsocketResult = {
+    if (userName != "haoyi") cask.Response("", statusCode = 403)
+    else cask.WsHandler { channel =>
+      cask.WsActor {
+        case cask.Ws.Text("") => channel.send(cask.Ws.Close())
+        case cask.Ws.Text(data) =>
+          channel.send(cask.Ws.Text(userName + " " + data))
+      }
+    }
+  }
+
+  initialize()
+}
+
+object Websockets4Main extends cask.Main{
+  val allRoutes = Seq(Websockets4())
+}

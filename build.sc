@@ -23,6 +23,7 @@ import $file.example.variableRoutes.build
 import $file.example.websockets.build
 import $file.example.websockets2.build
 import $file.example.websockets3.build
+import $file.example.websockets4.build
 
 trait CaskModule extends ScalaModule with PublishModule{
   def scalaVersion = "2.13.0"
@@ -122,7 +123,8 @@ object example extends Module{
   object variableRoutes extends $file.example.variableRoutes.build.AppModule with LocalModule
   object websockets extends $file.example.websockets.build.AppModule with LocalModule
   object websockets2 extends $file.example.websockets2.build.AppModule with LocalModule
-  object websockets3 extends $file.example.websockets2.build.AppModule with LocalModule
+  object websockets3 extends $file.example.websockets3.build.AppModule with LocalModule
+  object websockets4 extends $file.example.websockets4.build.AppModule with LocalModule
 }
 
 def publishVersion = T.input($file.ci.version.publishVersion)
@@ -167,6 +169,7 @@ def uploadToGithub(authKey: String) = T.command{
     $file.example.websockets.build.millSourcePath,
     $file.example.websockets2.build.millSourcePath,
     $file.example.websockets3.build.millSourcePath,
+    $file.example.websockets4.build.millSourcePath,
   )
   for(example <- examples){
     val f = T.ctx().dest
