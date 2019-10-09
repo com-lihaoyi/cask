@@ -6,7 +6,7 @@ import language.experimental.macros
 
 trait Routes{
 
-  def decorators = Seq.empty[cask.router.RawDecorator]
+  def decorators = Seq.empty[cask.router.Decorator[_, _]]
   implicit def executionContext = concurrent.ExecutionContext.Implicits.global
   private[this] var metadata0: RoutesEndpointsMetadata[this.type] = null
   def caskMetadata =

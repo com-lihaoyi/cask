@@ -39,14 +39,14 @@ object Decorator{
                 entryPoint: EntryPoint[T, _],
                 routes: T,
                 routeBindings: Map[String, String],
-                remainingDecorators: List[RawDecorator],
+                remainingDecorators: List[Decorator[_, _]],
                 bindings: List[Map[String, Any]]): Result[Any] = try {
     remainingDecorators match {
       case head :: rest =>
-        head.wrapFunction(
+        head.asInstanceOf[Decorator[Any, Any]].wrapFunction(
           ctx,
           args => invoke(ctx, endpoint, entryPoint, routes, routeBindings, rest, args :: bindings)
-            .asInstanceOf[Result[cask.model.Response.Raw]]
+            .asInstanceOf[Result[Nothing]]
         )
 
       case Nil =>
