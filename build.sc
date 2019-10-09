@@ -17,7 +17,7 @@ import $file.example.scalatags.build
 import $file.example.staticFiles.build
 import $file.example.todo.build
 import $file.example.todoApi.build
-//import $file.example.todoDb.build
+import $file.example.todoDb.build
 import $file.example.twirl.build
 import $file.example.variableRoutes.build
 import $file.example.websockets.build
@@ -115,9 +115,9 @@ object example extends Module{
   object redirectAbort extends $file.example.redirectAbort.build.AppModule with LocalModule
   object scalatags extends $file.example.scalatags.build.AppModule with LocalModule
   object staticFiles extends $file.example.staticFiles.build.AppModule with LocalModule
-//  object todo extends $file.example.todo.build.AppModule with LocalModule
+  object todo extends $file.example.todo.build.AppModule with LocalModule
   object todoApi extends $file.example.todoApi.build.AppModule with LocalModule
-//  object todoDb extends $file.example.todoDb.build.AppModule with LocalModule
+  object todoDb extends $file.example.todoDb.build.AppModule with LocalModule
   object twirl extends $file.example.twirl.build.AppModule with LocalModule
   object variableRoutes extends $file.example.variableRoutes.build.AppModule with LocalModule
   object websockets extends $file.example.websockets.build.AppModule with LocalModule
@@ -159,9 +159,9 @@ def uploadToGithub(authKey: String) = T.command{
     $file.example.redirectAbort.build.millSourcePath,
     $file.example.scalatags.build.millSourcePath,
     $file.example.staticFiles.build.millSourcePath,
-//    $file.example.todo.build.millSourcePath,
+    $file.example.todo.build.millSourcePath,
     $file.example.todoApi.build.millSourcePath,
-//    $file.example.todoDb.build.millSourcePath,
+    $file.example.todoDb.build.millSourcePath,
     $file.example.twirl.build.millSourcePath,
     $file.example.variableRoutes.build.millSourcePath,
     $file.example.websockets.build.millSourcePath,

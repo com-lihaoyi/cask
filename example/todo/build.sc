@@ -5,7 +5,7 @@ trait AppModule extends ScalaModule{
   def scalaVersion = "2.13.0"
   def ivyDeps = Agg[Dep](
     ivy"org.xerial:sqlite-jdbc:3.18.0",
-    ivy"io.getquill::quill-jdbc:2.5.4",
+    ivy"io.getquill::quill-jdbc:3.4.10",
     ivy"com.lihaoyi::scalatags:0.7.0",
   )
 

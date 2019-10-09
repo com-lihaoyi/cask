@@ -1,5 +1,4 @@
 package app
-import cask.internal.Router
 import com.typesafe.config.ConfigFactory
 import io.getquill.{SqliteJdbcContext, SnakeCase}
 
@@ -14,13 +13,13 @@ object TodoMvcDb extends cask.MainRoutes{
     )
   )
 
-  class transactional extends cask.Decorator{
-    class TransactionFailed(val value: Router.Result.Error) extends Exception
+  class transactional extends cask.RawDecorator{
+    class TransactionFailed(val value: cask.router.Result.Error) extends Exception
     def wrapFunction(pctx: cask.Request, delegate: Delegate): OuterReturned = {
       try ctx.transaction(
         delegate(Map()) match{
-          case Router.Result.Success(t) => Router.Result.Success(t)
-          case e: Router.Result.Error => throw new TransactionFailed(e)
+          case cask.router.Result.Success(t) => cask.router.Result.Success(t)
+          case e: cask.router.Result.Error => throw new TransactionFailed(e)
         }
       )
       catch{case e: TransactionFailed => e.value}
@@ -65,7 +64,11 @@ object TodoMvcDb extends cask.MainRoutes{
   @cask.post("/add")
   def add(request: cask.Request) = {
     val body = new String(request.readAllBytes())
-    run(query[Todo].insert(_.checked -> lift(false), _.text -> lift(body)).returning(_.id))
+    run(
+      query[Todo]
+        .insert(_.checked -> lift(false), _.text -> lift(body))
+        .returningGenerated(_.id)
+    )
   }
 
   @transactional

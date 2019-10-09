@@ -1,7 +1,7 @@
 package app
 import utest._
 object ExampleTests extends TestSuite{
-  def withServer[T](example: cask.main.BaseMain)(f: String => T): T = {
+  def withServer[T](example: cask.main.Main)(f: String => T): T = {
     val server = io.undertow.Undertow.builder
       .addHttpListener(8080, "localhost")
       .setHandler(example.defaultHandler)
