@@ -15,6 +15,7 @@ import $file.example.minimalApplication2.build
 import $file.example.redirectAbort.build
 import $file.example.scalatags.build
 import $file.example.staticFiles.build
+import $file.example.staticFiles2.build
 import $file.example.todo.build
 import $file.example.todoApi.build
 import $file.example.todoDb.build
@@ -116,6 +117,7 @@ object example extends Module{
   object redirectAbort extends $file.example.redirectAbort.build.AppModule with LocalModule
   object scalatags extends $file.example.scalatags.build.AppModule with LocalModule
   object staticFiles extends $file.example.staticFiles.build.AppModule with LocalModule
+  object staticFiles2 extends $file.example.staticFiles2.build.AppModule with LocalModule
   object todo extends $file.example.todo.build.AppModule with LocalModule
   object todoApi extends $file.example.todoApi.build.AppModule with LocalModule
   object todoDb extends $file.example.todoDb.build.AppModule with LocalModule
@@ -161,6 +163,7 @@ def uploadToGithub(authKey: String) = T.command{
     $file.example.redirectAbort.build.millSourcePath,
     $file.example.scalatags.build.millSourcePath,
     $file.example.staticFiles.build.millSourcePath,
+    $file.example.staticFiles2.build.millSourcePath,
     $file.example.todo.build.millSourcePath,
     $file.example.todoApi.build.millSourcePath,
     $file.example.todoDb.build.millSourcePath,

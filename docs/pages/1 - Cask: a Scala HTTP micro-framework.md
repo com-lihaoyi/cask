@@ -204,6 +204,11 @@ contents from the corresponding file on disk (and 404 otherwise).
 Similarly, `@cask.staticResources` attempts to serve a request based on the JVM
 resource path, returning the data if a resource is present and a 404 otherwise.
 
+You can also configure the `headers` you wish to return to static file requests,
+or use `@cask.decorators.compress` to compress the responses:
+
+$$$staticFiles2
+
 ## Redirects or Aborts
 
 $$$redirectAbort
