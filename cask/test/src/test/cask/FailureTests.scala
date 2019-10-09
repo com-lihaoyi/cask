@@ -9,8 +9,23 @@ object FailureTests extends TestSuite {
       delegate(Map("extra" -> 31337))
     }
   }
+
   val tests = Tests{
     'mismatchedDecorators - {
+      utest.compileError("""
+        object Decorated extends cask.MainRoutes{
+          @myDecorator
+          @cask.websocket("/hello/:world")
+          def hello(world: String)(extra: Int) = ???
+          initialize()
+        }
+      """).check(
+          """
+          def hello(world: String)(extra: Int) = ???
+              ^
+          """,
+        "required: cask.router.Decorator[_, cask.endpoints.WebsocketResult, _]"
+      )
       utest.compileError("""
         object Decorated extends cask.MainRoutes{
           @cask.get("/hello/:world")

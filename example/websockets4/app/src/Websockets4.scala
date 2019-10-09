@@ -1,7 +1,8 @@
 package app
 
 case class Websockets4()(implicit val log: cask.Logger) extends cask.Routes{
-  @cask.decorators.compress // make sure compress decorator passes non-requests through correctly
+  // make sure compress decorator passes non-requests through correctly
+  override def decorators = Seq(new cask.decorators.compress())
   @cask.websocket("/connect/:userName")
   def showUserProfile(userName: String): cask.WebsocketResult = {
     if (userName != "haoyi") cask.Response("", statusCode = 403)
