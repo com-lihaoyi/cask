@@ -75,7 +75,7 @@ object Abort{
   def apply(code: Int) = Response("", code, Nil, Nil)
 }
 object StaticFile{
-  def apply(path: String) = {
+  def apply(path: String, headers: Seq[(String, String)]) = {
     val relPath = java.nio.file.Paths.get(path)
     val (data0, statusCode0) =
       if (java.nio.file.Files.exists(relPath) && java.nio.file.Files.isRegularFile(relPath)){
@@ -83,17 +83,16 @@ object StaticFile{
       }else{
         ("": Response.Data, 404)
       }
-    Response(data0, statusCode0, Nil, Nil)
+    Response(data0, statusCode0, headers, Nil)
   }
 }
 object StaticResource{
-  def apply(path: String, resourceRoot: ClassLoader) = {
-    val relPath = java.nio.file.Paths.get(path)
+  def apply(path: String, resourceRoot: ClassLoader, headers: Seq[(String, String)]) = {
     val (data0, statusCode0) = resourceRoot.getResourceAsStream(path) match{
       case null => ("": Response.Data, 404)
       case res => (res: Response.Data, 200)
     }
-    Response(data0, statusCode0, Nil, Nil)
+    Response(data0, statusCode0, headers, Nil)
   }
 }
 
