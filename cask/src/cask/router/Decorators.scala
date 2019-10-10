@@ -14,7 +14,7 @@ import cask.model.{Request, Response}
   * to `wrapFunction`, which takes a `Map` representing any additional argument
   * lists (if any).
   */
-trait Decorator[OuterReturned, InnerReturned, Input]{
+trait Decorator[OuterReturned, InnerReturned, Input] extends scala.annotation.Annotation {
   final type InputTypeAlias = Input
   type InputParser[T] <: ArgReader[Input, T, Request]
   final type Delegate = Map[String, Input] => Result[InnerReturned]
