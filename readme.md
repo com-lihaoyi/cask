@@ -38,6 +38,10 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.3.2
+
+- Support for Scala 2.13.1
+
 ### 0.3.1
 
 - Mismatched decorator types applied to a single method is now a compile error
