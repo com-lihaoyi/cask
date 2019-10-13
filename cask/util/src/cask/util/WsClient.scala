@@ -4,7 +4,6 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Promise}
 
 class WsClient(impl: WebsocketBase)
-              (f: PartialFunction[cask.util.Ws.Event, Unit])
               (implicit ec: ExecutionContext, log: Logger)
   extends cask.util.BatchActor[Ws.Event]{
 
@@ -33,7 +32,7 @@ object WsClient{
     val p = Promise[WsClient]
     val impl = new WebsocketClientImpl(url) {
       def onOpen() = {
-        if (!p.isCompleted) p.success(new WsClient(this)(f))
+        if (!p.isCompleted) p.success(new WsClient(this))
       }
       def onMessage(message: String) = {
         receiveActor.send(Ws.Text(message))
@@ -43,7 +42,6 @@ object WsClient{
       }
       def onClose(code: Int, reason: String) = {
         receiveActor.send(Ws.Close(code, reason))
-        if (!p.isCompleted) p.success(new WsClient(this)(f))
       }
       def onError(ex: Exception): Unit = {
         receiveActor.send(Ws.Error(ex))
