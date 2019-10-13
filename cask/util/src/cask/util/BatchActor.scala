@@ -36,9 +36,9 @@ abstract class BatchActor[T]()(implicit ec: ExecutionContext,
   }
 }
 
-abstract class StateMachine[T]()
-                              (implicit ec: ExecutionContext,
-                               log: Logger) {
+abstract class StateMachineActor[T]()
+                                   (implicit ec: ExecutionContext,
+                                    log: Logger) extends BatchActor[T](){
   class State(val run: T => State)
   protected[this] def initialState: State
   protected[this] var state: State = initialState

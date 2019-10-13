@@ -43,7 +43,7 @@ object ExampleTests extends TestSuite{
           }
         )
         assert(ex.getMessage.contains("403"))
-      }finally ws.close()
+      }finally ws.send(cask.Ws.Close())
     }
   }
 }
