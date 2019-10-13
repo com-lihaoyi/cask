@@ -35,3 +35,12 @@ abstract class BatchActor[T]()(implicit ec: ExecutionContext,
     }
   }
 }
+
+abstract class StateMachine[T]()
+                              (implicit ec: ExecutionContext,
+                               log: Logger) {
+  class State(val run: T => State)
+  protected[this] def initialState: State
+  protected[this] var state: State = initialState
+  def run(items: Seq[T]): Unit = items.foreach{i => state = state.run(i)}
+}
