@@ -27,7 +27,7 @@ object WsClient{
                   (f: PartialFunction[cask.util.Ws.Event, Unit])
                   (implicit ec: ExecutionContext, log: Logger): scala.concurrent.Future[WsClient] = {
     object receiveActor extends cask.util.BatchActor[Ws.Event] {
-      def run(items: Seq[Ws.Event]) = items.collect(f)
+      def run(items: Seq[Ws.Event]) = items.foreach(x => f.applyOrElse(x, (_: Ws.Event) => ()))
     }
     val p = Promise[WsClient]
     val impl = new WebsocketClientImpl(url) {
@@ -41,10 +41,12 @@ object WsClient{
         receiveActor.send(Ws.Binary(message))
       }
       def onClose(code: Int, reason: String) = {
-        receiveActor.send(Ws.Close(code, reason))
+        if (!p.isCompleted) p.failure(new Exception(s"WsClient failed: $code $reason"))
+        else receiveActor.send(Ws.Close(code, reason))
       }
       def onError(ex: Exception): Unit = {
-        receiveActor.send(Ws.Error(ex))
+        if (!p.isCompleted) p.failure(ex)
+        else receiveActor.send(Ws.Error(ex))
       }
     }
 
