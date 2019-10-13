@@ -39,14 +39,13 @@ object ExampleTests extends TestSuite{
         Thread.sleep(100)
         out ==> List("haoyi world", "haoyi hello")
 
-        var error: String = ""
-        val ws2 = cask.WsClient.connect("ws://localhost:8080/connect/nobody") {
-          case cask.Ws.Text(s) => out = s :: out
-          case cask.Ws.Error(t) => error += t.toString
-          case cask.Ws.Close(code, reason) => error += reason
+        val ex = intercept[Exception] {
+          cask.WsClient.connect("ws://localhost:8080/connect/nobody") {
+            case _ => /*do nothing*/
+          }
         }
+        assert(ex.getMessage.contains("403"))
 
-        assert(error.contains("403"))
       }finally ws.close()
     }
 
