@@ -123,6 +123,65 @@ object JvmActorsTest extends TestSuite{
       decodeFile(logPath) ==> Seq("I am cow, I am cow", "Hear me moo, moooo")
     }
 
+    test("batch"){
+      sealed trait Msg
+      case class Text(value: String) extends Msg
+      case class Rotate() extends Msg
+      class Writer(log: os.Path, old: os.Path)
+                  (implicit ac: Context) extends BatchActor[Msg]{
+        def runBatch(msgs: Seq[Msg]): Unit = {
+          msgs.lastIndexOf(Rotate()) match{
+            case -1 => os.write.append(log, groupMsgs(msgs), createFolders = true)
+            case rotateIndex =>
+              val prevRotateIndex = msgs.lastIndexOf(Rotate(), rotateIndex - 1)
+              if (prevRotateIndex != -1) os.remove.all(log)
+              os.write.append(log, groupMsgs(msgs.slice(prevRotateIndex, rotateIndex)), createFolders = true)
+              os.move(log, old, replaceExisting = true)
+              os.write.over(log, groupMsgs(msgs.drop(rotateIndex)), createFolders = true)
+          }
+        }
+        def groupMsgs(msgs: Seq[Msg]) = msgs.collect{case Text(value) => value}.mkString("\n") + "\n"
+      }
+
+      class Logger(dest: Actor[Msg], rotateSize: Int)
+                  (implicit ac: Context) extends SimpleActor[String]{
+        def run(s: String) = {
+          val newLogSize = logSize + s.length + 1
+          if (newLogSize <= rotateSize) logSize = newLogSize
+          else {
+            logSize = s.length
+            dest.send(Rotate())
+          }
+          dest.send(Text(s))
+        }
+        private var logSize = 0
+      }
+
+      implicit val ac = new Context.Test()
+
+      val logPath = os.pwd / "out" / "scratch" / "log.txt"
+      val oldPath  = os.pwd / "out" / "scratch" / "log-old.txt"
+
+      val writer = new Writer(logPath, oldPath)
+      val logger = new Logger(writer, rotateSize = 50)
+
+      logger.send("I am cow")
+      logger.send("hear me moo")
+      logger.send("I weight twice as much as you")
+      logger.send("And I look good on the barbecue")
+      logger.send("Yoghurt curds cream cheese and butter")
+      logger.send("Comes from liquids from my udder")
+      logger.send("I am cow, I am cow")
+      logger.send("Hear me moo, moooo")
+
+      // Logger hasn't finished yet, running in the background
+      ac.waitForInactivity()
+      // Now logger has finished
+
+      os.read.lines(oldPath) ==> Seq("Comes from liquids from my udder")
+      os.read.lines(logPath) ==> Seq("I am cow, I am cow", "Hear me moo, moooo")
+    }
+
     test("debounce"){
       sealed trait Msg
       case class Debounced() extends Msg
