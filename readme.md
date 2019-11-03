@@ -38,6 +38,11 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.3.3
+
+- Separate `cask-actor` into a separate artifact, documented separately as
+  [Cask Actors](http://www.lihaoyi.com/cask/page/cask-actors.html)
+
 ### 0.3.2
 
 - Support for Scala 2.13.1

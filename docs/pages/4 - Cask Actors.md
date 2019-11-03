@@ -7,10 +7,10 @@ standalone `cask-actor` artifact:
 
 ```scala
 // Mill
-ivy"com.lihaoyi::cask-actor:0.2.9"
+ivy"com.lihaoyi::cask-actor:0.3.3"
 
 // SBT
-"com.lihaoyi" %% "cask-actor" % "0.2.9"
+"com.lihaoyi" %% "cask-actor" % "0.3.3"
 ```
 
 Cask Actors are much more lightweight solution than a full-fledged framework
@@ -18,7 +18,7 @@ like Akka: Cask Actors do not support any sort of distribution or clustering,
 and run entirely within a single process. Cask Actors are garbage collectible,
 and you do not need to manually terminate them or manage their lifecycle.
 
-## A Logger Actor
+## Example: Asynchronous Logging using an Actor
 
 Here is a small demonstration of using a `cask.actor.SimpleActor` to perform
 asynchronous logging to disk:
@@ -141,7 +141,7 @@ Using Cask Actors to perform logging avoids both these issues: calls to
 `logger.send` happen in the background without slowing down your main program,
 and multiple threads can call `logger.send` without being blocked by each other.
 
-## Actor Pipelines
+## Parallelism using Actor Pipelines
 
 Another advantage of Actors is that you can get pipelined parallelism when
 processing data. In the following example, we define two actor classes `Writer`

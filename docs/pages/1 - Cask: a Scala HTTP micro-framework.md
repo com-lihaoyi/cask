@@ -81,10 +81,10 @@ via the following coordinates:
 
 ```scala
 // Mill
-ivy"com.lihaoyi::cask:0.2.9"
+ivy"com.lihaoyi::cask:0.3.3"
 
 // SBT
-"com.lihaoyi" %% "cask" % "0.2.9"
+"com.lihaoyi" %% "cask" % "0.3.3"
 ```
 
 The `./mill` command is just a wrapper around the
