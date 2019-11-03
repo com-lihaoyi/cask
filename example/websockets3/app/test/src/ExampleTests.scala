@@ -1,11 +1,9 @@
 package app
 
-import java.util.concurrent.atomic.AtomicInteger
-
-import org.asynchttpclient.ws.{WebSocket, WebSocketListener, WebSocketUpgradeHandler}
 import utest._
-import concurrent.ExecutionContext.Implicits.global
 import cask.Logger.Console.globalLogger
+import cask.actor.Context.Simple.global
+
 object ExampleTests extends TestSuite{
 
 

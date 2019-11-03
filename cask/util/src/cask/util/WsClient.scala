@@ -4,10 +4,10 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Promise}
 
 class WsClient(impl: WebsocketBase)
-              (implicit ec: ExecutionContext, log: Logger)
-  extends cask.util.BatchActor[Ws.Event]{
+              (implicit ac: cask.actor.Context, log: Logger)
+  extends cask.actor.SimpleActor[Ws.Event]{
 
-  def run(items: Seq[Ws.Event]): Unit = items.foreach{
+  def run(item: Ws.Event): Unit = item match{
     case Ws.Text(s) => impl.send(s)
     case Ws.Binary(s) => impl.send(s)
     case Ws.Close(_, _) => impl.close()
@@ -18,14 +18,14 @@ class WsClient(impl: WebsocketBase)
 object WsClient{
   def connect(url: String)
              (f: PartialFunction[cask.util.Ws.Event, Unit])
-             (implicit ec: ExecutionContext, log: Logger): WsClient = {
+             (implicit ac: cask.actor.Context, log: Logger): WsClient = {
     Await.result(connectAsync(url)(f), Duration.Inf)
   }
   def connectAsync(url: String)
                   (f: PartialFunction[cask.util.Ws.Event, Unit])
-                  (implicit ec: ExecutionContext, log: Logger): scala.concurrent.Future[WsClient] = {
-    object receiveActor extends cask.util.BatchActor[Ws.Event] {
-      def run(items: Seq[Ws.Event]) = items.foreach(x => f.applyOrElse(x, (_: Ws.Event) => ()))
+                  (implicit ac: cask.actor.Context, log: Logger): scala.concurrent.Future[WsClient] = {
+    object receiveActor extends cask.actor.SimpleActor[Ws.Event] {
+      def run(item: Ws.Event) = f.lift(item)
     }
     val p = Promise[WsClient]
     val impl = new WebsocketClientImpl(url) {

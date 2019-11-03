@@ -67,23 +67,65 @@ object cask extends CaskModule {
         millSourcePath / s"src-$platformSegment"
       )
       def ivyDeps = Agg(
-        ivy"com.lihaoyi::sourcecode:0.1.7",
+        ivy"com.lihaoyi::sourcecode:0.1.8",
         ivy"com.lihaoyi::pprint:0.5.5"
       )
     }
 
     object js extends UtilModule with ScalaJSModule{
+      def moduleDeps = Seq(actor.js)
       def platformSegment = "js"
-      def scalaJSVersion = "0.6.28"
+      def scalaJSVersion = "0.6.29"
       def ivyDeps = super.ivyDeps() ++ Agg(
         ivy"org.scala-js::scalajs-dom::0.9.7"
       )
     }
     object jvm extends UtilModule{
+      def moduleDeps = Seq(actor.jvm)
       def platformSegment = "jvm"
       def ivyDeps = super.ivyDeps() ++ Agg(
         ivy"org.java-websocket:Java-WebSocket:1.4.0"
       )
+    }
+  }
+
+  object actor extends Module {
+    trait ActorModule extends CaskModule {
+      def artifactName = "cask-actor"
+      def platformSegment: String
+      def millSourcePath = super.millSourcePath / os.up
+
+      def sources = T.sources(
+        millSourcePath / "src",
+        millSourcePath / s"src-$platformSegment"
+      )
+
+      def ivyDeps = Agg(ivy"com.lihaoyi::sourcecode::0.1.8")
+
+      trait ActorTestModule extends Tests {
+        def sources = T.sources(
+          millSourcePath / "src",
+          millSourcePath / s"src-$platformSegment"
+        )
+        def testFrameworks = Seq("utest.runner.Framework")
+        def ivyDeps = Agg(ivy"com.lihaoyi::utest::0.7.1")
+      }
+    }
+
+    object js extends ActorModule with ScalaJSModule{
+      def platformSegment = "js"
+      def scalaJSVersion = "0.6.29"
+
+      object test extends ActorTestModule with Tests
+    }
+    object jvm extends ActorModule{
+      def platformSegment = "jvm"
+
+      object test extends ActorTestModule with Tests{
+        def ivyDeps = super.ivyDeps() ++ Agg(
+          ivy"com.lihaoyi::os-lib:0.4.2"
+        )
+      }
     }
   }
 
@@ -92,9 +134,7 @@ object cask extends CaskModule {
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.7.1",
-      ivy"com.lihaoyi::requests::0.2.0",
-//      ivy"org.xerial:sqlite-jdbc:3.18.0",
-//      ivy"io.getquill::quill-jdbc:2.6.0"
+      ivy"com.lihaoyi::requests::0.2.0"
     )
   }
 }

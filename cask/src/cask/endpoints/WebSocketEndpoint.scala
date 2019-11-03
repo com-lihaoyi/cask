@@ -32,8 +32,8 @@ class websocket(val path: String, override val subpath: Boolean = false)
   def wrapPathSegment(s: String): Seq[String] = Seq(s)
 }
 
-case class WsHandler(f: WsChannelActor => cask.util.BatchActor[Ws.Event])
-                    (implicit ec: ExecutionContext, log: Logger)
+case class WsHandler(f: WsChannelActor => cask.actor.Actor[Ws.Event])
+                    (implicit ac: cask.actor.Context, log: Logger)
 extends WebsocketResult with WebSocketConnectionCallback {
    def onConnect(exchange: WebSocketHttpExchange, channel: WebSocketChannel): Unit = {
      channel.suspendReceives()
@@ -75,9 +75,9 @@ extends WebsocketResult with WebSocketConnectionCallback {
 }
 
 class WsChannelActor(channel: WebSocketChannel)
-                    (implicit ec: ExecutionContext, log: Logger)
-extends cask.util.BatchActor[Ws.Event]{
-  def run(items: Seq[Ws.Event]): Unit = items.foreach{
+                    (implicit ac: cask.actor.Context, log: Logger)
+extends cask.actor.SimpleActor[Ws.Event]{
+  def run(item: Ws.Event): Unit = item match{
     case Ws.Text(value) => WebSockets.sendTextBlocking(value, channel)
     case Ws.Binary(value) => WebSockets.sendBinaryBlocking(ByteBuffer.wrap(value), channel)
     case Ws.Ping(value) => WebSockets.sendPingBlocking(ByteBuffer.wrap(value), channel)
@@ -87,10 +87,10 @@ extends cask.util.BatchActor[Ws.Event]{
 }
 
 case class WsActor(handle: PartialFunction[Ws.Event, Unit])
-                  (implicit ec: ExecutionContext, log: Logger)
-extends cask.util.BatchActor[Ws.Event]{
-  def run(items: Seq[Ws.Event]): Unit = {
-    items.foreach(handle.applyOrElse(_, (x: Ws.Event) => ()))
+                  (implicit ac: cask.actor.Context, log: Logger)
+extends cask.actor.SimpleActor[Ws.Event]{
+  def run(item: Ws.Event): Unit = {
+    handle.lift(item)
   }
 }
 
