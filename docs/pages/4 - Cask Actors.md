@@ -13,6 +13,11 @@ ivy"com.lihaoyi::cask-actor:0.2.9"
 "com.lihaoyi" %% "cask-actor" % "0.2.9"
 ```
 
+Cask Actors are much more lightweight solution than a full-fledged framework
+like Akka: Cask Actors do not support any sort of distribution or clustering,
+and run entirely within a single process. Cask Actors are garbage collectible,
+and you do not need to manually terminate them or manage their lifecycle.
+
 ## A Logger Actor
 
 Here is a small demonstration of using a `cask.actor.SimpleActor` to perform
@@ -58,11 +63,6 @@ os.read.lines(oldPath) ==> Seq("Comes from liquids from my udder")
 os.read.lines(logPath) ==> Seq("I am cow, I am cow", "Hear me moo, moooo")
 ```
 
-All cask actors require a `cask.actor.Context`, which is an extended
-`scala.concurrent.ExecutionContext`. Here we are using `Context.Test`, which
-also provides the handy `waitForInactivity()` method which blocks until all
-asynchronous actor processing has completed.
-
 In the above example, we are defining a single `Logger` actor class, which we
 are instantiating once as `val logger`. We can now send as many messages as we
 want via `logger.send`: while the processing of a message make take some time
@@ -70,14 +70,22 @@ want via `logger.send`: while the processing of a message make take some time
 [log-rotation](https://en.wikipedia.org/wiki/Log_rotation) to avoid the logfile
 growing in size forever) the fact that it's in a separate actor means the
 processing happens in the background without slowing down the main logic of your
-program. This is ideal for scenarios where the dataflow is one way: e.g. when
+program. Cask Actors process messages one at a time, so by putting the file
+write-and-rotate logic inside an Actor we can be sure to avoid race conditions
+that may arise due to multiple threads mangling the same file at once.
+
+Using Actors is ideal for scenarios where the dataflow is one way: e.g. when
 logging, you only write logs, and never need to wait for the results of
 processing them.
 
+All cask actors require a `cask.actor.Context`, which is an extended
+`scala.concurrent.ExecutionContext`. Here we are using `Context.Test`, which
+also provides the handy `waitForInactivity()` method which blocks until all
+asynchronous actor processing has completed.
+
 Note that `logger.send` is thread-safe: multiple threads can be sending logging
 messages to the `logger` at once, and the `.send` method will make sure the
-messages are properly queued up and executed. At no point will a thread calling
-`.send` end up blocking another thread from executing.
+messages are properly queued up and executed one at a time.
 
 ## Strawman: Synchronized Logging
 
@@ -198,3 +206,7 @@ constructing our data processing flows using Actors, we can take advantage of
 pipeline parallelism to distribute the processing over multiple threads and CPU
 cores, so adding steps to the pipeline neither slows it down nor does it slow
 down the execution of the main program.
+
+You can imagine adding additional stages to this actor pipeline, to perform
+other sorts of processing, and have those additional stages running in parallel
+as well.

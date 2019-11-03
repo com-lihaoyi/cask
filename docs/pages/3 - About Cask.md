@@ -34,8 +34,8 @@ logic they need to function. This has several benefits:
 - You can jump to the definition of an annotation and see what it does
 
 - It trivial to implement your own annotations as
-  [decorators](/using-cask#extending-endpoints-with-decorators) or
-  [endpoints](/using-cask#custom-endpoints).
+  [decorators](/cask#extending-endpoints-with-decorators) or
+  [endpoints](/cask#custom-endpoints).
 
 - Stacking multiple annotations on a single function has a well-defined contract
   and semantics
@@ -60,7 +60,7 @@ While these features all are valuable in specific cases, Cask aims for the 99%
 of code for which simple, boring code is perfectly fine. Cask's endpoints are
 synchronous by default, do not tie you to any underlying concurrency model, and
 should "just work" without any advanced knowledge apart from basic Scala and
-HTTP. Cask's [websockets](/using-cask#websockets) API is intentionally low-level, making it
+HTTP. Cask's [websockets](/cask#websockets) API is intentionally low-level, making it
 both simple to use and also simple to build on top of if you want to wrap it in
 your own concurrency-library-of-choice.
 
@@ -69,9 +69,9 @@ your own concurrency-library-of-choice.
 Cask is implemented as a thin wrapper around the excellent Undertow HTTP server.
 If you need more advanced functionality, Cask lets you ask for the `exchange:
 HttpServerExchange` in your endpoint, override
-[defaultHandler](/using-cask#def-defaulthandler) and add your own Undertow handlers next to
+[defaultHandler](/cask#def-defaulthandler) and add your own Undertow handlers next to
 Cask's and avoid Cask's routing/endpoint system altogether, or override
-[main](/using-cask#def-main) if you want to change how the server is initialized.
+[main](/cask#def-main) if you want to change how the server is initialized.
 
 Rather than trying to provide APIs for all conceivable functionality, Cask
 simply provides what it does best - simple routing for simple endpoints - and
@@ -91,4 +91,4 @@ trivial to pull in libraries like
 Each of these are stable, well-known, well-documented libraries you may already
 be familiar with, and Cask simply provides the HTTP/routing layer with the hooks
 necessary to tie everything together (e.g. into a
-[TodoMVC](/using-cask#todomvc-full-stack-web) webapp)
+[TodoMVC](/cask#todomvc-full-stack-web) webapp)
