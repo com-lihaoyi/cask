@@ -418,3 +418,65 @@ override def run(msg: Msg): Unit = {
   if (???) println(state)
 }
 ```
+
+### Context Logging
+
+Apart from logging individual Actors, you can also insert logging into the
+`cask.actor.Context` to log certain state transitions or actions. For example,
+you can log every time a message is run on an actor by overriding the
+`reportRun` callback:
+
+```scala
+implicit val ac = new Context.Test(){
+  override def reportRun(a: Actor[_], msg: Any, token: Context.Token): Unit = {
+    println(s"$a <- $msg")
+    super.reportRun(a, msg, token)
+  }
+}
+```
+
+Running this on the
+[two-actor pipeline example](#parallelism-using-actor-pipelines) from earlier,
+it helps us visualize exactly what our actors are going:
+
+```text
+cask.actor.JvmActorsTest$Logger$5@4a903c98 <- I am cow
+cask.actor.JvmActorsTest$Logger$5@4a903c98 <- hear me moo
+cask.actor.JvmActorsTest$Logger$5@4a903c98 <- I weight twice as much as you
+cask.actor.JvmActorsTest$Writer$2@3bb87fa0 <- SSBhbSBjb3c=
+cask.actor.JvmActorsTest$Logger$5@4a903c98 <- And I look good on the barbecue
+cask.actor.JvmActorsTest$Logger$5@4a903c98 <- Yoghurt curds cream cheese and butter
+cask.actor.JvmActorsTest$Logger$5@4a903c98 <- Comes from liquids from my udder
+cask.actor.JvmActorsTest$Logger$5@4a903c98 <- I am cow, I am cow
+cask.actor.JvmActorsTest$Logger$5@4a903c98 <- Hear me moo, moooo
+cask.actor.JvmActorsTest$Writer$2@3bb87fa0 <- aGVhciBtZSBtb28=
+cask.actor.JvmActorsTest$Writer$2@3bb87fa0 <- SSB3ZWlnaHQgdHdpY2UgYXMgbXVjaCBhcyB5b3U=
+cask.actor.JvmActorsTest$Writer$2@3bb87fa0 <- QW5kIEkgbG9vayBnb29kIG9uIHRoZSBiYXJiZWN1ZQ==
+cask.actor.JvmActorsTest$Writer$2@3bb87fa0 <- WW9naHVydCBjdXJkcyBjcmVhbSBjaGVlc2UgYW5kIGJ1dHRlcg==
+cask.actor.JvmActorsTest$Writer$2@3bb87fa0 <- Q29tZXMgZnJvbSBsaXF1aWRzIGZyb20gbXkgdWRkZXI=
+cask.actor.JvmActorsTest$Writer$2@3bb87fa0 <- SSBhbSBjb3csIEkgYW0gY293
+cask.actor.JvmActorsTest$Writer$2@3bb87fa0 <- SGVhciBtZSBtb28sIG1vb29v
+```
+
+We can also replace the default `scala.concurrent.ExecutionContext.global`
+executor with a single-threaded executor, if we want our Actor pipeline to
+behave 100% deterministically:
+
+```scala
+implicit val ac = new Context.Test(
+  scala.concurrent.ExecutionContext.fromExecutor(
+    java.util.concurrent.Executors.newSingleThreadExecutor()
+  )
+){
+  override def reportRun(a: Actor[_], msg: Any, token: Context.Token): Unit = {
+    println(s"$a <- $msg")
+    super.reportRun(a, msg, token)
+  }
+}
+```
+
+Any asynchronous Actor pipeline should be able to run no a
+`newSingleThreadExecutor`. While it would be slower than running on the default
+thread pool, it should make execution of your actors much more deterministic -
+only one actor will be running at a time - and make it easier to track down
+logical bugs without multithreaded parallelism getting in the way.
