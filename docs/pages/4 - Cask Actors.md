@@ -64,6 +64,14 @@ instead of many individual. `StateMachineActor` allows you to define actors via
 a set of distinct states, each of which has a separate `run` callback that
 transitions the actor to a different state.
 
+Note that any exception that is thrown while an Actor is processing a message
+(or batch of messages, in the case of `BatchActor`) is simply reported to the
+`cask.actor.Context`'s `reportFailure` function: the default just prints to the
+console using `.printStackTrace()`, but you can hook in to pass the exceptions
+elsewhere e.g. if you have a remote error aggregating service. The actor
+continues processing messages after the failure in the state that it was left
+in.
+
 ## Example: Asynchronous Logging using an Actor
 
 Here is a small demonstration of using a `cask.actor.SimpleActor` to perform
