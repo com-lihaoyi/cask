@@ -78,7 +78,8 @@ Each actor may run on a different thread, and the same actor may run on
 different threads at different times, so you should ensure you do not mutate
 shared mutable state otherwise you risk race conditions.
 
-## Example: Asynchronous Logging using an Actor
+## Writing Actors
+### Example: Asynchronous Logging using an Actor
 
 Here is a small demonstration of using a `cask.actor.SimpleActor` to perform
 asynchronous logging to disk:
@@ -147,7 +148,7 @@ Note that `logger.send` is thread-safe: multiple threads can be sending logging
 messages to the `logger` at once, and the `.send` method will make sure the
 messages are properly queued up and executed one at a time.
 
-## Strawman: Synchronized Logging
+### Strawman: Synchronized Logging
 
 To illustrate further the use case of actors, let us consider the earlier
 example but using a `synchronized` method instead of a `cask.actor.SimpleActor`
@@ -201,7 +202,7 @@ Using Cask Actors to perform logging avoids both these issues: calls to
 `logger.send` happen in the background without slowing down your main program,
 and multiple threads can call `logger.send` without being blocked by each other.
 
-## Parallelism using Actor Pipelines
+### Parallelism using Actor Pipelines
 
 Another advantage of Actors is that you can get pipelined parallelism when
 processing data. In the following example, we define two actor classes `Writer`
@@ -271,7 +272,7 @@ You can imagine adding additional stages to this actor pipeline, to perform
 other sorts of processing, and have those additional stages running in parallel
 as well.
 
-## Debounced Logging using State Machines
+### Debounced Logging using State Machines
 
 The last common API we will look at is using `StateMachineActor`. In this
 example, we use `StateMachineActor` to define a `Logger` actor with two states
@@ -349,6 +350,8 @@ library does not enforce that either, but doing so somewhat defeats the purpose
 of using a `StateMachineActor` to model your actor state in the first place, in
 which case you might as well use `SimpleActor`.
 
+## Debugging Actors
+
 ### Debug Logging State Machines
 
 When using `StateMachineActor`, all your actor's internal state should be in the
@@ -419,7 +422,7 @@ override def run(msg: Msg): Unit = {
 }
 ```
 
-### Context Logging
+### Debugging using Context Logging
 
 Apart from logging individual Actors, you can also insert logging into the
 `cask.actor.Context` to log certain state transitions or actions. For example,
