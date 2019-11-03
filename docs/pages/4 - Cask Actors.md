@@ -341,3 +341,10 @@ distinct states which an Actor can be in, as it forces you explicitly define the
 states, the members of each state, as well as the state transitions that occur
 when each state receives each message. When the number of distinct states grows,
 `StateMachineActor` can be significantly easier to use than `SimpleActor`.
+
+While it is good practice to make your `State`s immutable, `StateMachineActor`
+does not enforce it. Similarly, it is generally good practice to avoid defining
+"auxiliary" mutable state `var`s in the body of a `StateMachineActor`. The
+library does not enforce that either, but doing so somewhat defeats the purpose
+of using a `StateMachineActor` to model your actor state in the first place, in
+which case you might as well use `SimpleActor`.
