@@ -348,3 +348,73 @@ does not enforce it. Similarly, it is generally good practice to avoid defining
 library does not enforce that either, but doing so somewhat defeats the purpose
 of using a `StateMachineActor` to model your actor state in the first place, in
 which case you might as well use `SimpleActor`.
+
+### Debug Logging State Machines
+
+When using `StateMachineActor`, all your actor's internal state should be in the
+single `state` variable. You can thus easily override `def run` to print the
+state before and after each message is received:
+
+```scala
+override def run(msg: Msg): Unit = {
+  println(s"$state + $msg -> ")
+  super.run(msg)
+  println(state)
+}
+```
+
+If your `StateMachineActor` is misbehaving, this should hopefully make it easier
+to trace what it is doing in response to each message, so you can figure out
+exactly why it is misbehaving:
+
+```scala
+logger.send(Text("I am cow"))
+// Idle() + Text(I am cow) -> 
+// Buffering(Vector(I am cow))
+logger.send(Text("hear me moo"))
+// Buffering(Vector(I am cow)) + Text(hear me moo) -> 
+// Buffering(Vector(I am cow, hear me moo))
+Thread.sleep(100)
+// Buffering(Vector(I am cow, hear me moo)) + Debounced() -> 
+// Idle()
+logger.send(Text("I weight twice as much as you"))
+// Idle() + Text(I weight twice as much as you) -> 
+// Buffering(Vector(I weight twice as much as you))
+logger.send(Text("And I look good on the barbecue"))
+// Buffering(Vector(I weight twice as much as you)) + Text(And I look good on the barbecue) -> 
+// Buffering(Vector(I weight twice as much as you, And I look good on the barbecue))
+Thread.sleep(100)
+// Buffering(Vector(I weight twice as much as you, And I look good on the barbecue)) + Debounced() -> 
+// Idle()
+logger.send(Text("Yoghurt curds cream cheese and butter"))
+// Idle() + Text(Yoghurt curds cream cheese and butter) -> 
+// Buffering(Vector(Yoghurt curds cream cheese and butter))
+logger.send(Text("Comes from liquids from my udder"))
+// Buffering(Vector(Yoghurt curds cream cheese and butter)) +
+// Text(Comes from liquids from my udder) -> Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder))
+logger.send(Text("I am cow, I am cow"))
+// Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder)) + Text(I am cow, I am cow) -> 
+// Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder, I am cow, I am cow))
+logger.send(Text("Hear me moo, moooo"))
+// Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder, I am cow, I am cow)) + Text(Hear me moo, moooo) -> 
+// Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder, I am cow, I am cow, Hear me moo, moooo))
+
+ac.waitForInactivity()
+// Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder, I am cow, I am cow, Hear me moo, moooo)) + Debounced() ->
+// Idle()
+```
+
+Logging every message received and processed by one or more Actors may get very
+verbose in a large system with lots going on; you can use a conditional
+`if(...)` in your `override def run` to specify exactly which state transitions
+on which actors you care about (e.g. only actors handling a certain user ID) to
+cut down on the noise:
+
+
+```scala
+override def run(msg: Msg): Unit = {
+  if (???) println(s"$state + $msg -> ")
+  super.run(msg)
+  if (???) println(state)
+}
+```

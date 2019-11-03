@@ -169,6 +169,80 @@ object JvmActorsTest extends TestSuite{
         "Yoghurt curds cream cheese and butter Comes from liquids from my udder I am cow, I am cow Hear me moo, moooo",
       )
     }
+    test("log"){
+      sealed trait Msg
+      case class Debounced() extends Msg
+      case class Text(value: String) extends Msg
+
+      class Logger(log: os.Path, debounceTime: java.time.Duration)
+                  (implicit ac: Context) extends StateMachineActor[Msg]{
+        def initialState = Idle()
+        case class Idle() extends State({
+          case Text(value) =>
+            ac.scheduleMsg(this, Debounced(), debounceTime)
+            Buffering(Vector(value))
+        })
+        case class Buffering(buffer: Vector[String]) extends State({
+          case Text(value) => Buffering(buffer :+ value)
+          case Debounced() =>
+            os.write.append(log, buffer.mkString(" ") + "\n", createFolders = true)
+            Idle()
+        })
+
+        override def run(msg: Msg): Unit = {
+          println(s"$state + $msg -> ")
+          super.run(msg)
+          println(state)
+        }
+      }
+
+      implicit val ac = new Context.Test()
+
+      val logPath = os.pwd / "out" / "scratch" / "log.txt"
+
+      val logger = new Logger(logPath, java.time.Duration.ofMillis(50))
+
+      logger.send(Text("I am cow"))
+      // Idle() + Text(I am cow) ->
+      // Buffering(Vector(I am cow))
+      logger.send(Text("hear me moo"))
+      // Buffering(Vector(I am cow)) + Text(hear me moo) ->
+      // Buffering(Vector(I am cow, hear me moo))
+      Thread.sleep(100)
+      // Buffering(Vector(I am cow, hear me moo)) + Debounced() ->
+      // Idle()
+      logger.send(Text("I weight twice as much as you"))
+      // Idle() + Text(I weight twice as much as you) ->
+      // Buffering(Vector(I weight twice as much as you))
+      logger.send(Text("And I look good on the barbecue"))
+      // Buffering(Vector(I weight twice as much as you)) + Text(And I look good on the barbecue) ->
+      // Buffering(Vector(I weight twice as much as you, And I look good on the barbecue))
+      Thread.sleep(100)
+      // Buffering(Vector(I weight twice as much as you, And I look good on the barbecue)) + Debounced() ->
+      // Idle()
+      logger.send(Text("Yoghurt curds cream cheese and butter"))
+      // Idle() + Text(Yoghurt curds cream cheese and butter) ->
+      // Buffering(Vector(Yoghurt curds cream cheese and butter))
+      logger.send(Text("Comes from liquids from my udder"))
+      // Buffering(Vector(Yoghurt curds cream cheese and butter)) +
+      // Text(Comes from liquids from my udder) -> Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder))
+      logger.send(Text("I am cow, I am cow"))
+      // Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder)) + Text(I am cow, I am cow) ->
+      // Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder, I am cow, I am cow))
+      logger.send(Text("Hear me moo, moooo"))
+      // Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder, I am cow, I am cow)) + Text(Hear me moo, moooo) ->
+      // Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder, I am cow, I am cow, Hear me moo, moooo))
+
+      ac.waitForInactivity()
+      // Buffering(Vector(Yoghurt curds cream cheese and butter, Comes from liquids from my udder, I am cow, I am cow, Hear me moo, moooo)) + Debounced() ->
+      // Idle()
+
+      os.read.lines(logPath) ==> Seq(
+        "I am cow hear me moo",
+        "I weight twice as much as you And I look good on the barbecue",
+        "Yoghurt curds cream cheese and butter Comes from liquids from my udder I am cow, I am cow Hear me moo, moooo",
+      )
+    }
 
   }
 }
