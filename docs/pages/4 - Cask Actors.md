@@ -422,6 +422,11 @@ override def run(msg: Msg): Unit = {
 }
 ```
 
+Note that if you have multiple actors sending messages to each other, by default
+they run on a thread pool and so the `println` messages above may become
+interleaved and hard to read. To resolve that, you can try
+[Running Actors Single Threaded](#running-actors-single-threaded).
+
 ### Debugging using Context Logging
 
 Apart from logging individual Actors, you can also insert logging into the
@@ -460,6 +465,8 @@ cask.actor.JvmActorsTest$Writer$2@3bb87fa0 <- Q29tZXMgZnJvbSBsaXF1aWRzIGZyb20gbX
 cask.actor.JvmActorsTest$Writer$2@3bb87fa0 <- SSBhbSBjb3csIEkgYW0gY293
 cask.actor.JvmActorsTest$Writer$2@3bb87fa0 <- SGVhciBtZSBtb28sIG1vb29v
 ```
+
+### Running Actors Single Threaded
 
 We can also replace the default `scala.concurrent.ExecutionContext.global`
 executor with a single-threaded executor, if we want our Actor pipeline to
