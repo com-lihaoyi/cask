@@ -72,6 +72,12 @@ elsewhere e.g. if you have a remote error aggregating service. The actor
 continues processing messages after the failure in the state that it was left
 in.
 
+Cask Actors are meant to manage mutable state internal to the Actor. Note that
+it is up to you to mark the state `private` to avoid accidental external access.
+Each actor may run on a different thread, and the same actor may run on
+different threads at different times, so you should ensure you do not mutate
+shared mutable state otherwise you risk race conditions.
+
 ## Example: Asynchronous Logging using an Actor
 
 Here is a small demonstration of using a `cask.actor.SimpleActor` to perform
