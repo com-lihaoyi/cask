@@ -11,7 +11,7 @@ object JvmActorsTest extends TestSuite{
 
       var logSize = 0
 
-      def logLine(s: String): Unit = {
+      def logLine(s: String): Unit = synchronized{
         val newLogSize = logSize + s.length + 1
         if (newLogSize <= rotateSize) logSize = newLogSize
         else {
@@ -66,7 +66,9 @@ object JvmActorsTest extends TestSuite{
       logger.send("I am cow, I am cow")
       logger.send("Hear me moo, moooo")
 
+      // Logger hasn't finished yet, running in the background
       ac.waitForInactivity()
+      // Now logger has finished
 
       os.read.lines(oldPath) ==> Seq("Comes from liquids from my udder")
       os.read.lines(logPath) ==> Seq("I am cow, I am cow", "Hear me moo, moooo")
