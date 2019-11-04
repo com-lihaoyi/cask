@@ -106,7 +106,22 @@ val logPath = os.pwd / "out" / "scratch" / "log.txt"
 val oldPath  = os.pwd / "out" / "scratch" / "log-old.txt"
 
 val logger = new Logger(logPath, oldPath, rotateSize = 50)
+```
 
+In the above example, we are defining a single `Logger` actor class, which we
+are instantiating once as `val logger`. We can now send as many messages as we
+want via `logger.send`: while the processing of a message make take some time
+(here are are both writing to disk, as well as providing
+[log-rotation](https://en.wikipedia.org/wiki/Log_rotation) to avoid the logfile
+growing in size forever) the fact that it's in a separate actor means the
+processing happens in the background without slowing down the main logic of your
+program. Cask Actors process messages one at a time, so by putting the file
+write-and-rotate logic inside an Actor we can be sure to avoid race conditions
+that may arise due to multiple threads mangling the same file at once.
+
+Here's the result of sending messages to the actor:
+
+```scala
 logger.send("I am cow")
 logger.send("hear me moo")
 logger.send("I weight twice as much as you")
@@ -123,17 +138,6 @@ ac.waitForInactivity()
 os.read.lines(oldPath) ==> Seq("Comes from liquids from my udder")
 os.read.lines(logPath) ==> Seq("I am cow, I am cow", "Hear me moo, moooo")
 ```
-
-In the above example, we are defining a single `Logger` actor class, which we
-are instantiating once as `val logger`. We can now send as many messages as we
-want via `logger.send`: while the processing of a message make take some time
-(here are are both writing to disk, as well as providing
-[log-rotation](https://en.wikipedia.org/wiki/Log_rotation) to avoid the logfile
-growing in size forever) the fact that it's in a separate actor means the
-processing happens in the background without slowing down the main logic of your
-program. Cask Actors process messages one at a time, so by putting the file
-write-and-rotate logic inside an Actor we can be sure to avoid race conditions
-that may arise due to multiple threads mangling the same file at once.
 
 Using Actors is ideal for scenarios where the dataflow is one way: e.g. when
 logging, you only write logs, and never need to wait for the results of
@@ -237,7 +241,20 @@ val oldPath  = os.pwd / "out" / "scratch" / "log-old.txt"
 
 val writer = new Writer(logPath, oldPath, rotateSize = 50)
 val logger = new Logger(writer)
+```
 
+Although we have added another Base64 encoding step to the logging process, this
+new step lives in a separate actor from the original write-to-disk step, and
+both of these can run in parallel as well as in parallel with the main logic. By
+constructing our data processing flows using Actors, we can take advantage of
+pipeline parallelism to distribute the processing over multiple threads and CPU
+cores, so adding steps to the pipeline neither slows it down nor does it slow
+down the execution of the main program.
+
+We can send messages to this actor and verify that it writes lines to the log
+file base64 encoded:
+
+```scala
 logger.send("I am cow")
 logger.send("hear me moo")
 logger.send("I weight twice as much as you")
@@ -259,14 +276,6 @@ def decodeFile(p: os.Path) = {
 decodeFile(oldPath) ==> Seq("Comes from liquids from my udder")
 decodeFile(logPath) ==> Seq("I am cow, I am cow", "Hear me moo, moooo")
 ```
-
-Although we have added another Base64 encoding step to the logging process, this
-new step lives in a separate actor from the original write-to-disk step, and
-both of these can run in parallel as well as in parallel with the main logic. By
-constructing our data processing flows using Actors, we can take advantage of
-pipeline parallelism to distribute the processing over multiple threads and CPU
-cores, so adding steps to the pipeline neither slows it down nor does it slow
-down the execution of the main program.
 
 You can imagine adding additional stages to this actor pipeline, to perform
 other sorts of processing, and have those additional stages running in parallel
@@ -325,7 +334,21 @@ val oldPath  = os.pwd / "out" / "scratch" / "log-old.txt"
 
 val writer = new Writer(logPath, oldPath)
 val logger = new Logger(writer, rotateSize = 50)
+```
 
+Here the `Logger` actor takes incoming log lines and decides when it needs to
+trigger a log rotation, while sending both the log lines and rotation commands
+as `Text` and `Rotate` commands to the `Writer` batch actor which handles
+batches of these messages via its `runBatch` method. `Writer` filters through
+the list of incoming messages to decide what it needs to do: either there are
+zero `Rotate` commands and it simply appends all incoming `Text`s to the log
+file, or there are one-or-more `Rotate` commands it needs to do a log rotation,
+writing the batched messages once to the log file pre- and post-rotation.
+
+We can send messages to the logger and verify that it behaves the same as the
+`SimpleActor` example earlier:
+
+```scala
 logger.send("I am cow")
 logger.send("hear me moo")
 logger.send("I weight twice as much as you")
@@ -340,15 +363,6 @@ ac.waitForInactivity()
 os.read.lines(oldPath) ==> Seq("Comes from liquids from my udder")
 os.read.lines(logPath) ==> Seq("I am cow, I am cow", "Hear me moo, moooo")
 ```
-
-Here the `Logger` actor takes incoming log lines and decides when it needs to
-trigger a log rotation, while sending both the log lines and rotation commands
-as `Text` and `Rotate` commands to the `Writer` batch actor which handles
-batches of these messages via its `runBatch` method. `Writer` filters through
-the list of incoming messages to decide what it needs to do: either there are
-zero `Rotate` commands and it simply appends all incoming `Text`s to the log
-file, or there are one-or-more `Rotate` commands it needs to do a log rotation,
-writing the batched messages once to the log file pre- and post-rotation.
 
 Using a `BatchActor` here helps reduce the number of writes to the filesystem:
 no matter how many messages get queued up, our batch actor only makes two
@@ -397,7 +411,21 @@ implicit val ac = new Context.Test()
 val logPath = os.pwd / "out" / "scratch" / "log.txt"
 
 val logger = new Logger(logPath, java.time.Duration.ofMillis(50))
+```
 
+In this example, we use `StateMachineActor` to define a `Logger` actor with two
+states `Idle` and `Buffering`.
+
+This actor starts out with its `initalState = Idle()`. When it receives a `Text`
+message, it schedules a `Flush` message to be sent 50 milliseconds in the
+future, and transitions into the `Buffering` state. While in `Buffering`, any
+additional `Text` messages are simply accumulated onto the buffer, until the
+`Flush` is received again and all the buffered messages are flushed to disk.
+Each group of messages is written as a single line, separated by newlines (just
+so we can see the effect of the batching in the output). The output is as
+follows:
+
+```scala
 logger.send(Text("I am cow"))
 logger.send(Text("hear me moo"))
 Thread.sleep(100)
@@ -418,21 +446,9 @@ os.read.lines(logPath) ==> Seq(
 )
 ```
 
-In this example, we use `StateMachineActor` to define a `Logger` actor with two
-states `Idle` and `Buffering`.
-
-This actor starts out with its `initalState = Idle()`. When it receives a `Text`
-message, it schedules a `Flush` message to be sent 50 milliseconds in the
-future, and transitions into the `Buffering` state. While in `Buffering`, any
-additional `Text` messages are simply accumulated onto the buffer, until the
-`Flush` is received again and all the buffered messages are flushed to disk.
-Each group of messages is written as a single line, separated by newlines (just
-so we can see the effect of the batching in the output)
-
-You can see that we send the text messages to the `logger` in three groups
-separated by 100 millisecond waits, and as a result the final log file ends up
-having three lines of logs each of which contains multiple messages buffered
-together.
+You can see that when sending the text messages to the `logger` in three groups
+separated by 100 millisecond waits, the final log file ends up having three
+lines of logs each of which contains multiple messages buffered together.
 
 In general, `StateMachineActor` is very useful in cases where there are multiple
 distinct states which an Actor can be in, as it forces you explicitly define the
