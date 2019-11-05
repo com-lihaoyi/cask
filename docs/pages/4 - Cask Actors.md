@@ -467,8 +467,8 @@ Note that while multiple threads can send messages to `Logger` at once, and the
 `Flush()` message can also be sent at an arbitrary time in the future thanks to
 the `ac.scheduleMsg` call, the actor will only ever process one message at a
 time. This means you can be sure that it will transition through the two states
-`Idle` and `Buffering` in a straightforward manner, without worry about multiple
-threads executing at once and messing up the simple state machine.
+`Idle` and `Buffering` in a straightforward manner, without worrying about
+multiple threads executing at once and messing up the simple state machine.
 
 ## Debugging Actors
 

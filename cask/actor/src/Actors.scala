@@ -69,10 +69,16 @@ abstract class SimpleActor[T]()(implicit ac: Context) extends BaseActor[T]{
 }
 
 abstract class StateMachineActor[T]()(implicit ac: Context) extends SimpleActor[T]() {
-  class State(val run: T => State)
+  class State(val run: T => State = null)
   protected[this] def initialState: State
   protected[this] var state: State = initialState
   def run(msg: T): Unit = {
+    assert(state != null)
     state = state.run(msg)
   }
+}
+
+class ProxyActor[T, V](f: T => V, downstream: Actor[V])
+                      (implicit ac: Context) extends SimpleActor[T]{
+  def run(msg: T): Unit = downstream.send(f(msg))
 }
