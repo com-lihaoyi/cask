@@ -2,7 +2,7 @@ package app
 
 import utest._
 import cask.Logger.Console.globalLogger
-import cask.actor.Context.Simple.global
+import castor.Context.Simple.global
 object ExampleTests extends TestSuite{
 
 

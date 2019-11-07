@@ -7,7 +7,7 @@ import language.experimental.macros
 trait Routes{
 
   def decorators = Seq.empty[cask.router.Decorator[_, _, _]]
-  implicit val actorContext = new cask.actor.Context.Simple(
+  implicit val actorContext = new castor.Context.Simple(
     concurrent.ExecutionContext.Implicits.global,
     log.exception
   )

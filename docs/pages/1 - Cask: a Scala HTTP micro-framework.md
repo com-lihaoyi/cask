@@ -81,10 +81,10 @@ via the following coordinates:
 
 ```scala
 // Mill
-ivy"com.lihaoyi::cask:0.3.3"
+ivy"com.lihaoyi::cask:0.3.6"
 
 // SBT
-"com.lihaoyi" %% "cask" % "0.3.3"
+"com.lihaoyi" %% "cask" % "0.3.6"
 ```
 
 The `./mill` command is just a wrapper around the
@@ -401,23 +401,7 @@ This minimal example intentionally does not contain javascript, HTML, styles,
 etc.. Those can be managed via the normal mechanism for
 [Serving Static Files](#serving-static-files).
 
-
 ## TodoMVC Database Integration
-
-$$$todoDb
-
-This example demonstrates how to use Cask to write a TodoMVC API server that
-persists it's state in a database rather than in memory. We use the
-[Quill](http://getquill.io/) database access library to write a `@transactional`
-decorator that automatically opens one transaction per call to an endpoint,
-ensuring that database queries are properly committed on success or rolled-back
-on error. Note that because the default database connector propagates its
-transaction context in a thread-local, `@transactional` does not need to pass
-the `ctx` object into each endpoint as an additional parameter list, and so we
-simply leave it out.
-
-While this example is specific to Quill, you can easily modify the
-`@transactional` decorator to make it <!--## TodoMVC Database Integration
 
 $$$todoDb
 

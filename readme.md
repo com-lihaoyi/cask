@@ -38,6 +38,11 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.3.6
+
+- Extract `cask-actor` into its own repo and artifact,
+  [https://github.com/lihaoyi/castor](https://github.com/lihaoyi/castor)
+
 ### 0.3.3
 
 - Separate `cask-actor` into a separate artifact, documented separately as

@@ -4,8 +4,8 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Promise}
 
 class WsClient(impl: WebsocketBase)
-              (implicit ac: cask.actor.Context, log: Logger)
-  extends cask.actor.SimpleActor[Ws.Event]{
+              (implicit ac: castor.Context, log: Logger)
+  extends castor.SimpleActor[Ws.Event]{
 
   def run(item: Ws.Event): Unit = item match{
     case Ws.Text(s) => impl.send(s)
@@ -18,13 +18,13 @@ class WsClient(impl: WebsocketBase)
 object WsClient{
   def connect(url: String)
              (f: PartialFunction[cask.util.Ws.Event, Unit])
-             (implicit ac: cask.actor.Context, log: Logger): WsClient = {
+             (implicit ac: castor.Context, log: Logger): WsClient = {
     Await.result(connectAsync(url)(f), Duration.Inf)
   }
   def connectAsync(url: String)
                   (f: PartialFunction[cask.util.Ws.Event, Unit])
-                  (implicit ac: cask.actor.Context, log: Logger): scala.concurrent.Future[WsClient] = {
-    object receiveActor extends cask.actor.SimpleActor[Ws.Event] {
+                  (implicit ac: castor.Context, log: Logger): scala.concurrent.Future[WsClient] = {
+    object receiveActor extends castor.SimpleActor[Ws.Event] {
       def run(item: Ws.Event) = f.lift(item)
     }
     val p = Promise[WsClient]

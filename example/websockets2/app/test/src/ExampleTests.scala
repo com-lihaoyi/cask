@@ -1,7 +1,7 @@
 package app
 
 import java.util.concurrent.atomic.AtomicInteger
-import cask.actor.Context.Simple.global
+import castor.Context.Simple.global
 import org.asynchttpclient.ws.{WebSocket, WebSocketListener, WebSocketUpgradeHandler}
 import utest._
 

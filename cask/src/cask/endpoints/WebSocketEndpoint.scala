@@ -32,8 +32,8 @@ class websocket(val path: String, override val subpath: Boolean = false)
   def wrapPathSegment(s: String): Seq[String] = Seq(s)
 }
 
-case class WsHandler(f: WsChannelActor => cask.actor.Actor[Ws.Event])
-                    (implicit ac: cask.actor.Context, log: Logger)
+case class WsHandler(f: WsChannelActor => castor.Actor[Ws.Event])
+                    (implicit ac: castor.Context, log: Logger)
 extends WebsocketResult with WebSocketConnectionCallback {
    def onConnect(exchange: WebSocketHttpExchange, channel: WebSocketChannel): Unit = {
      channel.suspendReceives()
@@ -75,8 +75,8 @@ extends WebsocketResult with WebSocketConnectionCallback {
 }
 
 class WsChannelActor(channel: WebSocketChannel)
-                    (implicit ac: cask.actor.Context, log: Logger)
-extends cask.actor.SimpleActor[Ws.Event]{
+                    (implicit ac: castor.Context, log: Logger)
+extends castor.SimpleActor[Ws.Event]{
   def run(item: Ws.Event): Unit = item match{
     case Ws.Text(value) => WebSockets.sendTextBlocking(value, channel)
     case Ws.Binary(value) => WebSockets.sendBinaryBlocking(ByteBuffer.wrap(value), channel)
@@ -87,8 +87,8 @@ extends cask.actor.SimpleActor[Ws.Event]{
 }
 
 case class WsActor(handle: PartialFunction[Ws.Event, Unit])
-                  (implicit ac: cask.actor.Context, log: Logger)
-extends cask.actor.SimpleActor[Ws.Event]{
+                  (implicit ac: castor.Context, log: Logger)
+extends castor.SimpleActor[Ws.Event]{
   def run(item: Ws.Event): Unit = {
     handle.lift(item)
   }
