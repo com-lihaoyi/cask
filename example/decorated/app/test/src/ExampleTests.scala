@@ -21,7 +21,9 @@ object ExampleTests extends TestSuite{
       requests.get(s"$host/hello/woo").text() ==> "woo31337"
       requests.get(s"$host/internal/boo").text() ==> "boo[haoyi]"
       requests.get(s"$host/internal-extra/goo").text() ==> "goo[haoyi]31337"
-
+      requests.get(s"$host/internal-extra/goo").text() ==> "goo[haoyi]31337"
+      requests.get(s"$host/hello-default?world=worldz").text() ==> "worldz[haoyi]"
+      requests.get(s"$host/hello-default").text() ==> "world[haoyi]"
     }
   }
 }

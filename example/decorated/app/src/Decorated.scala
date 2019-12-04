@@ -40,5 +40,10 @@ object Decorated extends cask.MainRoutes{
     world + user
   }
 
+  @loggedIn()
+  @cask.get("/hello-default")
+  def defaults(world: String = "world")(user: User) = {
+    world + user
+  }
   initialize()
 }
