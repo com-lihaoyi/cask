@@ -67,7 +67,10 @@ class Macros[C <: blackbox.Context](val c: C) {
       val argReader = argReaders.lift(argListIndex).getOrElse(q"cask.router.NoOpParser.instanceAny")
       val flattenedArgLists = method.paramss(argListIndex)
       def hasDefault(i: Int) = {
-        val defaultName = s"${method.name}$$default$$${i + 1}"
+        // defaults are numbered globally on a class-level, this means that we
+        // must take into account the parameter index *as well as the parameter list index*
+        val defaultIdx = i + argListIndex + 1
+        val defaultName = s"${method.name}$$default$$$defaultIdx"
         if (curCls.members.exists(_.name.toString == defaultName)) Some(defaultName)
         else None
       }
