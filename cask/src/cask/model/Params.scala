@@ -40,7 +40,8 @@ object Cookie{
       from.getVersion,
       from.isDiscard,
       from.isHttpOnly,
-      from.isSecure
+      from.isSecure,
+      from.getSameSiteMode
     )
   }
   def toUndertow(from: Cookie): io.undertow.server.handlers.Cookie = {
@@ -54,6 +55,7 @@ object Cookie{
     out.setDiscard(from.discard)
     out.setHttpOnly(from.httpOnly)
     out.setSecure(from.secure)
+    out.setSameSiteMode(from.sameSite)
   }
 }
 case class Cookie(name: String,
@@ -66,7 +68,8 @@ case class Cookie(name: String,
                   version: Int = 1,
                   discard: Boolean = false,
                   httpOnly: Boolean = false,
-                  secure: Boolean = false) {
+                  secure: Boolean = false,
+                  sameSite: String = null) {
 
 }
 
