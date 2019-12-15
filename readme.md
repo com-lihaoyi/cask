@@ -38,6 +38,11 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.3.7
+
+- Add `SameSite` cookie attribute
+- Fix bug in default parameters of cask routes
+
 ### 0.3.6
 
 - Extract `cask-actor` into its own repo and artifact,
