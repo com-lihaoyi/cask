@@ -50,20 +50,14 @@ object Response {
     implicit class UnitData(s: Unit) extends Data{
       def write(out: OutputStream) = ()
     }
-    implicit class StringData(s: String) extends Data{
-      def write(out: OutputStream) = out.write(s.getBytes)
+    implicit class WritableData[T](s: T)(implicit f: T => geny.Writable) extends Data{
+      def write(out: OutputStream) = f(s).writeBytesTo(out)
     }
     implicit class NumericData[T: Numeric](s: T) extends Data{
       def write(out: OutputStream) = out.write(s.toString.getBytes)
     }
     implicit class BooleanData(s: Boolean) extends Data{
       def write(out: OutputStream) = out.write(s.toString.getBytes)
-    }
-    implicit class BytesData(b: Array[Byte]) extends Data{
-      def write(out: OutputStream) = out.write(b)
-    }
-    implicit class StreamData(b: InputStream) extends Data{
-      def write(out: OutputStream) = Util.transferTo(b, out)
     }
   }
 }

@@ -72,7 +72,7 @@ class postJson(val path: String, override val subpath: Boolean = false)
         ))}
     } yield obj.toMap
     obj match{
-      case Left(r) => Result.Success(r.map(Response.Data.StringData))
+      case Left(r) => Result.Success(r.map(Response.Data.WritableData(_)))
       case Right(params) => delegate(params)
     }
   }
