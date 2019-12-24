@@ -1,5 +1,5 @@
 import mill._, scalalib._
-import $ivy.`com.lihaoyi::mill-contrib-twirllib:0.4.1-4-158d11`
+import $ivy.`com.lihaoyi::mill-contrib-twirllib:$MILL_VERSION`
 
 trait AppModule extends ScalaModule with mill.twirllib.TwirlModule{
   def scalaVersion = "2.13.0"
@@ -16,7 +16,7 @@ trait AppModule extends ScalaModule with mill.twirllib.TwirlModule{
 
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.7.1",
-      ivy"com.lihaoyi::requests::0.3.0",
+      ivy"com.lihaoyi::requests::0.4.1",
     )
   }
 }

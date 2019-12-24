@@ -19,12 +19,12 @@ object ExampleTests extends TestSuite{
   val tests = Tests{
     test("Cookies") - withServer(Cookies){ host =>
       val sess = requests.Session()
-      sess.get(s"$host/read-cookie").statusCode ==> 400
+      sess.get(s"$host/read-cookie", check = false).statusCode ==> 400
       sess.get(s"$host/store-cookie")
       sess.get(s"$host/read-cookie").text() ==> "the username"
       sess.get(s"$host/read-cookie").statusCode ==> 200
       sess.get(s"$host/delete-cookie")
-      sess.get(s"$host/read-cookie").statusCode ==> 400
+      sess.get(s"$host/read-cookie", check = false).statusCode ==> 400
 
     }
   }

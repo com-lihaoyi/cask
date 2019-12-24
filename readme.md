@@ -38,6 +38,10 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.4.1
+
+- Bump uPickle, Requests versions
+
 ### 0.3.7
 
 - Add `SameSite` cookie attribute

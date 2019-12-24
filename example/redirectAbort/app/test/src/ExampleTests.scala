@@ -19,7 +19,7 @@ object ExampleTests extends TestSuite{
   val tests = Tests{
 
     test("RedirectAbort") - withServer(RedirectAbort){ host =>
-      val resp = requests.get(s"$host/")
+      val resp = requests.get(s"$host/", check = false)
       resp.statusCode ==> 401
       resp.history.get.statusCode ==> 301
     }

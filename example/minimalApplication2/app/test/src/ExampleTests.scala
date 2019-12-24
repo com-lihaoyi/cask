@@ -23,11 +23,11 @@ object ExampleTests extends TestSuite{
       success.text() ==> "Hello World!"
       success.statusCode ==> 200
 
-      requests.get(s"$host/doesnt-exist").statusCode ==> 404
+      requests.get(s"$host/doesnt-exist", check = false).statusCode ==> 404
 
       requests.post(s"$host/do-thing", data = "hello").text() ==> "olleh"
 
-      requests.get(s"$host/do-thing").statusCode ==> 404
+      requests.get(s"$host/do-thing", check = false).statusCode ==> 404
     }
   }
 }

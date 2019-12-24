@@ -20,8 +20,8 @@ object ExampleTests extends TestSuite{
     test("Endpoints") - withServer(Endpoints){ host =>
       requests.get(s"$host/echo/200").text() ==> "Echo 200"
       requests.get(s"$host/echo/200").statusCode ==> 200
-      requests.get(s"$host/echo/400").text() ==> "Echo 400"
-      requests.get(s"$host/echo/400").statusCode ==> 400
+      requests.get(s"$host/echo/400", check = false).text() ==> "Echo 400"
+      requests.get(s"$host/echo/400", check = false).statusCode ==> 400
     }
   }
 }

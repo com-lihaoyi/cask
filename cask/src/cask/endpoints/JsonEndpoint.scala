@@ -33,7 +33,7 @@ trait JsonData extends Response.Data
 object JsonData extends DataCompanion[JsonData]{
   implicit class JsonDataImpl[T: upickle.default.Writer](t: T) extends JsonData{
     def write(out: OutputStream) = {
-      upickle.default.writable(t).writeBytesTo(out)
+      upickle.default.stream(t).writeBytesTo(out)
       out.flush()
     }
   }

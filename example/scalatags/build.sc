@@ -12,7 +12,7 @@ trait AppModule extends ScalaModule{
 
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.7.1",
-      ivy"com.lihaoyi::requests::0.3.0",
+      ivy"com.lihaoyi::requests::0.4.1",
     )
   }
 }
