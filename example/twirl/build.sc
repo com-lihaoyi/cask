@@ -16,7 +16,7 @@ trait AppModule extends ScalaModule with mill.twirllib.TwirlModule{
 
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.7.1",
-      ivy"com.lihaoyi::requests::0.4.2",
+      ivy"com.lihaoyi::requests::0.4.4",
     )
   }
 }

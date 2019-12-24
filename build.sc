@@ -49,7 +49,7 @@ object cask extends CaskModule {
   def ivyDeps = Agg(
     ivy"org.scala-lang:scala-reflect:${scalaVersion()}",
     ivy"io.undertow:undertow-core:2.0.13.Final",
-    ivy"com.lihaoyi::upickle:0.9.1"
+    ivy"com.lihaoyi::upickle:0.9.2"
   )
   def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.2.0")
   def scalacOptions = Seq("-P:acyclic:force")
@@ -68,8 +68,8 @@ object cask extends CaskModule {
       )
       def ivyDeps = Agg(
         ivy"com.lihaoyi::sourcecode:0.1.8",
-        ivy"com.lihaoyi::pprint:0.5.5",
-        ivy"com.lihaoyi::geny:0.2.0"
+        ivy"com.lihaoyi::pprint:0.5.7",
+        ivy"com.lihaoyi::geny:0.4.0"
       )
     }
 
@@ -77,14 +77,14 @@ object cask extends CaskModule {
       def platformSegment = "js"
       def scalaJSVersion = "0.6.29"
       def ivyDeps = super.ivyDeps() ++ Agg(
-        ivy"com.lihaoyi::castor::0.1.0",
+        ivy"com.lihaoyi::castor::0.1.1",
         ivy"org.scala-js::scalajs-dom::0.9.7"
       )
     }
     object jvm extends UtilModule{
       def platformSegment = "jvm"
       def ivyDeps = super.ivyDeps() ++ Agg(
-        ivy"com.lihaoyi::castor::0.1.0",
+        ivy"com.lihaoyi::castor::0.1.1",
         ivy"org.java-websocket:Java-WebSocket:1.4.0"
       )
     }
@@ -95,7 +95,7 @@ object cask extends CaskModule {
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.7.1",
-      ivy"com.lihaoyi::requests::0.4.2"
+      ivy"com.lihaoyi::requests::0.4.4"
     )
   }
 }
