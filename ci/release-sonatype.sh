@@ -14,6 +14,3 @@ rm gpg_key
     --signed true \
     --publishArtifacts __.publishArtifacts \
     --release true
-
-
-./mill uploadToGithub $GITHUB_ACCESS_TOKEN

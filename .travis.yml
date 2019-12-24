@@ -13,7 +13,10 @@ matrix:
     jdk: oraclejdk8
 
   - stage: release
-    script: "ci/on-master.py ci/release.sh"
+    script: "ci/on-master.py ci/release-github.sh"
+    jdk: oraclejdk9
+  - stage: release
+    script: "ci/on-master.py ci/release-sonatype.sh"
     jdk: oraclejdk9
   - stage: release
     script: "ci/on-master.py ci/publish-docs.sh"
