@@ -1,0 +1,125 @@
+<html><head><meta charset="utf-8" /><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" /><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" /><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/styles/github-gist.min.css" rel="stylesheet" type="text/css" /><title>Main Customization</title><style>@media (min-width: 60em) {.WideStyles-header{
+  bottom: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: fixed;
+  top: 0px;
+  width: 25%;
+}
+
+.WideStyles-tableOfContentsItem{
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  width: 100%;
+}
+
+.WideStyles-tableOfContents{
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-height: 0px;
+  width: 100%;
+}
+
+.WideStyles-content{
+  box-sizing: border-box;
+  margin-left: 25%;
+  padding: 48px;
+}
+
+.WideStyles-footer{
+  bottom: 0px;
+  height: 50px;
+  position: fixed;
+  width: 25%;
+}
+
+.WideStyles-marginLeftZero{
+  margin-left: 0px;
+}
+}</style><style>@media (max-width: 60em) {.NarrowStyles-header{
+  margin-bottom: 10px;
+}
+
+.NarrowStyles-content{
+  padding: 16px;
+}
+
+.NarrowStyles-headerContent{
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.NarrowStyles-flexFont{
+  font-size: 4vw;
+}
+
+.NarrowStyles-disappear{
+  display: none;
+}
+
+.NarrowStyles-floatLeft{
+  float: left;
+  margin-left: 30px;
+}
+}</style><style>.Styles-hoverBox{
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.Styles-hoverBox:hover .Styles-hoverLink{
+  opacity: 0.5;
+}
+
+.Styles-hoverLink{
+  opacity: 0.1;
+}
+.Styles-hoverLink:hover{
+  opacity: 1.0;
+}
+
+.Styles-headerStyle{
+  background-color: rgb(61, 79, 93);
+  box-sizing: border-box;
+  display: flex;
+}
+
+.Styles-headerLinkBox{
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.Styles-headerLink{
+  align-items: center;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  padding: 10px 10px;
+}
+
+.Styles-footerStyle{
+  color: rgb(158, 167, 174);
+  display: flex;
+  justify-content: center;
+}
+
+.Styles-subtleLink{
+  text-decoration: none;
+}
+</style><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/languages/scala.min.js"></script><script>hljs.initHighlightingOnLoad();</script><meta name="viewport" content="initial-scale = 1.0,maximum-scale = 1.0" /></head><body style="margin: 0px;background-color: #f8f8f8;"><div class=" WideStyles-header NarrowStyles-header Styles-headerStyle"><div class=" NarrowStyles-headerContent"><h1 style="text-align: center;padding: 30px 30px;margin: 0px;"><a style="color: #f8f8f8;font-weight: bold;" href=".." class=" Styles-subtleLink NarrowStyles-flexFont"> Cask</a></h1><div class=" Styles-headerLinkBox"><div class=" WideStyles-tableOfContents" style="color: #f8f8f8;"><div style="padding-left: 40px;" class=" NarrowStyles-disappear"><b>Pages</b></div><div style="overflow-y: auto;flex-shrink: 1;min-height: 0px;"><ul style="overflow: hidden;text-align: start;margin-top: 10px;white-space: nowrap;text-overflow: ellipsis;margin-right: 10px;"><li class=" WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="../index.html">Cask: a Scala HTTP micro-framework</a></li><li class=" WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="main-customization.html">Main Customization</a></li><li class=" WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="about-cask.html">About Cask</a></li></ul></div></div></div></div><hr class=" NarrowStyles-disappear" style="background-color: #f8f8f8;width: 80%;" /><div class=" WideStyles-tableOfContents NarrowStyles-disappear" style="color: #f8f8f8;"><div style="padding-left: 40px;" class=" NarrowStyles-disappear"><b>Table of Contents</b></div><div style="overflow-y: auto;flex-shrink: 1;min-height: 0px;"><ul style="overflow: hidden;text-align: start;margin-top: 10px;white-space: nowrap;text-overflow: ellipsis;margin-right: 10px;"><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#def-debugmode-boolean--true">def debugMode: Boolean = true</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#def-main">def main</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#def-log">def log</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#def-defaulthandler">def defaultHandler</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#def-port-int--8080-def-host-string--localhost">def port: Int = 8080, def host: String = &quot;localhost&quot;</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#def-handlenotfound">def handleNotFound</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#def-handleendpointerror">def handleEndpointError</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#def-maindecorators">def mainDecorators</a></li></ul></div></div></div><div class=" WideStyles-content NarrowStyles-content" style="max-width: 900px;"><h1>Main Customization</h1><div style="margin-bottom: 10px;"><div style="display: flex;flex-direction: row;justify-content: space-between;"><a href="../index.html"><i class="fa fa-arrow-left" aria-hidden="true"></i> Cask: a Scala HTTP micro-framework</a><a href="about-cask.html">About Cask <i class="fa fa-arrow-right" aria-hidden="true"></i></a></div></div><p>Apart from the code used to configure and define your routes and endpoints, Cask also allows global configuration for things that apply to the entire web server. This can be done by overriding the following methods on <code>cask.Main</code> or <code>cask.MainRoutes</code>:</p><h2 id="def-debugmode-boolean--true" class="Styles-hoverBox">def debugMode: Boolean = true<a href="#def-debugmode-boolean--true" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>Makes the Cask report verbose error messages and stack traces if an endpoint fails; useful for debugging, should be disabled for production.</p><h2 id="def-main" class="Styles-hoverBox">def main<a href="#def-main" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>The cask program entrypoint. By default just spins up a webserver, but you can override it to do whatever you like before or after the webserver runs.</p><h2 id="def-log" class="Styles-hoverBox">def log<a href="#def-log" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>A logger that gets passed around the application. Used for convenient debug logging, as well as logging exceptions either to the terminal or to a centralized exception handler.</p><h2 id="def-defaulthandler" class="Styles-hoverBox">def defaultHandler<a href="#def-defaulthandler" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>Cask is built on top of the <a href="http://undertow.io/">Undertow</a> web server. If you need some low-level functionality not exposed by the Cask API, you can override <code>defaultHandler</code> to make use of Undertow's own <a href="http://undertow.io/undertow-docs/undertow-docs-2.0.0/index.html#built-in-handlers">handler API</a> for customizing your webserver. This allows for things that Cask itself doesn't internally support.</p><h2 id="def-port-int--8080-def-host-string--localhost" class="Styles-hoverBox">def port: Int = 8080, def host: String = "localhost"<a href="#def-port-int--8080-def-host-string--localhost" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>The host &amp; port to attach your webserver to.</p><h2 id="def-handlenotfound" class="Styles-hoverBox">def handleNotFound<a href="#def-handlenotfound" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>The response to serve when the incoming request does not match any of the routes or endpoints; defaults to a typical 404</p><h2 id="def-handleendpointerror" class="Styles-hoverBox">def handleEndpointError<a href="#def-handleendpointerror" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>The response to serve when the incoming request matches a route and endpoint, but then fails for other reasons. Defaults to 400 for mismatched or invalid endpoint arguments and 500 for exceptions in the endpoint body, and provides useful stack traces or metadata for debugging if <code>debugMode = true</code>.</p><h2 id="def-maindecorators" class="Styles-hoverBox">def mainDecorators<a href="#def-maindecorators" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>Any <code>cask.Decorator</code>s that you want to apply to all routes and all endpoints in the entire web application. Useful for inserting application-wide instrumentation, logging, security-checks, and similar things.</p><hr /><p><b>About the Author:</b><i> Haoyi is a software engineer, an early contributor to <a href="http://www.scala-js.org/">Scala.js</a>, and the author of many open-source Scala tools such as Cask, the <a href="lihaoyi.com/Ammonite">Ammonite REPL</a> and <a href="https://github.com/lihaoyi/fastparse">FastParse</a>. </i></p><p><i>If you've enjoy using Cask, or enjoyed using Haoyi's other open source libraries, please chip in (or get your Company to chip in!) via <a href="https://www.patreon.com/lihaoyi">Patreon</a> so he can continue his open-source work</i></p><hr /><div style="display: flex;flex-direction: row;justify-content: space-between;"><a href="../index.html"><i class="fa fa-arrow-left" aria-hidden="true"></i> Cask: a Scala HTTP micro-framework</a><a href="about-cask.html">About Cask <i class="fa fa-arrow-right" aria-hidden="true"></i></a></div></div></body></html>
