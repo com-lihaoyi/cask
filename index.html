@@ -417,7 +417,7 @@ object RedirectAbort extends cask.MainRoutes{
 <ul>
   <li><a href="https://github.com/lihaoyi/cask/releases/download/0.4.8/redirectAbort-0.4.8.zip">example project</a></li>
 </ul>
-<p>Cask provides some convenient helpers <code>cask.Redirect</code> and <code>cask.Abort</code> which you can return; these are simple wrappers around <code>cask.Request</code>, and simply set up the relevant headers or status code for you.</p><h2 id="html-rendering" class="Styles-hoverBox">HTML Rendering<a href="#html-rendering" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>Cask provides some convenient helpers <code>cask.Redirect</code> and <code>cask.Abort</code> which you can return; these are simple wrappers around <code>cask.Response</code>, and simply set up the relevant headers or status code for you.</p><h2 id="html-rendering" class="Styles-hoverBox">HTML Rendering<a href="#html-rendering" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <p>Cask doesn't come bundled with HTML templating functionality, but it makes it really easy to use community-standard libraries like <a href="https://github.com/lihaoyi/scalatags">Scalatags</a> to render your HTML. Simply adding the relevant <code>ivy&quot;com.lihaoyi::scalatags:0.8.0&quot;</code> dependency to your <code>build.sc</code> file is enough to render Scalatags templates:</p>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
 import scalatags.Text.all._
