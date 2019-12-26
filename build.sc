@@ -49,7 +49,7 @@ object cask extends CaskModule {
   def ivyDeps = Agg(
     ivy"org.scala-lang:scala-reflect:${scalaVersion()}",
     ivy"io.undertow:undertow-core:2.0.13.Final",
-    ivy"com.lihaoyi::upickle:0.9.5"
+    ivy"com.lihaoyi::upickle:0.9.6"
   )
   def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.2.0")
   def scalacOptions = Seq("-P:acyclic:force")
