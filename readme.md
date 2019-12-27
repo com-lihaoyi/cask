@@ -38,7 +38,7 @@ courtesy of EJ Technologies
 
 ## Changelog
 
-### 0.5.1
+### 0.5.2
 
 - Bump uPickle, Requests versions
 
