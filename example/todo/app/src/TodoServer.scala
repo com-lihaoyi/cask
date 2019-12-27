@@ -53,7 +53,7 @@ object TodoServer extends cask.MainRoutes{
   @transactional
   @cask.post("/add/:state")
   def add(state: String, request: cask.Request) = {
-    val body = new String(request.readAllBytes())
+    val body = request.text()
     run(
       query[Todo]
         .insert(_.checked -> lift(false), _.text -> lift(body))

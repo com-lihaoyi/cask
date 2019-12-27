@@ -8,7 +8,7 @@ case class MinimalRoutes()(implicit val log: cask.Logger) extends cask.Routes{
 
   @cask.post("/do-thing")
   def doThing(request: cask.Request) = {
-    new String(request.readAllBytes()).reverse
+    request.text().reverse
   }
 
   initialize()

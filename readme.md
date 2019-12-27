@@ -17,7 +17,7 @@ object MinimalApplication extends cask.MainRoutes{
 
   @cask.post("/do-thing")
   def doThing(request: cask.Request) = {
-    new String(request.readAllBytes()).reverse
+    request.text().reverse
   }
 
   initialize()

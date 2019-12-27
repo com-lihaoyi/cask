@@ -63,7 +63,7 @@ object TodoMvcDb extends cask.MainRoutes{
   @transactional
   @cask.post("/add")
   def add(request: cask.Request) = {
-    val body = new String(request.readAllBytes())
+    val body = request.text()
     run(
       query[Todo]
         .insert(_.checked -> lift(false), _.text -> lift(body))
