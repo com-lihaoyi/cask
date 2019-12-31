@@ -2,7 +2,7 @@ import mill._, scalalib._
 import $ivy.`com.lihaoyi::mill-contrib-twirllib:$MILL_VERSION`
 
 trait AppModule extends ScalaModule with mill.twirllib.TwirlModule{
-  def scalaVersion = "2.13.0"
+  def scalaVersion = "2.13.1"
   def twirlVersion = "1.5.0-M1"
 
   def generatedSources = T{ Seq(compileTwirl().classes) }
