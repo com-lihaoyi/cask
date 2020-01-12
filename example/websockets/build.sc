@@ -9,8 +9,8 @@ trait AppModule extends ScalaModule{
     def testFrameworks = Seq("utest.runner.Framework")
 
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.7.1",
-      ivy"com.lihaoyi::requests::0.4.7",
+      ivy"com.lihaoyi::utest::0.7.3",
+      ivy"com.lihaoyi::requests::0.4.9",
       ivy"org.asynchttpclient:async-http-client:2.5.2"
     )
   }
