@@ -81,10 +81,10 @@ via the following coordinates:
 
 ```scala
 // Mill
-ivy"com.lihaoyi::cask:0.5.2"
+ivy"com.lihaoyi::cask:0.5.6"
 
 // SBT
-"com.lihaoyi" %% "cask" % "0.5.2"
+"com.lihaoyi" %% "cask" % "0.5.6"
 ```
 
 The `./mill` command is just a wrapper around the
@@ -113,7 +113,7 @@ The rough outline of how the minimal example works should be easy to understand:
   `cask.Response` if you want further customization: response code, headers,
   etc.
 
-- Your function can tale an optional `cask.Request`, which exposes the entire
+- Your function can take an optional `cask.Request`, which exposes the entire
   incoming HTTP request if necessary. In the above example, we use it to read
   the request body into a string and return it reversed.
 
@@ -222,7 +222,7 @@ the relevant headers or status code for you.
 Cask doesn't come bundled with HTML templating functionality, but it makes it
 really easy to use community-standard libraries like
 [Scalatags](https://github.com/lihaoyi/scalatags) to render your HTML. Simply
-adding the relevant `ivy"com.lihaoyi::scalatags:0.8.0"` dependency to your
+adding the relevant `ivy"com.lihaoyi::scalatags:0.8.2"` dependency to your
 `build.sc` file is enough to render Scalatags templates:
 
 $$$scalatags
