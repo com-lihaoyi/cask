@@ -27,6 +27,8 @@ package object cask {
   type get = endpoints.get
   type post = endpoints.post
   type put = endpoints.put
+  type delete = endpoints.delete
+  type patch = endpoints.patch
   type route = endpoints.route
   type staticFiles = endpoints.staticFiles
   type staticResources = endpoints.staticResources
