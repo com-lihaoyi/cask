@@ -37,6 +37,12 @@ class post(val path: String, override val subpath: Boolean = false) extends WebE
 class put(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("put")
 }
+class patch(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
+  val methods = Seq("patch")
+}
+class delete(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
+  val methods = Seq("delete")
+}
 class route(val path: String, val methods: Seq[String], override val subpath: Boolean = false) extends WebEndpoint
 
 abstract class QueryParamReader[T]
