@@ -6,5 +6,15 @@ object HttpMethods extends cask.MainRoutes{
     else "show_the_login_form"
   }
 
+  @cask.route("/session", methods = Seq("delete"))
+  def session(request: cask.Request) = {
+    "delete_the_session"
+  }
+
+  @cask.route("/session", methods = Seq("secretmethod"))
+  def admin(request: cask.Request) = {
+    "security_by_obscurity"
+  }
+
   initialize()
 }

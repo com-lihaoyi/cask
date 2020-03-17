@@ -120,12 +120,16 @@ object Main{
     )
   }
 
-  def prepareRouteTries(allRoutes: Seq[Routes]) = {
+  def prepareRouteTries(allRoutes: Seq[Routes]): Map[String, DispatchTrie[(Routes, EndpointMetadata[_])]] = {
     val routeList = for{
       routes <- allRoutes
       route <- routes.caskMetadata.value.map(x => x: EndpointMetadata[_])
     } yield (routes, route)
-    Seq("get", "put", "post", "websocket")
+
+    val allMethods: Set[String] =
+      routeList.flatMap(_._2.endpoint.methods).map(_.toLowerCase).toSet
+
+    allMethods
       .map { method =>
         method -> DispatchTrie.construct[(Routes, EndpointMetadata[_])](0,
           for ((route, metadata) <- routeList if metadata.endpoint.methods.contains(method))
