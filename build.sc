@@ -49,7 +49,7 @@ object cask extends CaskModule {
   def ivyDeps = Agg(
     ivy"org.scala-lang:scala-reflect:${scalaVersion()}",
     ivy"io.undertow:undertow-core:2.0.13.Final",
-    ivy"com.lihaoyi::upickle:0.9.8"
+    ivy"com.lihaoyi::upickle:1.1.0"
   )
   def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.2.0")
   def scalacOptions = Seq("-P:acyclic:force")
@@ -69,7 +69,7 @@ object cask extends CaskModule {
       def ivyDeps = Agg(
         ivy"com.lihaoyi::sourcecode:0.2.0",
         ivy"com.lihaoyi::pprint:0.5.8",
-        ivy"com.lihaoyi::geny:0.5.0"
+        ivy"com.lihaoyi::geny:0.6.0"
       )
     }
 
@@ -95,7 +95,7 @@ object cask extends CaskModule {
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.7.3",
-      ivy"com.lihaoyi::requests::0.5.0"
+      ivy"com.lihaoyi::requests::0.6.0"
     )
   }
 }
@@ -190,7 +190,7 @@ def uploadToGithub(authKey: String) = T.command{
         .replace("trait AppModule ", "object app ")
         .replaceFirst(
           "def ivyDeps = Agg\\[Dep\\]\\(",
-          "def ivyDeps = Agg(\n    ivy\"com.lihaoyi::cask:" + releaseTag + "\""
+          "def ivyDeps = Agg(\n    ivy\"com.lihaoyi::cask:" + releaseTag + "\","
         )
     )
 
