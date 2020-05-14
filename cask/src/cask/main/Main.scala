@@ -138,6 +138,9 @@ object Main{
       }.toMap
   }
   def writeResponse(exchange: HttpServerExchange, response: Response.Raw) = {
+    response.data.headers.foreach{case (k, v) =>
+      exchange.getResponseHeaders.put(new HttpString(k), v)
+    }
     response.headers.foreach{case (k, v) =>
       exchange.getResponseHeaders.put(new HttpString(k), v)
     }
