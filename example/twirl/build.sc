@@ -7,7 +7,7 @@ trait AppModule extends ScalaModule with mill.twirllib.TwirlModule{
 
   def generatedSources = T{ Seq(compileTwirl().classes) }
   def ivyDeps = Agg[Dep](
-    ivy"com.lihaoyi::scalatags:0.8.4",
+    ivy"com.lihaoyi::scalatags:0.9.1",
     ivy"com.typesafe.play::twirl-api:${twirlVersion()}",
   )
 
@@ -15,8 +15,8 @@ trait AppModule extends ScalaModule with mill.twirllib.TwirlModule{
     def testFrameworks = Seq("utest.runner.Framework")
 
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.7.3",
-      ivy"com.lihaoyi::requests::0.6.0",
+      ivy"com.lihaoyi::utest::0.7.4",
+      ivy"com.lihaoyi::requests::0.6.2",
     )
   }
 }

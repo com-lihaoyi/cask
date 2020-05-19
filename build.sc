@@ -67,8 +67,8 @@ object cask extends CaskModule {
         millSourcePath / s"src-$platformSegment"
       )
       def ivyDeps = Agg(
-        ivy"com.lihaoyi::sourcecode:0.2.0",
-        ivy"com.lihaoyi::pprint:0.5.8",
+        ivy"com.lihaoyi::sourcecode:0.2.1",
+        ivy"com.lihaoyi::pprint:0.5.9",
         ivy"com.lihaoyi::geny:0.6.0"
       )
     }
@@ -84,7 +84,7 @@ object cask extends CaskModule {
     object jvm extends UtilModule{
       def platformSegment = "jvm"
       def ivyDeps = super.ivyDeps() ++ Agg(
-        ivy"com.lihaoyi::castor::0.1.1",
+        ivy"com.lihaoyi::castor::0.1.3",
         ivy"org.java-websocket:Java-WebSocket:1.4.0"
       )
     }
@@ -94,8 +94,8 @@ object cask extends CaskModule {
 
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.7.3",
-      ivy"com.lihaoyi::requests::0.6.0"
+      ivy"com.lihaoyi::utest::0.7.4",
+      ivy"com.lihaoyi::requests::0.6.2"
     )
   }
 }

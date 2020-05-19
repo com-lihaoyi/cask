@@ -222,7 +222,7 @@ the relevant headers or status code for you.
 Cask doesn't come bundled with HTML templating functionality, but it makes it
 really easy to use community-standard libraries like
 [Scalatags](https://github.com/lihaoyi/scalatags) to render your HTML. Simply
-adding the relevant `ivy"com.lihaoyi::scalatags:0.8.2"` dependency to your
+adding the relevant `ivy"com.lihaoyi::scalatags:0.9.1"` dependency to your
 `build.sc` file is enough to render Scalatags templates:
 
 $$$scalatags
