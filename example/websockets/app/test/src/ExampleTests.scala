@@ -12,12 +12,12 @@ object ExampleTests extends TestSuite{
 
   def withServer[T](example: cask.main.Main)(f: String => T): T = {
     val server = io.undertow.Undertow.builder
-      .addHttpListener(8080, "localhost")
+      .addHttpListener(8081, "localhost")
       .setHandler(example.defaultHandler)
       .build
     server.start()
     val res =
-      try f("http://localhost:8080")
+      try f("http://localhost:8081")
       finally server.stop()
     res
   }
@@ -26,7 +26,7 @@ object ExampleTests extends TestSuite{
       @volatile var out = List.empty[String]
       // 4. open websocket
 
-      val ws = cask.WsClient.connect("ws://localhost:8080/connect/haoyi"){
+      val ws = cask.WsClient.connect("ws://localhost:8081/connect/haoyi"){
         case cask.Ws.Text(s) => out = s :: out
       }
 
@@ -39,7 +39,7 @@ object ExampleTests extends TestSuite{
         out ==> List("haoyi world", "haoyi hello")
 
         val ex = intercept[Exception] {
-          cask.WsClient.connect("ws://localhost:8080/connect/nobody") {
+          cask.WsClient.connect("ws://localhost:8081/connect/nobody") {
             case _ => /*do nothing*/
           }
         }
@@ -52,7 +52,7 @@ object ExampleTests extends TestSuite{
       @volatile var out = List.empty[String]
       val closed = new AtomicInteger(0)
       val client = org.asynchttpclient.Dsl.asyncHttpClient();
-      val ws = Seq.fill(2000)(client.prepareGet("ws://localhost:8080/connect/haoyi")
+      val ws = Seq.fill(2000)(client.prepareGet("ws://localhost:8081/connect/haoyi")
         .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(
           new WebSocketListener() {
 
