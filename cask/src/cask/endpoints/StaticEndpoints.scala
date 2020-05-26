@@ -22,7 +22,7 @@ class staticFiles(val path: String, headers: Seq[(String, String)] = Nil) extend
 }
 
 class staticResources(val path: String,
-                      resourceRoot: ClassLoader = getClass.getClassLoader,
+                      resourceRoot: ClassLoader = classOf[staticResources].getClassLoader,
                       headers: Seq[(String, String)] = Nil)
   extends HttpEndpoint[String, Seq[String]]{
   val methods = Seq("get")

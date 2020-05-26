@@ -75,7 +75,7 @@ object cask extends CaskModule {
 
     object js extends UtilModule with ScalaJSModule{
       def platformSegment = "js"
-      def scalaJSVersion = "0.6.29"
+      def scalaJSVersion = "0.6.33"
       def ivyDeps = super.ivyDeps() ++ Agg(
         ivy"com.lihaoyi::castor::0.1.1",
         ivy"org.scala-js::scalajs-dom::0.9.7"

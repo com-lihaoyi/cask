@@ -59,9 +59,9 @@ class Macros[C <: blackbox.Context](val c: C) {
       (remaining, docValues.headOption)
     }
     val (_, methodDoc) = getDocAnnotation(method.annotations)
-    val argValuesSymbol = q"${c.fresh[TermName]("argValues")}"
-    val argSigsSymbol = q"${c.fresh[TermName]("argSigs")}"
-    val ctxSymbol = q"${c.fresh[TermName]("ctx")}"
+    val argValuesSymbol = q"${c.fresh[TermName](TermName("argValues"))}"
+    val argSigsSymbol = q"${c.fresh[TermName](TermName("argSigs"))}"
+    val ctxSymbol = q"${c.fresh[TermName](TermName("ctx"))}"
     val argData = for(argListIndex <- method.paramLists.indices) yield{
       val annotDeserializeType = annotDeserializeTypes.lift(argListIndex).getOrElse(tq"scala.Any")
       val argReader = argReaders.lift(argListIndex).getOrElse(q"cask.router.NoOpParser.instanceAny")
