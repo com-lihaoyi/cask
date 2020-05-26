@@ -147,7 +147,18 @@ object Main{
     response.cookies.foreach(c => exchange.setResponseCookie(Cookie.toUndertow(c)))
 
     exchange.setStatusCode(response.statusCode)
-    response.data.write(exchange.getOutputStream)
+    val output = exchange.getOutputStream
+    response.data.write(new java.io.OutputStream {
+      def write(b: Int): Unit = output.write(b)
+      override def write(b: Array[Byte]): Unit = output.write(b)
+      override def write(b: Array[Byte], off: Int, len: Int): Unit = output.write(b, off, len)
+      override def close() = {
+        if (!exchange.isComplete) output.close()
+      }
+      override def flush() = {
+        if (!exchange.isComplete) output.flush()
+      }
+    })
   }
 
   def defaultHandleError(routes: Routes,
