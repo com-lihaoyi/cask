@@ -27,7 +27,7 @@ import $file.example.websockets3.build
 import $file.example.websockets4.build
 
 trait CaskModule extends ScalaModule with PublishModule{
-  def scalaVersion = "2.13.1"
+  def scalaVersion = "2.13.2"
 
   def publishVersion = build.publishVersion()._2
 

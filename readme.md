@@ -59,7 +59,7 @@ courtesy of EJ Technologies
 
 ### 0.3.2
 
-- Support for Scala 2.13.1
+- Support for Scala 2.13.2
 
 ### 0.3.1
 

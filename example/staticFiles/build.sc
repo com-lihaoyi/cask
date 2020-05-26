@@ -2,7 +2,7 @@ import mill._, scalalib._
 
 
 trait AppModule extends ScalaModule{
-  def scalaVersion = "2.13.1"
+  def scalaVersion = "2.13.2"
 
   def forkWorkingDir = build.millSourcePath
   def ivyDeps = Agg[Dep](
