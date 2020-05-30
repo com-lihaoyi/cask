@@ -29,8 +29,16 @@ Cask is a simple Scala web framework inspired by Python's
 flexibility and ease-of-use to Scala webservers, avoiding cryptic DSLs or
 complicated asynchrony.
 
-
 - [Documentation](http://www.lihaoyi.com/cask/)
+
+If you use Cask and like it, you will probably enjoy the following book by the Author:
+
+- [*Hands-on Scala Programming*](https://www.handsonscala.com/)
+
+*Hands-on Scala* has uses Requests-Scala extensively throughout the book, and has
+the entirety of *Chapter 14: Simple Web and API Servers* dedicated to 
+the library. *Hands-on Scala* is a great way to level up your skills in Scala
+in general and Cask in particular.
 
 Cask is profiled using the
 [JProfiler Java Profiler](https://www.ej-technologies.com/products/jprofiler/overview.html),
