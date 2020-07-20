@@ -1,5 +1,7 @@
 package cask.main
 
+import java.util.concurrent.Executors
+
 import cask.endpoints.{WebsocketResult, WsHandler}
 import cask.model._
 import cask.internal.{DispatchTrie, Util}
@@ -10,6 +12,8 @@ import io.undertow.Undertow
 import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.server.handlers.BlockingHandler
 import io.undertow.util.HttpString
+
+import scala.concurrent.ExecutionContext
 
 /**
   * A combination of [[cask.Main]] and [[cask.Routes]], ideal for small
@@ -32,6 +36,12 @@ abstract class Main{
   def port: Int = 8080
   def host: String = "localhost"
   def debugMode: Boolean = true
+
+  def createExecutionContext = castor.Context.Simple.executionContext
+  def createActorContext = new castor.Context.Simple(executionContext, log.exception)
+
+  val executionContext = createExecutionContext
+  implicit val actorContext = createActorContext
 
   implicit def log = new cask.util.Logger.Console()
 

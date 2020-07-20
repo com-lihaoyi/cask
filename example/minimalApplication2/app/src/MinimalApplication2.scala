@@ -1,6 +1,7 @@
 package app
 
-case class MinimalRoutes()(implicit val log: cask.Logger) extends cask.Routes{
+case class MinimalRoutes()(implicit val actorContext: castor.Context,
+                           val log: cask.Logger) extends cask.Routes{
   @cask.get("/")
   def hello() = {
     "Hello World!"

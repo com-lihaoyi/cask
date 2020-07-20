@@ -38,6 +38,20 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.7.0
+
+- Make Cask `actorContext` explicitly passed into every Routes case class
+
+### 0.6.5
+
+- Add support for `geny.Writable#httpContentType` and
+  `geny.Writable#contentLength`
+
+### 0.5.7
+
+- Add endpoints for `delete` and `patch`
+- Allow arbitrary HTTP methods
+
 ### 0.5.2
 
 - Bump uPickle, Requests versions
