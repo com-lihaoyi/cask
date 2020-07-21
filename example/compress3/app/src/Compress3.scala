@@ -1,7 +1,7 @@
 package app
 
-case class Compress3()(implicit val actorContext: castor.Context,
-                       val log: cask.Logger) extends cask.Routes{
+case class Compress3()(implicit cc: castor.Context,
+                       log: cask.Logger) extends cask.Routes{
 
   @cask.get("/")
   def hello() = {

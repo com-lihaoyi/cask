@@ -1,7 +1,7 @@
 package app
 
-case class Compress2()(implicit val actorContext: castor.Context,
-                       val log: cask.Logger) extends cask.Routes{
+case class Compress2()(implicit cc: castor.Context,
+                       log: cask.Logger) extends cask.Routes{
   override def decorators = Seq(new cask.decorators.compress())
 
   @cask.get("/")

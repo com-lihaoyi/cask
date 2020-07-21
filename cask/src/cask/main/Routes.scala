@@ -7,7 +7,6 @@ import language.experimental.macros
 trait Routes{
 
   def decorators = Seq.empty[cask.router.Decorator[_, _, _]]
-  implicit def actorContext: castor.Context
   private[this] var metadata0: RoutesEndpointsMetadata[this.type] = null
   def caskMetadata =
     if (metadata0 != null) metadata0
@@ -17,5 +16,4 @@ trait Routes{
     metadata0 = routes
   }
 
-  implicit def log: cask.util.Logger
 }

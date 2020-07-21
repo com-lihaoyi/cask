@@ -1,7 +1,7 @@
 package app
 
-case class Websockets4()(implicit val actorContext: castor.Context,
-                         val log: cask.Logger) extends cask.Routes{
+case class Websockets4()(implicit cc: castor.Context,
+                         log: cask.Logger) extends cask.Routes{
   // make sure compress decorator passes non-requests through correctly
   override def decorators = Seq(new cask.decorators.compress())
   @cask.websocket("/connect/:userName")
