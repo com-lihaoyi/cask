@@ -46,7 +46,7 @@ courtesy of EJ Technologies
 
 ## Changelog
 
-### 0.7.0
+### 0.7.3
 
 - Make Cask `actorContext` explicitly passed into every Routes case class
 
