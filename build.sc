@@ -77,14 +77,14 @@ object cask extends CaskModule {
       def platformSegment = "js"
       def scalaJSVersion = "0.6.33"
       def ivyDeps = super.ivyDeps() ++ Agg(
-        ivy"com.lihaoyi::castor::0.1.4",
+        ivy"com.lihaoyi::castor::0.1.5",
         ivy"org.scala-js::scalajs-dom::0.9.7"
       )
     }
     object jvm extends UtilModule{
       def platformSegment = "jvm"
       def ivyDeps = super.ivyDeps() ++ Agg(
-        ivy"com.lihaoyi::castor::0.1.4",
+        ivy"com.lihaoyi::castor::0.1.5",
         ivy"org.java-websocket:Java-WebSocket:1.4.0"
       )
     }
