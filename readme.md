@@ -46,6 +46,10 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.7.4
+
+- Bump Mill version to 0.8.0
+
 ### 0.7.3
 
 - Make Cask `actorContext` explicitly passed into every Routes case class
