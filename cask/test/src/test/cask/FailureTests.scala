@@ -11,7 +11,7 @@ object FailureTests extends TestSuite {
   }
 
   val tests = Tests{
-    'mismatchedDecorators - {
+    "mismatchedDecorators" - {
       utest.compileError("""
         object Decorated extends cask.MainRoutes{
           @myDecorator
