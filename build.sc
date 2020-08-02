@@ -26,8 +26,34 @@ import $file.example.websockets2.build
 import $file.example.websockets3.build
 import $file.example.websockets4.build
 
+val dottyVersion: Option[String] = Option(sys.props("dottyVersion"))
+
 trait CaskModule extends ScalaModule with PublishModule{
-  def scalaVersion = "2.13.2"
+  def scalaVersion = T.input{
+    dottyVersion match {
+      case None => "2.13.2"
+      case Some(v) => v // can't use getOrElse in a T because it has a call-by-name parameter
+    }
+  }
+
+  def isDotty = T {
+    scalaVersion().startsWith("0")
+  }
+
+  // sources can't be a Target (mill actually requires a Sources), so we need to
+  // statically check for the version
+  // TODO: fix mill to allow specifying a Target?
+  def sources = if (dottyVersion.isDefined) {
+    T.sources(
+      millSourcePath / "src",
+      millSourcePath / "src-0"
+    )
+  } else {
+    T.sources(
+      millSourcePath / "src",
+      millSourcePath / "src-2"
+    )
+  }
 
   def publishVersion = build.publishVersion()._2
 
@@ -46,15 +72,16 @@ trait CaskModule extends ScalaModule with PublishModule{
 object cask extends CaskModule {
   def moduleDeps = Seq(util.jvm)
 
-  def ivyDeps = Agg(
-    ivy"org.scala-lang:scala-reflect:${scalaVersion()}",
-    ivy"io.undertow:undertow-core:2.0.13.Final",
-    ivy"com.lihaoyi::upickle:1.2.0"
-  )
-  def compileIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.2.0")
-  def scalacOptions = Seq("-P:acyclic:force")
-  def scalacPluginIvyDeps = Agg(ivy"com.lihaoyi::acyclic:0.2.0")
-
+  def ivyDeps = T{
+    Agg(
+      ivy"io.undertow:undertow-core:2.0.13.Final",
+      ivy"com.lihaoyi::upickle:1.2.0"
+    ) ++
+    (if(!isDotty()) Agg(ivy"org.scala-lang:scala-reflect:${scalaVersion()}") else Agg())
+  }
+  def compileIvyDeps = T{ if (!isDotty()) Agg(ivy"com.lihaoyi::acyclic:0.2.0") else Agg() }
+  def scalacOptions = T{ if (!isDotty()) Seq("-P:acyclic:force") else Seq() }
+  def scalacPluginIvyDeps = T{ if (!isDotty()) Agg(ivy"com.lihaoyi::acyclic:0.2.0") else Agg() }
 
   object util extends Module {
     trait UtilModule extends CaskModule {
@@ -68,7 +95,7 @@ object cask extends CaskModule {
       )
       def ivyDeps = Agg(
         ivy"com.lihaoyi::sourcecode:0.2.1",
-        ivy"com.lihaoyi::pprint:0.5.9",
+        //ivy"com.lihaoyi::pprint:0.5.9",
         ivy"com.lihaoyi::geny:0.6.2"
       )
     }
@@ -84,7 +111,7 @@ object cask extends CaskModule {
     object jvm extends UtilModule{
       def platformSegment = "jvm"
       def ivyDeps = super.ivyDeps() ++ Agg(
-        ivy"com.lihaoyi::castor::0.1.7",
+        ivy"com.lihaoyi::castor::0.1.7".withDottyCompat(scalaVersion()),
         ivy"org.java-websocket:Java-WebSocket:1.4.0"
       )
     }
