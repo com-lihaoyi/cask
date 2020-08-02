@@ -12,7 +12,7 @@ import collection.JavaConverters._
 
 sealed trait JsReader[T] extends ArgReader[ujson.Value, T, cask.model.Request]
 object JsReader{
-  implicit def defaultJsReader[T: upickle.default.Reader] = new JsReader[T]{
+  implicit def defaultJsReader[T: upickle.default.Reader]: JsReader[T] = new JsReader[T]{
     def arity = 1
 
     def read(ctx: cask.model.Request, label: String, input: ujson.Value): T = {
@@ -21,7 +21,7 @@ object JsReader{
     }
   }
 
-  implicit def paramReader[T: ParamReader] = new JsReader[T] {
+  implicit def paramReader[T: ParamReader]: JsReader[T] = new JsReader[T] {
     override def arity = 0
 
     override def read(ctx: cask.model.Request, label: String, v: ujson.Value) = {

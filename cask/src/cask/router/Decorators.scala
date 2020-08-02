@@ -127,6 +127,6 @@ class NoOpParser[Input, T] extends ArgReader[Input, T, Request] {
   def read(ctx: Request, label: String, input: Input) = input.asInstanceOf[T]
 }
 object NoOpParser{
-  implicit def instance[Input, T] = new NoOpParser[Input, T]
-  implicit def instanceAny[T] = new NoOpParser[Any, T]
+  implicit def instance[Input, T]: NoOpParser[Input, T] = new NoOpParser[Input, T]
+  implicit def instanceAny[T]: NoOpParser[Any, T] = new NoOpParser[Any, T]
 }
