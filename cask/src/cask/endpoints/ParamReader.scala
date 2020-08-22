@@ -1,7 +1,7 @@
 package cask.endpoints
 
 import cask.router.ArgReader
-import cask.model.{Cookie, Request}
+import cask.model.{Cookie, Query, Request}
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.handlers.form.{FormData, FormParserFactory}
 
@@ -25,4 +25,11 @@ object ParamReader{
   implicit object CookieParam extends NilParam[Cookie]((ctx, label) =>
     Cookie.fromUndertow(ctx.exchange.getRequestCookies().get(label))
   )
+
+  implicit object QueryParam extends NilParam[Query]((ctx, label) =>
+    Query(ctx.exchange.getQueryString)
+  ) {
+    override def allowUnknownArgs = true
+  }
+
 }

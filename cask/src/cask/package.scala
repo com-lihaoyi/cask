@@ -16,6 +16,8 @@ package object cask {
   val FormFile = model.FormFile
   type Cookie = model.Cookie
   val Cookie = model.Cookie
+  type Query = model.Query
+  val Query = model.Query
   type Request = model.Request
   val Request = model.Request
 

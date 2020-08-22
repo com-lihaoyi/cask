@@ -18,6 +18,10 @@ case class ArgSig[I, -T, +V, -C](name: String,
                                 (implicit val reads: ArgReader[I, V, C])
 
 trait ArgReader[I, +T, -C]{
+  // Mark this reader as accepting arguments whose arity and names are unknown
+  // ahead of time. Effectively, this requests that the entrypoint ignore
+  // unknown arguments in the parameter list in which this reader is used.
+  def allowUnknownArgs: Boolean = false
   def arity: Int
   def read(ctx: C, label: String, input: I): T
 }

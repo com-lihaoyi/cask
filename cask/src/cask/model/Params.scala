@@ -111,3 +111,12 @@ case class FormFile(fileName: String,
                     headers: io.undertow.util.HeaderMap) extends FormEntry{
   def valueOrFileName = fileName
 }
+
+/** Use this as a parameter type to get access to the raw query string
+  *
+  * This is useful if you need to deal with raw (and potentially unknown)
+  * HTTP parameters.
+  */
+case class Query(
+  string: String
+)

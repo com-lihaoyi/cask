@@ -77,6 +77,7 @@ object QueryParamReader{
     }
   }
   implicit def paramReader[T: ParamReader] = new QueryParamReader[T] {
+    override def allowUnknownArgs = implicitly[ParamReader[T]].allowUnknownArgs
     override def arity = 0
 
     override def read(ctx: cask.model.Request, label: String, v: Seq[String]) = {

@@ -28,14 +28,18 @@ case class EntryPoint[T, C](name: String,
 
     val missing = mutable.Buffer.empty[ArgSig[_, T, _, C]]
 
-    val unknown = paramLists.head.keys.filter(!firstArgs.contains(_))
-
+    var allowUnknownArgs = false
     for(k <- firstArgs.keys) {
+      val as = firstArgs(k)
       if (!paramLists.head.contains(k)) {
-        val as = firstArgs(k)
         if (as.reads.arity != 0 && as.default.isEmpty) missing.append(as)
       }
+      // as soon as one reader allows unknown arguments, we allow them for the
+      // current parameter list
+      if (as.reads.allowUnknownArgs) allowUnknownArgs = true
     }
+
+    val unknown = if (allowUnknownArgs) Seq.empty else paramLists.head.keys.filter(!firstArgs.contains(_))
 
     if (missing.nonEmpty || unknown.nonEmpty) Result.Error.MismatchedArguments(missing.toSeq, unknown.toSeq)
     else {
