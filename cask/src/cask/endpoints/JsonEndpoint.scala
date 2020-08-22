@@ -32,6 +32,7 @@ object JsReader{
 trait JsonData extends Response.Data
 object JsonData extends DataCompanion[JsonData]{
   implicit class JsonDataImpl[T: upickle.default.Writer](t: T) extends JsonData{
+    def headers = Seq("Content-Type" -> "application/json")
     def write(out: OutputStream) = {
       upickle.default.stream(t).writeBytesTo(out)
       out.flush()

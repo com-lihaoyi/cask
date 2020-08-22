@@ -29,7 +29,7 @@ object Response {
                cookies: Seq[Cookie] = Nil) = new Response(data, statusCode, headers, cookies)
   trait Data{
     def write(out: OutputStream): Unit
-    def headers: Seq[(String, String)] = Nil
+    def headers: Seq[(String, String)]
   }
   trait DataCompanion[V]{
     // Put the implicit constructors for Response[Data] into the `Data` companion
@@ -50,21 +50,23 @@ object Response {
   object Data extends DataCompanion[Data]{
     implicit class UnitData(s: Unit) extends Data{
       def write(out: OutputStream) = ()
+      def headers = Nil
     }
     implicit class WritableData[T](s: T)(implicit f: T => geny.Writable) extends Data{
       val writable = f(s)
       def write(out: OutputStream) = writable.writeBytesTo(out)
 
-      override def headers =
-        super.headers ++
+      def headers =
         writable.httpContentType.map("Content-Type" -> _).toSeq ++
         writable.contentLength.map("Content-Length" -> _.toString)
     }
     implicit class NumericData[T: Numeric](s: T) extends Data{
       def write(out: OutputStream) = out.write(s.toString.getBytes)
+      def headers = Nil
     }
     implicit class BooleanData(s: Boolean) extends Data{
       def write(out: OutputStream) = out.write(s.toString.getBytes)
+      def headers = Nil
     }
   }
 }
