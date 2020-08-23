@@ -4,11 +4,12 @@ import scala.quoted.{ given _, _ }
 
 object Macros {
 
-  def getDefaultParams(using qctx: QuoteContext)(method: qctx.tasty.Symbol): Seq[Option[Expr[Any]]] = {
+  def getDefaultParams(using qctx: QuoteContext)(method: qctx.tasty.Symbol): Map[qctx.tasty.Symbol, Expr[Any]] = {
     import qctx.tasty._
 
     val params = method.paramSymss.flatten
-    val defaults = Array.fill[Option[Expr[Any]]](params.length)(None)
+    //val defaults = Array.fill[Option[Expr[Any]]](params.length)(None)
+    val defaults = collection.mutable.Map.empty[Symbol, Expr[Any]]
 
     val Name = (method.name + """\$default\$(\d+)""").r
 
@@ -16,14 +17,15 @@ object Macros {
     idents.foreach{
       case deff @ DefDef(Name(idx), _, _, _, tree) =>
         val expr = Ref(deff.symbol).seal
-        defaults(idx.toInt - 1) = Some(expr)
+        defaults += (params(idx.toInt - 1) -> expr)
       case _ =>
     }
 
-    defaults
+    defaults.toMap
   }
 
-  def findReader(using qctx: QuoteContext)(
+  /** Summon the reader for a parameter. */
+  def summonReader(using qctx: QuoteContext)(
     decorator: Expr[Decorator[_,_,_]],
     param: qctx.tasty.Symbol
   ): Expr[ArgReader[_, _, _]] = {
@@ -93,7 +95,6 @@ object Macros {
       }
     }
 
-
     val base = Apply(fct, accesses.head)
     val application: Apply = accesses.tail.foldLeft(base)((lhs, args) => Apply(lhs, args))
     val expr = application.seal
@@ -103,20 +104,13 @@ object Macros {
   /** Convert a result to an HTTP response */
   def convertToResponse(using qctx: QuoteContext)(
     method: qctx.tasty.Symbol,
-    decorators: Seq[Expr[Decorator[_, _, _]]],
+    endpoint: Expr[Endpoint[_, _, _]],
     result: Expr[Any]
   ): Expr[Any] = {
     import qctx.tasty._
 
-    val endpoint = decorators.head.unseal
-
-    if (!(endpoint.tpe <:< typeOf[Endpoint[_, _, _]])) {
-      error("the last decorator must be a cask.router.Endpoint", endpoint.pos)
-      return '{???}
-    }
-
     val innerReturnedTpt = TypeSelect(
-      endpoint,
+      endpoint.unseal,
       "InnerReturnedAlias"
     )
 
@@ -128,6 +122,7 @@ object Macros {
         rtpt, innerReturnedTpt
       )
     ).tpe
+
     // the asInstanceOf is required to splice this back into an Expr; this is generally
     // unsafe, but we know that it will work in the context that this macro is invoked in
     val conversionTpe = conversionTpeRaw.seal.asInstanceOf[quoted.Type[Any]]
@@ -146,10 +141,12 @@ object Macros {
 
   def extractMethod[Cls](using qctx: QuoteContext, curCls: Type[Cls])(
     method: qctx.tasty.Symbol,
-    decorators: List[Expr[Decorator[_, _, _]]]
+    decorators: List[Expr[Decorator[_, _, _]]], // these must also include the endpoint
+    endpoint: Expr[Endpoint[_, _, _]]
   ): Expr[EntryPoint[Cls, cask.Request]] = {
     import qctx.tasty._
 
+    val defaults = getDefaultParams(method)
 
     val exprs0 = for(idx <- method.paramSymss.indices) yield {
       val params: List[Symbol] = method.paramSymss(idx)
@@ -160,16 +157,28 @@ object Macros {
         val paramTpeName = paramTree.tpt.tpe.typeSymbol.fullName
         val paramTpe = paramTree.tpt.tpe.seal.asInstanceOf[quoted.Type[Any]]
 
+        // The Scala 2 versionuses a getter that takes as input an instance of
+        // the current class.
+        // Not sure why it's needed however, since we can actually access the
+        // default parameter ident directly from the macro (hence we use a
+        // wildcard function that simply discards its input and always returns
+        // the default).
+        val defaultGetter = defaults.get(param) match {
+          case None => '{None}
+          case Some(expr) =>
+            '{Some((_: Cls) => $expr)}
+        }
+
         '{
           val deco = ${decorator}
 
-          val reader = ${findReader(decorator, param) }.asInstanceOf[ArgReader[deco.InputTypeAlias, $paramTpe, cask.Request]]
+          val reader = ${summonReader(decorator, param) }.asInstanceOf[ArgReader[deco.InputTypeAlias, $paramTpe, cask.Request]]
 
           ArgSig[deco.InputTypeAlias, Cls, $paramTpe, cask.Request](
             ${Expr(param.name)},
             ${Expr(paramTpeName)},
             doc = None, // TODO
-            default = None // TODO
+            default = ${defaultGetter}
           )(using reader)
         }
       }
@@ -195,7 +204,12 @@ object Macros {
                 Runtime.makeReadCall(
                   args,
                   ctx,
-                  None, // default, TODO
+                  (sig.default match {
+                    case None => None
+                    case Some(getter) =>
+                      val value = getter.asInstanceOf[Cls => Any](clazz)
+                      Some(value)
+                  }),
                   sig
                 )
               }
@@ -206,7 +220,7 @@ object Macros {
             ${
               convertToResponse(
                 method,
-                decorators,
+                endpoint,
                 '{result}
               )
             }
@@ -216,6 +230,5 @@ object Macros {
     }
 
   }
-
 
 }

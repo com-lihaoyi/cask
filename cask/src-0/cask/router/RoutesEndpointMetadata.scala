@@ -1,15 +1,3 @@
-// package cask.router
-
-// import cask.router.EntryPoint
-
-// case class RoutesEndpointsMetadata[T](value: EndpointMetadata[T]*)
-// object RoutesEndpointsMetadata{
-
-//   implicit def initialize[T]: RoutesEndpointsMetadata[T] = ???
-// }
-
-
-
 package cask.router
 
 import cask.router.EntryPoint
@@ -19,6 +7,13 @@ object RoutesEndpointsMetadata{
   import scala.quoted._
 
   inline given initialize[T] as RoutesEndpointsMetadata[T] = ${initializeImpl}
+
+  def setRoutesImpl[T](setter: Expr[RoutesEndpointsMetadata[T] => Unit])
+    (using qctx: QuoteContext, tpe: Type[T]): Expr[Unit] = {
+    '{
+      $setter(${initializeImpl[T]})
+    }
+  }
 
   def initializeImpl[T](using qctx: QuoteContext, tpe: Type[T]): Expr[RoutesEndpointsMetadata[T]] = {
     import qctx.tasty._
@@ -42,26 +37,26 @@ object RoutesEndpointsMetadata{
         annotations.last.pos,
       )
 
+      // decorators must be reversed
       val decorators = annotations.reverse.map(_.seal.asInstanceOf[Expr[Decorator[_, _, _]]])
+      val endpoint = decorators.head.asInstanceOf[Expr[Endpoint[_, _, _]]]
 
       '{
 
-        val decos: List[Decorator[_, _, _]] = ${Expr.ofList(decorators)}
-        val endpoint = decos.head.asInstanceOf[Endpoint[_, _, _]]
-
-        val entrypoint = ${
+        val entrypoint: EntryPoint[T, cask.Request] = ${
           Macros.extractMethod[T](
             m,
             // (0 until annotations.length).toList.map{ i =>
             //   '{decos(${Expr(i)})}
             // }
-            decorators
+            decorators,
+            endpoint
           )
         }
 
-        EndpointMetadata(
-          decos.drop(1), // TODO: check that decorator chains typecheck, i.e. replicate what seqify does in the macro
-          endpoint, // endpoint, last decorator
+        EndpointMetadata[T](
+          ${Expr.ofList(decorators)}.drop(1), // TODO: check that decorator chains typecheck, i.e. replicate what seqify does in the macro
+          ${endpoint}, // endpoint, last decorator
           entrypoint
         )
       }
@@ -69,8 +64,6 @@ object RoutesEndpointsMetadata{
     }
 
     '{
-      //${Expr.ofSeq(routeParts)}
-
       RoutesEndpointsMetadata[T](
         ${Expr.ofList(routeParts)}
       )
