@@ -4,6 +4,7 @@ import scala.quoted.{ given _, _ }
 
 object Macros {
 
+  /** Lookup default values for a method's parameters. */
   def getDefaultParams(using qctx: QuoteContext)(method: qctx.tasty.Symbol): Map[qctx.tasty.Symbol, Expr[Any]] = {
     import qctx.tasty._
 
@@ -101,7 +102,16 @@ object Macros {
     expr
   }
 
-  /** Convert a result to an HTTP response */
+  /** Convert a result to an HTTP response
+    *
+    * Note: essentially, all this method does is summon a `cask.internal.Conversion`
+    * and provide a helpful error message if it cannot be found. In this case,
+    * one could wonder why we do the implicit summoning in this macro, rather than
+    * emit "regular" code which does the summoning. The reason is to provide
+    * helpful error messages with correct positions. We can control the position
+    * in the macro, but if the error were to come from the expanded code the position
+    * would be completely off.
+    */
   def convertToResponse(using qctx: QuoteContext)(
     method: qctx.tasty.Symbol,
     endpoint: Expr[Endpoint[_, _, _]],
@@ -157,7 +167,7 @@ object Macros {
         val paramTpeName = paramTree.tpt.tpe.typeSymbol.fullName
         val paramTpe = paramTree.tpt.tpe.seal.asInstanceOf[quoted.Type[Any]]
 
-        // The Scala 2 versionuses a getter that takes as input an instance of
+        // The Scala 2 version uses a getter that takes as input an instance of
         // the current class.
         // Not sure why it's needed however, since we can actually access the
         // default parameter ident directly from the macro (hence we use a
@@ -168,6 +178,7 @@ object Macros {
           case Some(expr) =>
             '{Some((_: Cls) => $expr)}
         }
+
 
         '{
           val deco = ${decorator}
