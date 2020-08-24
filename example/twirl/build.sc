@@ -1,8 +1,8 @@
 import mill._, scalalib._
 import $ivy.`com.lihaoyi::mill-contrib-twirllib:$MILL_VERSION`
 
-trait AppModule extends ScalaModule with mill.twirllib.TwirlModule{
-  def scalaVersion = "2.13.2"
+trait AppModule extends CrossScalaModule with mill.twirllib.TwirlModule{
+
   def twirlVersion = "1.5.0-M1"
 
   def generatedSources = T{ Seq(compileTwirl().classes) }

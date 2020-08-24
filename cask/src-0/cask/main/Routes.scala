@@ -18,5 +18,4 @@ trait Routes{
     )
   }
 
-
 }

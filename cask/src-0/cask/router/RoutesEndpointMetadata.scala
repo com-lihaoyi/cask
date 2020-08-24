@@ -12,6 +12,7 @@ object RoutesEndpointsMetadata{
     (using qctx: QuoteContext, tpe: Type[T]): Expr[Unit] = {
     '{
       $setter(${initializeImpl[T]})
+      ()
     }
   }
 
@@ -25,7 +26,7 @@ object RoutesEndpointsMetadata{
       if (annotations.nonEmpty)
     } yield {
 
-      if(!(annotations.last.tpe <:< typeOf[Endpoint[_, _, _]])) error(
+      if(!(annotations.head.tpe <:< typeOf[Endpoint[_, _, _]])) error(
         s"Last annotation applied to a function must be an instance of Endpoint, " +
           s"not ${annotations.last.tpe}",
         annotations.head.pos
@@ -38,7 +39,7 @@ object RoutesEndpointsMetadata{
       )
 
       // decorators must be reversed
-      val decorators = annotations.reverse.map(_.seal.asInstanceOf[Expr[Decorator[_, _, _]]])
+      val decorators = annotations.map(_.seal.asInstanceOf[Expr[Decorator[_, _, _]]])
       val endpoint = decorators.head.asInstanceOf[Expr[Endpoint[_, _, _]]]
 
       '{

@@ -1,8 +1,8 @@
 import mill._, scalalib._
 
 
-trait AppModule extends ScalaModule{
-  def scalaVersion = "2.13.2"
+trait AppModule extends CrossScalaModule{
+
   def ivyDeps = Agg[Dep](
     ivy"org.xerial:sqlite-jdbc:3.18.0",
     ivy"io.getquill::quill-jdbc:3.4.10",
