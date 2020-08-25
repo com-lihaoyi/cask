@@ -170,7 +170,7 @@ object example extends Module{
   object redirectAbort extends Cross[redirectAbortModule](allVersions: _*)
 
   class scalatagsModule(val crossScalaVersion: String) extends $file.example.scalatags.build.AppModule with LocalModule
-  object scalatags extends Cross[scalatagsModule](allVersions: _*)
+  object scalatags extends Cross[scalatagsModule](scala213) // TODO: enable Dotty once scalatags has been ported
 
   class staticFilesModule(val crossScalaVersion: String) extends $file.example.staticFiles.build.AppModule with LocalModule
   object staticFiles extends Cross[staticFilesModule](allVersions: _*)
@@ -179,16 +179,16 @@ object example extends Module{
   object staticFiles2 extends Cross[staticFiles2Module](allVersions: _*)
 
   class todoModule(val crossScalaVersion: String) extends $file.example.todo.build.AppModule with LocalModule
-  object todo extends Cross[todoModule](allVersions: _*)
+  object todo extends Cross[todoModule](scala213) // TODO: uses quill, can't enable for Dotty yet
 
   class todoApiModule(val crossScalaVersion: String) extends $file.example.todoApi.build.AppModule with LocalModule
-  object todoApi extends Cross[todoApiModule](allVersions: _*)
+  object todoApi extends Cross[todoApiModule](scala213) // TODO: enable
 
   class todoDbModule(val crossScalaVersion: String) extends $file.example.todoDb.build.AppModule with LocalModule
-  object todoDb extends Cross[todoDbModule](allVersions: _*)
+  object todoDb extends Cross[todoDbModule](scala213) // TODO: uses quill, can't enable for Dotty yet
 
   class twirlModule(val crossScalaVersion: String) extends $file.example.twirl.build.AppModule with LocalModule
-  object twirl extends Cross[twirlModule](allVersions: _*)
+  object twirl extends Cross[twirlModule](scala213) // TODO: enable once twirl is available
 
   class variableRoutesModule(val crossScalaVersion: String) extends $file.example.variableRoutes.build.AppModule with LocalModule
   object variableRoutes extends Cross[variableRoutesModule](allVersions: _*)
