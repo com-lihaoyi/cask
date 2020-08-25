@@ -38,7 +38,7 @@ object RoutesEndpointsMetadata{
         annotations.last.pos,
       )
 
-      // decorators must be reversed
+      // the Scala 2 version and non-macro code expects decorators to be reversed
       val decorators = annotations.map(_.seal.asInstanceOf[Expr[Decorator[_, _, _]]])
       val endpoint = decorators.head.asInstanceOf[Expr[Endpoint[_, _, _]]]
 
@@ -47,9 +47,6 @@ object RoutesEndpointsMetadata{
         val entrypoint: EntryPoint[T, cask.Request] = ${
           Macros.extractMethod[T](
             m,
-            // (0 until annotations.length).toList.map{ i =>
-            //   '{decos(${Expr(i)})}
-            // }
             decorators,
             endpoint
           )
@@ -57,7 +54,7 @@ object RoutesEndpointsMetadata{
 
         EndpointMetadata[T](
           ${Expr.ofList(decorators.drop(1).reverse)}, // TODO: check that decorator chains typecheck, i.e. replicate what seqify does in the macro
-          ${endpoint}, // endpoint, last decorator
+          ${endpoint},
           entrypoint
         )
       }

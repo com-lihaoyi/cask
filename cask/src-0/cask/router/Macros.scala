@@ -9,7 +9,6 @@ object Macros {
     import qctx.tasty._
 
     val params = method.paramSymss.flatten
-    //val defaults = Array.fill[Option[Expr[Any]]](params.length)(None)
     val defaults = collection.mutable.Map.empty[Symbol, Expr[Any]]
 
     val Name = (method.name + """\$default\$(\d+)""").r
@@ -172,7 +171,10 @@ object Macros {
 
     val exprs0 = for(idx <- method.paramSymss.indices) yield {
       val params: List[Symbol] = method.paramSymss(idx)
-      val decorator: Option[Expr[Decorator[_, _, _]]] = decorators.lift(idx) // sometimes we have more params than decorators (this can happen with glocal decorators)
+
+      // sometimes we have more params than annotated decorators, for example if
+      // there are global decorators
+      val decorator: Option[Expr[Decorator[_, _, _]]] = decorators.lift(idx)
 
       val exprs1 = for (param <- params) yield {
         val paramTree = param.tree.asInstanceOf[ValDef]
