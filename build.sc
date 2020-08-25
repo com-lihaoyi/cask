@@ -151,8 +151,9 @@ object example extends Module{
   class RedirectAbortModule(val crossScalaVersion: String) extends $file.example.redirectAbort.build.AppModule with LocalModule
   object redirectAbort extends Cross[RedirectAbortModule](allVersions: _*)
 
+  // java.lang.NoSuchMethodError: 'void geny.Writable.$init$(geny.Writable)' - geny mismatch, need to upgrade
   class ScalatagsModule(val crossScalaVersion: String) extends $file.example.scalatags.build.AppModule with LocalModule
-  object scalatags extends Cross[ScalatagsModule](scala213) // TODO: enable Dotty once scalatags has been ported
+  object scalatags extends Cross[ScalatagsModule](scala213)
 
   class StaticFilesModule(val crossScalaVersion: String) extends $file.example.staticFiles.build.AppModule with LocalModule
   object staticFiles extends Cross[StaticFilesModule](allVersions: _*)
@@ -161,16 +162,16 @@ object example extends Module{
   object staticFiles2 extends Cross[StaticFiles2Module](allVersions: _*)
 
   class TodoModule(val crossScalaVersion: String) extends $file.example.todo.build.AppModule with LocalModule
-  object todo extends Cross[TodoModule](scala213) // TODO: uses quill, can't enable for Dotty yet
+  object todo extends Cross[TodoModule](scala213) // uses quill, can't enable for Dotty yet
 
   class TodoApiModule(val crossScalaVersion: String) extends $file.example.todoApi.build.AppModule with LocalModule
   object todoApi extends Cross[TodoApiModule](scala213) // TODO: implicit lookup bug, enable before PR
 
   class TodoDbModule(val crossScalaVersion: String) extends $file.example.todoDb.build.AppModule with LocalModule
-  object todoDb extends Cross[TodoDbModule](scala213) // TODO: uses quill, can't enable for Dotty yet
+  object todoDb extends Cross[TodoDbModule](scala213) // uses quill, can't enable for Dotty yet
 
   class TwirlModule(val crossScalaVersion: String) extends $file.example.twirl.build.AppModule with LocalModule
-  object twirl extends Cross[TwirlModule](scala213) // TODO: enable once twirl is available
+  object twirl extends Cross[TwirlModule](allVersions: _*)
 
   class VariableRoutesModule(val crossScalaVersion: String) extends $file.example.variableRoutes.build.AppModule with LocalModule
   object variableRoutes extends Cross[VariableRoutesModule](allVersions: _*)

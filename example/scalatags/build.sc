@@ -4,7 +4,7 @@ import mill._, scalalib._
 trait AppModule extends CrossScalaModule{
 
   def ivyDeps = Agg[Dep](
-    ivy"com.lihaoyi::scalatags:0.9.1",
+    ivy"com.lihaoyi::scalatags:0.9.1".withDottyCompat(scalaVersion()),
   )
 
   object test extends Tests{

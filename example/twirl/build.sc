@@ -7,8 +7,8 @@ trait AppModule extends CrossScalaModule with mill.twirllib.TwirlModule{
 
   def generatedSources = T{ Seq(compileTwirl().classes) }
   def ivyDeps = Agg[Dep](
-    ivy"com.lihaoyi::scalatags:0.9.1",
-    ivy"com.typesafe.play::twirl-api:${twirlVersion()}",
+    ivy"com.lihaoyi::scalatags:0.9.1".withDottyCompat(scalaVersion()),
+    ivy"com.typesafe.play::twirl-api:${twirlVersion()}".withDottyCompat(scalaVersion()),
   )
 
   object test extends Tests{
