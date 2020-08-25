@@ -160,7 +160,7 @@ object Macros {
 
     val exprs0 = for(idx <- method.paramSymss.indices) yield {
       val params: List[Symbol] = method.paramSymss(idx)
-      val decorator: Expr[Decorator[_, _, _]] = decorators(idx)
+      val decorator: Option[Expr[Decorator[_, _, _]]] = decorators.lift(idx) // sometimes we have more params than decorators (this can happen with glocal decorators)
 
       val exprs1 = for (param <- params) yield {
         val paramTree = param.tree.asInstanceOf[ValDef]
@@ -173,30 +173,39 @@ object Macros {
         // default parameter ident directly from the macro (hence we use a
         // wildcard function that simply discards its input and always returns
         // the default).
-        val defaultGetter = defaults.get(param) match {
+        val defaultGetter: Expr[Option[Cls => Any]] = defaults.get(param) match {
           case None => '{None}
           case Some(expr) =>
             '{Some((_: Cls) => $expr)}
         }
 
+        val decoTpe = (decorator match {
+          case Some(deco) =>
+            TypeSelect(
+              deco.unseal,
+              "InputTypeAlias"
+            ).tpe
+          case None =>
+            typeOf[Any]
+        }).seal.asInstanceOf[quoted.Type[Any]]
+
+        val reader = decorator match {
+          case Some(deco) => summonReader(deco, param)
+          case None => '{ NoOpParser.instanceAny[$decoTpe] }
+        }
 
         '{
-          val deco = ${decorator}
-
-          val reader = ${summonReader(decorator, param) }.asInstanceOf[ArgReader[deco.InputTypeAlias, $paramTpe, cask.Request]]
-
-          ArgSig[deco.InputTypeAlias, Cls, $paramTpe, cask.Request](
+          ArgSig[$decoTpe, Cls, $paramTpe, cask.Request](
             ${Expr(param.name)},
             ${Expr(paramTpeName)},
             doc = None, // TODO
             default = ${defaultGetter}
-          )(using reader)
+          )(using ${reader}.asInstanceOf[ArgReader[$decoTpe, $paramTpe, cask.Request]])
         }
       }
       Expr.ofList(exprs1)
     }
     val sigExprs = Expr.ofList(exprs0)
-
     '{
       val sigs = $sigExprs
       EntryPoint[Cls, cask.Request](
@@ -225,6 +234,7 @@ object Macros {
                 )
               }
             }
+
           Runtime.validateLists(parsedArgss).map{ validated =>
             val result = ${call(method, '{validated})}
 

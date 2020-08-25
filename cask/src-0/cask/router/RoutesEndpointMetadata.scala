@@ -56,7 +56,7 @@ object RoutesEndpointsMetadata{
         }
 
         EndpointMetadata[T](
-          ${Expr.ofList(decorators)}.drop(1), // TODO: check that decorator chains typecheck, i.e. replicate what seqify does in the macro
+          ${Expr.ofList(decorators.drop(1).reverse)}, // TODO: check that decorator chains typecheck, i.e. replicate what seqify does in the macro
           ${endpoint}, // endpoint, last decorator
           entrypoint
         )
