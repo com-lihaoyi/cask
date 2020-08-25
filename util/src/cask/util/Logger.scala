@@ -15,7 +15,7 @@ object Logger{
     def exception(t: Throwable): Unit = t.printStackTrace()
 
     def debug(t: Text[Any])(implicit f: File, line: Line): Unit = {
-      println(f.value.split('/').last + ":" + line + " " + t.source + " " + t.value)
+      println(f.value.split('/').last + ":" + line + " " + t.source + " " + pprint.apply(t.value))
     }
   }
 }
