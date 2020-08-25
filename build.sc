@@ -130,77 +130,77 @@ object example extends Module{
 
   val allVersions = Seq(scala213, scala3) ++ dottyCustomVersion
 
-  class compressModule(val crossScalaVersion: String) extends $file.example.compress.build.AppModule with LocalModule
-  object compress extends Cross[compressModule](allVersions: _*)
+  class CompressModule(val crossScalaVersion: String) extends $file.example.compress.build.AppModule with LocalModule
+  object compress extends Cross[CompressModule](allVersions: _*)
 
-  class compress2Module(val crossScalaVersion: String) extends $file.example.compress2.build.AppModule with LocalModule
-  object compress2 extends Cross[compress2Module](allVersions: _*)
+  class Compress2Module(val crossScalaVersion: String) extends $file.example.compress2.build.AppModule with LocalModule
+  object compress2 extends Cross[Compress2Module](allVersions: _*)
 
-  class compress3Module(val crossScalaVersion: String) extends $file.example.compress3.build.AppModule with LocalModule
-  object compress3 extends Cross[compress3Module](allVersions: _*)
+  class Compress3Module(val crossScalaVersion: String) extends $file.example.compress3.build.AppModule with LocalModule
+  object compress3 extends Cross[Compress3Module](allVersions: _*)
 
-  class cookiesModule(val crossScalaVersion: String) extends $file.example.cookies.build.AppModule with LocalModule
-  object cookies extends Cross[cookiesModule](allVersions: _*)
+  class CookiesModule(val crossScalaVersion: String) extends $file.example.cookies.build.AppModule with LocalModule
+  object cookies extends Cross[CookiesModule](allVersions: _*)
 
-  class decoratedModule(val crossScalaVersion: String) extends $file.example.decorated.build.AppModule with LocalModule
-  object decorated extends Cross[decoratedModule](allVersions: _*)
+  class DecoratedModule(val crossScalaVersion: String) extends $file.example.decorated.build.AppModule with LocalModule
+  object decorated extends Cross[DecoratedModule](allVersions: _*)
 
-  class decorated2Module(val crossScalaVersion: String) extends $file.example.decorated2.build.AppModule with LocalModule
-  object decorated2 extends Cross[decorated2Module](allVersions: _*)
+  class Decorated2Module(val crossScalaVersion: String) extends $file.example.decorated2.build.AppModule with LocalModule
+  object decorated2 extends Cross[Decorated2Module](allVersions: _*)
 
-  class endpointsModule(val crossScalaVersion: String) extends $file.example.endpoints.build.AppModule with LocalModule
-  object endpoints extends Cross[endpointsModule](allVersions: _*)
+  class EndpointsModule(val crossScalaVersion: String) extends $file.example.endpoints.build.AppModule with LocalModule
+  object endpoints extends Cross[EndpointsModule](allVersions: _*)
 
-  class formJsonPostModule(val crossScalaVersion: String) extends $file.example.formJsonPost.build.AppModule with LocalModule
-  object formJsonPost extends Cross[formJsonPostModule](scala213) // TODO: implicit lookup bug, enable before PR
+  class FormJsonPostModule(val crossScalaVersion: String) extends $file.example.formJsonPost.build.AppModule with LocalModule
+  object formJsonPost extends Cross[FormJsonPostModule](scala213) // TODO: implicit lookup bug, enable before PR
 
-  class httpMethodsModule(val crossScalaVersion: String) extends $file.example.httpMethods.build.AppModule with LocalModule
-  object httpMethods extends Cross[httpMethodsModule](allVersions: _*)
+  class HttpMethodsModule(val crossScalaVersion: String) extends $file.example.httpMethods.build.AppModule with LocalModule
+  object httpMethods extends Cross[HttpMethodsModule](allVersions: _*)
 
   class MinimalApplicationModule(val crossScalaVersion: String) extends $file.example.minimalApplication.build.AppModule with LocalModule
   object minimalApplication extends Cross[MinimalApplicationModule](allVersions: _*)
 
-  class minimalApplication2Module(val crossScalaVersion: String) extends $file.example.minimalApplication2.build.AppModule with LocalModule
-  object minimalApplication2 extends Cross[minimalApplication2Module](allVersions: _*)
+  class MinimalApplication2Module(val crossScalaVersion: String) extends $file.example.minimalApplication2.build.AppModule with LocalModule
+  object minimalApplication2 extends Cross[MinimalApplication2Module](allVersions: _*)
 
-  class redirectAbortModule(val crossScalaVersion: String) extends $file.example.redirectAbort.build.AppModule with LocalModule
-  object redirectAbort extends Cross[redirectAbortModule](allVersions: _*)
+  class RedirectAbortModule(val crossScalaVersion: String) extends $file.example.redirectAbort.build.AppModule with LocalModule
+  object redirectAbort extends Cross[RedirectAbortModule](allVersions: _*)
 
-  class scalatagsModule(val crossScalaVersion: String) extends $file.example.scalatags.build.AppModule with LocalModule
-  object scalatags extends Cross[scalatagsModule](scala213) // TODO: enable Dotty once scalatags has been ported
+  class ScalatagsModule(val crossScalaVersion: String) extends $file.example.scalatags.build.AppModule with LocalModule
+  object scalatags extends Cross[ScalatagsModule](scala213) // TODO: enable Dotty once scalatags has been ported
 
-  class staticFilesModule(val crossScalaVersion: String) extends $file.example.staticFiles.build.AppModule with LocalModule
-  object staticFiles extends Cross[staticFilesModule](allVersions: _*)
+  class StaticFilesModule(val crossScalaVersion: String) extends $file.example.staticFiles.build.AppModule with LocalModule
+  object staticFiles extends Cross[StaticFilesModule](allVersions: _*)
 
-  class staticFiles2Module(val crossScalaVersion: String) extends $file.example.staticFiles2.build.AppModule with LocalModule
-  object staticFiles2 extends Cross[staticFiles2Module](allVersions: _*)
+  class StaticFiles2Module(val crossScalaVersion: String) extends $file.example.staticFiles2.build.AppModule with LocalModule
+  object staticFiles2 extends Cross[StaticFiles2Module](allVersions: _*)
 
-  class todoModule(val crossScalaVersion: String) extends $file.example.todo.build.AppModule with LocalModule
-  object todo extends Cross[todoModule](scala213) // TODO: uses quill, can't enable for Dotty yet
+  class TodoModule(val crossScalaVersion: String) extends $file.example.todo.build.AppModule with LocalModule
+  object todo extends Cross[TodoModule](scala213) // TODO: uses quill, can't enable for Dotty yet
 
-  class todoApiModule(val crossScalaVersion: String) extends $file.example.todoApi.build.AppModule with LocalModule
-  object todoApi extends Cross[todoApiModule](scala213) // TODO: implicit lookup bug, enable before PR
+  class TodoApiModule(val crossScalaVersion: String) extends $file.example.todoApi.build.AppModule with LocalModule
+  object todoApi extends Cross[TodoApiModule](scala213) // TODO: implicit lookup bug, enable before PR
 
-  class todoDbModule(val crossScalaVersion: String) extends $file.example.todoDb.build.AppModule with LocalModule
-  object todoDb extends Cross[todoDbModule](scala213) // TODO: uses quill, can't enable for Dotty yet
+  class TodoDbModule(val crossScalaVersion: String) extends $file.example.todoDb.build.AppModule with LocalModule
+  object todoDb extends Cross[TodoDbModule](scala213) // TODO: uses quill, can't enable for Dotty yet
 
-  class twirlModule(val crossScalaVersion: String) extends $file.example.twirl.build.AppModule with LocalModule
-  object twirl extends Cross[twirlModule](scala213) // TODO: enable once twirl is available
+  class TwirlModule(val crossScalaVersion: String) extends $file.example.twirl.build.AppModule with LocalModule
+  object twirl extends Cross[TwirlModule](scala213) // TODO: enable once twirl is available
 
-  class variableRoutesModule(val crossScalaVersion: String) extends $file.example.variableRoutes.build.AppModule with LocalModule
-  object variableRoutes extends Cross[variableRoutesModule](allVersions: _*)
+  class VariableRoutesModule(val crossScalaVersion: String) extends $file.example.variableRoutes.build.AppModule with LocalModule
+  object variableRoutes extends Cross[VariableRoutesModule](allVersions: _*)
 
-  class websocketsModule(val crossScalaVersion: String) extends $file.example.websockets.build.AppModule with LocalModule
-  object websockets extends Cross[websocketsModule](allVersions: _*)
+  class WebsocketsModule(val crossScalaVersion: String) extends $file.example.websockets.build.AppModule with LocalModule
+  object websockets extends Cross[WebsocketsModule](allVersions: _*)
 
-  class websockets2Module(val crossScalaVersion: String) extends $file.example.websockets2.build.AppModule with LocalModule
-  object websockets2 extends Cross[websockets2Module](allVersions: _*)
+  class Websockets2Module(val crossScalaVersion: String) extends $file.example.websockets2.build.AppModule with LocalModule
+  object websockets2 extends Cross[Websockets2Module](allVersions: _*)
 
-  class websockets3Module(val crossScalaVersion: String) extends $file.example.websockets3.build.AppModule with LocalModule
-  object websockets3 extends Cross[websockets3Module](allVersions: _*)
+  class Websockets3Module(val crossScalaVersion: String) extends $file.example.websockets3.build.AppModule with LocalModule
+  object websockets3 extends Cross[Websockets3Module](allVersions: _*)
 
-  class websockets4Module(val crossScalaVersion: String) extends $file.example.websockets4.build.AppModule with LocalModule
-  object websockets4 extends Cross[websockets4Module](allVersions: _*)
+  class Websockets4Module(val crossScalaVersion: String) extends $file.example.websockets4.build.AppModule with LocalModule
+  object websockets4 extends Cross[Websockets4Module](allVersions: _*)
 
 }
 
