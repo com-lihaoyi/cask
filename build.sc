@@ -26,7 +26,7 @@ import $file.example.websockets2.build
 import $file.example.websockets3.build
 import $file.example.websockets4.build
 
-val scala213  = "2.13.2"
+val scala213  = "2.13.3"
 val scala3 = "0.26.0-RC1"
 val dottyCustomVersion = Option(sys.props("dottyVersion"))
 
