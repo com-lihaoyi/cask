@@ -33,21 +33,6 @@ val dottyCustomVersion = Option(sys.props("dottyVersion"))
 trait CaskModule extends CrossScalaModule with PublishModule{
   def isDotty = crossScalaVersion.startsWith("0")
 
-  // // sources can't be a Target (mill actually requires a Sources), so we need to
-  // // statically check for the version
-  // // TODO: fix mill to allow specifying a Target?
-  // def sources = if (dottyVersion.isDefined) {
-  //   T.sources(
-  //     millSourcePath / "src",
-  //     millSourcePath / "src-0"
-  //   )
-  // } else {
-  //   T.sources(
-  //     millSourcePath / "src",
-  //     millSourcePath / "src-2"
-  //   )
-  // }
-
   def publishVersion = build.publishVersion()._2
 
   def pomSettings = PomSettings(
@@ -66,7 +51,7 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
   def ivyDeps = T{
     Agg(
       ivy"io.undertow:undertow-core:2.0.13.Final",
-      ivy"com.lihaoyi::upickle:1.1.0"
+      ivy"com.lihaoyi::upickle:1.1.0".withDottyCompat(scalaVersion())
     ) ++
     (if(!isDotty) Agg(ivy"org.scala-lang:scala-reflect:${scalaVersion()}") else Agg())
   }
