@@ -20,10 +20,11 @@ object Macros {
             check(outer, tail)
           } else {
             error(
-              s"Incompatible decorator return type. Expected ${d.unseal.tpe.show}.InnerReturned <: ${prevOuter.unseal.tpe.show}, but found ${inner.unseal.tpe.show}.",
+              s"required: cask.router.Decorator[_, ${prevOuter.unseal.tpe.show}, _]",
               d.unseal.pos
             )
           }
+        case _ => sys.error("internal error: expected only check decorators")
       }
 
     check('[Any], decorators)

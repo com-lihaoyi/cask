@@ -25,11 +25,13 @@ object RoutesEndpointsMetadata{
       if (annotations.nonEmpty)
     } yield {
 
-      if(!(annotations.head.tpe <:< typeOf[Endpoint[_, _, _]])) error(
-        s"Last annotation applied to a function must be an instance of Endpoint, " +
-          s"not ${annotations.last.tpe.show}",
-        annotations.head.pos
-      )
+      if(!(annotations.head.tpe <:< typeOf[Endpoint[_, _, _]])) {
+        error(s"Last annotation applied to a function must be an instance of Endpoint, " +
+          s"not ${annotations.head.tpe.show}",
+          annotations.head.pos
+        )
+        return '{???} // in this case, we can't continue expansion of this macro
+      }
       val allEndpoints = annotations.filter(_.tpe <:< typeOf[Endpoint[_, _, _]])
       if(allEndpoints.length > 1) error(
         s"You can only apply one Endpoint annotation to a function, not " +
