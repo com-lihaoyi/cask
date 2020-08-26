@@ -4,6 +4,31 @@ import scala.quoted.{ given _, _ }
 
 object Macros {
 
+  /** Check that decorator inner and outer return types match.
+    *
+    * This replicates EndpointMetadata.seqify, but in a macro where error
+    * positions can be controlled.
+    */
+  def checkDecorators(using qctx: QuoteContext)(decorators: List[Expr[Decorator[_, _, _]]]) = {
+    import qctx.tasty._
+
+    def check(prevOuter: quoted.Type[_], decorators: List[Expr[Decorator[_, _, _]]]): Unit =
+      decorators match {
+        case Nil =>
+        case '{ $d: Decorator[$outer, $inner, _] } :: tail =>
+          if (inner.unseal.tpe <:< prevOuter.unseal.tpe) {
+            check(outer, tail)
+          } else {
+            error(
+              s"Incompatible decorator return type. Expected ${d.unseal.tpe.show}.InnerReturned <: ${prevOuter.unseal.tpe.show}, but found ${inner.unseal.tpe.show}.",
+              d.unseal.pos
+            )
+          }
+      }
+
+    check('[Any], decorators)
+  }
+
   /** Lookup default values for a method's parameters. */
   def getDefaultParams(using qctx: QuoteContext)(method: qctx.tasty.Symbol): Map[qctx.tasty.Symbol, Expr[Any]] = {
     import qctx.tasty._

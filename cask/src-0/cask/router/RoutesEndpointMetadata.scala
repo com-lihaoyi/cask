@@ -19,7 +19,6 @@ object RoutesEndpointsMetadata{
   def initializeImpl[T](using qctx: QuoteContext, tpe: Type[T]): Expr[RoutesEndpointsMetadata[T]] = {
     import qctx.tasty._
 
-
     val routeParts: List[Expr[EndpointMetadata[T]]] = for {
       m <- tpe.unseal.symbol.methods
       annotations = m.annots.filter(_.tpe <:< typeOf[Decorator[_, _, _]])
@@ -28,17 +27,18 @@ object RoutesEndpointsMetadata{
 
       if(!(annotations.head.tpe <:< typeOf[Endpoint[_, _, _]])) error(
         s"Last annotation applied to a function must be an instance of Endpoint, " +
-          s"not ${annotations.last.tpe}",
+          s"not ${annotations.last.tpe.show}",
         annotations.head.pos
       )
       val allEndpoints = annotations.filter(_.tpe <:< typeOf[Endpoint[_, _, _]])
       if(allEndpoints.length > 1) error(
         s"You can only apply one Endpoint annotation to a function, not " +
-          s"${allEndpoints.length} in ${allEndpoints.map(_.tpe).mkString(", ")}",
+          s"${allEndpoints.length} in ${allEndpoints.map(_.tpe.show).mkString(", ")}",
         annotations.last.pos,
       )
 
       val decorators = annotations.map(_.seal.asInstanceOf[Expr[Decorator[_, _, _]]])
+      Macros.checkDecorators(decorators)
       val endpoint = decorators.head.asInstanceOf[Expr[Endpoint[_, _, _]]]
 
       '{
@@ -53,7 +53,7 @@ object RoutesEndpointsMetadata{
 
         EndpointMetadata[T](
           // the Scala 2 version and non-macro code expects decorators to be reversed
-          ${Expr.ofList(decorators.drop(1).reverse)}, // TODO: check that decorator chains typecheck, i.e. replicate what seqify does in the macro
+          ${Expr.ofList(decorators.drop(1).reverse)},
           ${endpoint},
           entrypoint
         )
