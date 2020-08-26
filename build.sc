@@ -51,7 +51,7 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
   def ivyDeps = T{
     Agg(
       ivy"io.undertow:undertow-core:2.0.13.Final",
-      ivy"com.lihaoyi::upickle:1.2.0".withDottyCompat(scalaVersion())
+      ivy"com.lihaoyi::upickle:1.2.0"
     ) ++
     (if(!isDotty) Agg(ivy"org.scala-lang:scala-reflect:${scalaVersion()}") else Agg())
   }
@@ -137,7 +137,7 @@ object example extends Module{
   object endpoints extends Cross[EndpointsModule](allVersions: _*)
 
   class FormJsonPostModule(val crossScalaVersion: String) extends $file.example.formJsonPost.build.AppModule with LocalModule
-  object formJsonPost extends Cross[FormJsonPostModule](scala213) // TODO: implicit lookup bug, enable before PR
+  object formJsonPost extends Cross[FormJsonPostModule](allVersions: _*)
 
   class HttpMethodsModule(val crossScalaVersion: String) extends $file.example.httpMethods.build.AppModule with LocalModule
   object httpMethods extends Cross[HttpMethodsModule](allVersions: _*)
@@ -165,7 +165,7 @@ object example extends Module{
   object todo extends Cross[TodoModule](scala213) // uses quill, can't enable for Dotty yet
 
   class TodoApiModule(val crossScalaVersion: String) extends $file.example.todoApi.build.AppModule with LocalModule
-  object todoApi extends Cross[TodoApiModule](scala213) // TODO: implicit lookup bug, enable before PR
+  object todoApi extends Cross[TodoApiModule](allVersions: _*)
 
   class TodoDbModule(val crossScalaVersion: String) extends $file.example.todoDb.build.AppModule with LocalModule
   object todoDb extends Cross[TodoDbModule](scala213) // uses quill, can't enable for Dotty yet

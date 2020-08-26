@@ -2,7 +2,7 @@ package app
 object TodoMvcApi extends cask.MainRoutes{
   case class Todo(checked: Boolean, text: String)
   object Todo{
-    implicit def todoRW = upickle.default.macroRW[Todo]
+    implicit def todoRW: upickle.default.ReadWriter[Todo] = upickle.default.macroRW[Todo]
   }
   var todos = Seq(
     Todo(true, "Get started with Cask"),
