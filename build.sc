@@ -27,7 +27,7 @@ import $file.example.websockets3.build
 import $file.example.websockets4.build
 
 val scala213  = "2.13.3"
-val scala3 = "0.26.0-RC1"
+val scala3 = "0.27.0-RC1"
 val dottyCustomVersion = Option(sys.props("dottyVersion"))
 
 trait CaskModule extends CrossScalaModule with PublishModule{
