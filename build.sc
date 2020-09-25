@@ -66,45 +66,45 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
       ivy"com.lihaoyi::requests::0.6.5"
     )
   }
-  def moduleDeps = Seq(util.jvm(crossScalaVersion))
+  def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
 }
-object cask extends Cross[CaskMainModule]((Seq(scala213, scala3) ++ dottyCustomVersion): _*)
+object cask extends Cross[CaskMainModule]((Seq(scala213, scala3) ++ dottyCustomVersion): _*) {
+  object util extends Module {
+    trait UtilModule extends CaskModule {
+      def artifactName = "cask-util"
+      def platformSegment: String
+      def millSourcePath = super.millSourcePath / os.up
 
-object util extends Module {
-  trait UtilModule extends CaskModule {
-    def artifactName = "cask-util"
-    def platformSegment: String
-    def millSourcePath = super.millSourcePath / os.up
+      def sources = T.sources(
+        millSourcePath / "src",
+        millSourcePath / s"src-$platformSegment"
+      )
+      def ivyDeps = Agg(
+        ivy"com.lihaoyi::sourcecode:0.2.1",
+        ivy"com.lihaoyi::pprint:0.6.0",
+        ivy"com.lihaoyi::geny:0.6.2"
+      )
+    }
+    class UtilJvmModule(val crossScalaVersion: String) extends UtilModule {
+      def platformSegment = "jvm"
+      def ivyDeps = super.ivyDeps() ++ Agg(
+        ivy"com.lihaoyi::castor::0.1.7".withDottyCompat(scalaVersion()),
+        ivy"org.java-websocket:Java-WebSocket:1.4.0"
+      )
+    }
+    object jvm extends Cross[UtilJvmModule]((Seq(scala213, scala3) ++ dottyCustomVersion): _*)
 
-    def sources = T.sources(
-      millSourcePath / "src",
-      millSourcePath / s"src-$platformSegment"
-    )
-    def ivyDeps = Agg(
-      ivy"com.lihaoyi::sourcecode:0.2.1",
-      ivy"com.lihaoyi::pprint:0.6.0",
-      ivy"com.lihaoyi::geny:0.6.2"
-    )
+    class UtilJsModule(val crossScalaVersion: String) extends UtilModule with ScalaJSModule {
+      def platformSegment = "js"
+      def scalaJSVersion = "0.6.33"
+      def ivyDeps = super.ivyDeps() ++ Agg(
+        ivy"com.lihaoyi::castor::0.1.7",
+        ivy"org.scala-js::scalajs-dom::0.9.7"
+      )
+    }
+    object js extends Cross[UtilJsModule](scala213)
+
   }
-  class UtilJvmModule(val crossScalaVersion: String) extends UtilModule {
-    def platformSegment = "jvm"
-    def ivyDeps = super.ivyDeps() ++ Agg(
-      ivy"com.lihaoyi::castor::0.1.7".withDottyCompat(scalaVersion()),
-      ivy"org.java-websocket:Java-WebSocket:1.4.0"
-    )
-  }
-  object jvm extends Cross[UtilJvmModule]((Seq(scala213, scala3) ++ dottyCustomVersion): _*)
-
-  class UtilJsModule(val crossScalaVersion: String) extends UtilModule with ScalaJSModule {
-    def platformSegment = "js"
-    def scalaJSVersion = "0.6.33"
-    def ivyDeps = super.ivyDeps() ++ Agg(
-      ivy"com.lihaoyi::castor::0.1.7",
-      ivy"org.scala-js::scalajs-dom::0.9.7"
-    )
-  }
-  object js extends Cross[UtilJsModule](scala213)
-
 }
 
 object example extends Module{
