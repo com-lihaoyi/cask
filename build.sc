@@ -67,6 +67,7 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
     )
   }
   def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
+  def artifactName = "cask"
 }
 object cask extends Cross[CaskMainModule]((Seq(scala213, scala3) ++ dottyCustomVersion): _*) {
   object util extends Module {
