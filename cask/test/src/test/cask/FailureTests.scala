@@ -12,14 +12,15 @@ object FailureTests extends TestSuite {
 
   val tests = Tests{
     "mismatchedDecorators" - {
-      utest.compileError("""
+      val m = utest.compileError("""
         object Decorated extends cask.MainRoutes{
           @myDecorator
           @cask.websocket("/hello/:world")
           def hello(world: String)(extra: Int) = ???
           initialize()
         }
-      """).msg ==> "required: cask.router.Decorator[_, cask.endpoints.WebsocketResult, _]"
+      """).msg
+      assert(m.contains("required: cask.router.Decorator[_, cask.endpoints.WebsocketResult, _]"))
     }
 
     "noEndpoint" - {
