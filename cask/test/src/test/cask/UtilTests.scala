@@ -4,7 +4,7 @@ import utest._
 
 object UtilTests extends TestSuite {
   val tests = Tests{
-    'splitPath - {
+    "splitPath" - {
       cask.internal.Util.splitPath("") ==> Seq()
       cask.internal.Util.splitPath("/") ==> Seq()
       cask.internal.Util.splitPath("////") ==> Seq()

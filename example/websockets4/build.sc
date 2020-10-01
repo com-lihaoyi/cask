@@ -1,8 +1,8 @@
 import mill._, scalalib._
 
 
-trait AppModule extends ScalaModule{
-  def scalaVersion = "2.13.2"
+trait AppModule extends CrossScalaModule{
+
   def ivyDeps = Agg[Dep](
   )
   object test extends Tests{

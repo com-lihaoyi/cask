@@ -41,9 +41,9 @@ abstract class Main{
   def createActorContext = new castor.Context.Simple(executionContext, log.exception)
 
   val executionContext = createExecutionContext
-  implicit val actorContext = createActorContext
+  implicit val actorContext: castor.Context = createActorContext
 
-  implicit def log = new cask.util.Logger.Console()
+  implicit def log: cask.util.Logger = new cask.util.Logger.Console()
 
   def routeTries = Main.prepareRouteTries(allRoutes)
 

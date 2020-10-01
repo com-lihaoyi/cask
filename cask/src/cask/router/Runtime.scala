@@ -18,6 +18,16 @@ object Runtime{
     }
   }
 
+  def validateLists(argss: Seq[Seq[Either[Seq[Result.ParamError], Any]]]): Result[Seq[Seq[Any]]] = {
+    val lefts: Seq[Result.ParamError] = argss.flatMap(_.collect{case Left(x) => x}.flatten)
+
+    if (lefts.nonEmpty) Result.Error.InvalidArguments(lefts)
+    else {
+      val rights = argss.map(_.collect{case Right(x) => x})
+      Result.Success(rights)
+    }
+  }
+
   def makeReadCall[I, C](dict: Map[String, I],
                          ctx: C,
                          default: => Option[Any],

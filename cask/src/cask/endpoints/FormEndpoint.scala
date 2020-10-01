@@ -10,7 +10,7 @@ import collection.JavaConverters._
 
 sealed trait FormReader[T] extends ArgReader[Seq[FormEntry], T, Request]
 object FormReader{
-  implicit def paramFormReader[T: QueryParamReader] = new FormReader[T]{
+  implicit def paramFormReader[T: QueryParamReader]: FormReader[T] = new FormReader[T]{
     def arity = implicitly[QueryParamReader[T]].arity
 
     def read(ctx: Request, label: String, input: Seq[FormEntry]) = {
@@ -18,28 +18,28 @@ object FormReader{
     }
   }
 
-  implicit def formEntryReader = new FormReader[FormEntry]{
+  implicit def formEntryReader: FormReader[FormEntry] = new FormReader[FormEntry]{
     def arity = 1
     def read(ctx: Request, label: String, input: Seq[FormEntry]) = input.head
   }
-  implicit def formEntriesReader = new FormReader[Seq[FormEntry]]{
+  implicit def formEntriesReader: FormReader[Seq[FormEntry]] = new FormReader[Seq[FormEntry]]{
     def arity = 1
     def read(ctx: Request, label: String, input: Seq[FormEntry]) = input
   }
 
-  implicit def formValueReader = new FormReader[FormValue]{
+  implicit def formValueReader: FormReader[FormValue] = new FormReader[FormValue]{
     def arity = 1
     def read(ctx: Request, label: String, input: Seq[FormEntry]) = input.head.asInstanceOf[FormValue]
   }
-  implicit def formValuesReader = new FormReader[Seq[FormValue]]{
+  implicit def formValuesReader: FormReader[Seq[FormValue]] = new FormReader[Seq[FormValue]]{
     def arity = 1
     def read(ctx: Request, label: String, input: Seq[FormEntry]) = input.map(_.asInstanceOf[FormValue])
   }
-  implicit def formFileReader = new FormReader[FormFile]{
+  implicit def formFileReader: FormReader[FormFile] = new FormReader[FormFile]{
     def arity = 1
     def read(ctx: Request, label: String, input: Seq[FormEntry]) = input.head.asInstanceOf[FormFile]
   }
-  implicit def formFilesReader = new FormReader[Seq[FormFile]]{
+  implicit def formFilesReader: FormReader[Seq[FormFile]] = new FormReader[Seq[FormFile]]{
     def arity = 1
     def read(ctx: Request, label: String, input: Seq[FormEntry]) = input.map(_.asInstanceOf[FormFile])
   }

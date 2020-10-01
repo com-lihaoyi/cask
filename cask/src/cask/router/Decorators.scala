@@ -80,6 +80,10 @@ trait RawDecorator extends Decorator[Response.Raw, Response.Raw, Any]{
   */
 trait Endpoint[OuterReturned, InnerReturned, Input]
   extends Decorator[OuterReturned, InnerReturned, Input]{
+
+  // used internally to facilitate access to the type in macros
+  type InnerReturnedAlias = InnerReturned
+
   /**
     * What is the path that this particular endpoint matches?
     */
@@ -127,6 +131,6 @@ class NoOpParser[Input, T] extends ArgReader[Input, T, Request] {
   def read(ctx: Request, label: String, input: Input) = input.asInstanceOf[T]
 }
 object NoOpParser{
-  implicit def instance[Input, T] = new NoOpParser[Input, T]
-  implicit def instanceAny[T] = new NoOpParser[Any, T]
+  implicit def instance[Input, T]: NoOpParser[Input, T] = new NoOpParser[Input, T]
+  implicit def instanceAny[T]: NoOpParser[Any, T] = new NoOpParser[Any, T]
 }

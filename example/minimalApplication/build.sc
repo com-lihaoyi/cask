@@ -1,10 +1,7 @@
 import mill._, scalalib._
 
 
-trait AppModule extends ScalaModule{
-  def scalaVersion = "2.13.2"
-  def ivyDeps = Agg[Dep](
-  )
+trait AppModule extends CrossScalaModule{
   object test extends Tests{
     def testFrameworks = Seq("utest.runner.Framework")
 

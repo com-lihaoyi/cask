@@ -5,7 +5,7 @@ import utest._
 object DispatchTrieTests extends TestSuite {
   val tests = Tests{
 
-    'hello - {
+    "hello" - {
       val x = DispatchTrie.construct(0,
         Seq((Vector("hello"), 1, false))
       )
@@ -16,7 +16,7 @@ object DispatchTrieTests extends TestSuite {
         x.lookup(List("world"), Map()) == None
       )
     }
-    'nested - {
+    "nested" - {
       val x = DispatchTrie.construct(0,
         Seq(
           (Vector("hello", "world"), 1, false),
@@ -31,7 +31,7 @@ object DispatchTrieTests extends TestSuite {
         x.lookup(List("hello", "world", "moo"), Map()) == None
       )
     }
-    'bindings - {
+    "bindings" - {
       val x = DispatchTrie.construct(0,
         Seq((Vector(":hello", ":world"), 1, false))
       )
@@ -44,7 +44,7 @@ object DispatchTrieTests extends TestSuite {
       )
     }
 
-    'path - {
+    "path" - {
       val x = DispatchTrie.construct(0,
         Seq((Vector("hello"), 1, true))
       )
@@ -57,7 +57,7 @@ object DispatchTrieTests extends TestSuite {
       )
     }
 
-    'errors - {
+    "errors" - {
       intercept[Exception]{
         DispatchTrie.construct(0,
           Seq(

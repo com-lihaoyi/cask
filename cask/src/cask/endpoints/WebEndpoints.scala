@@ -64,19 +64,19 @@ object QueryParamReader{
   implicit object LongParam extends SimpleParam[Long](_.toLong)
   implicit object DoubleParam extends SimpleParam[Double](_.toDouble)
   implicit object FloatParam extends SimpleParam[Float](_.toFloat)
-  implicit def SeqParam[T: QueryParamReader] = new QueryParamReader[Seq[T]]{
+  implicit def SeqParam[T: QueryParamReader]: QueryParamReader[Seq[T]] = new QueryParamReader[Seq[T]]{
     def arity = 1
     def read(ctx: cask.model.Request, label: String, v: Seq[String]): Seq[T] = {
       v.map(x => implicitly[QueryParamReader[T]].read(ctx, label, Seq(x)))
     }
   }
-  implicit def OptionParam[T: QueryParamReader] = new QueryParamReader[Option[T]]{
+  implicit def OptionParam[T: QueryParamReader]: QueryParamReader[Option[T]] = new QueryParamReader[Option[T]]{
     def arity = 1
     def read(ctx: cask.model.Request, label: String, v: Seq[String]): Option[T] = {
       v.headOption.map(x => implicitly[QueryParamReader[T]].read(ctx, label, Seq(x)))
     }
   }
-  implicit def paramReader[T: ParamReader] = new QueryParamReader[T] {
+  implicit def paramReader[T: ParamReader]: QueryParamReader[T] = new QueryParamReader[T] {
     override def arity = 0
 
     override def read(ctx: cask.model.Request, label: String, v: Seq[String]) = {
