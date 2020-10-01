@@ -248,7 +248,9 @@ def uploadToGithub(authKey: String) = T.command{
     os.write.over(
       f / last / "build.sc",
       os.read(f / last / "build.sc")
-        .replace("trait AppModule ", "object app ")
+        .replaceFirst(
+          "trait AppModule extends CrossScalaModule\\s*\\{",
+          "object app extends ScalaModule \\{\n  def scalaVersion = \"2.13.3\"")
         .replaceFirst(
           "def ivyDeps = Agg\\[Dep\\]\\(",
           "def ivyDeps = Agg(\n    ivy\"com.lihaoyi::cask:" + releaseTag + "\","
