@@ -36,7 +36,7 @@ If you use Cask and like it, you will probably enjoy the following book by the A
 - [*Hands-on Scala Programming*](https://www.handsonscala.com/)
 
 *Hands-on Scala* has uses Requests-Scala extensively throughout the book, and has
-the entirety of *Chapter 14: Simple Web and API Servers* dedicated to 
+the entirety of *Chapter 14: Simple Web and API Servers* dedicated to
 the library. *Hands-on Scala* is a great way to level up your skills in Scala
 in general and Cask in particular.
 
@@ -45,6 +45,10 @@ Cask is profiled using the
 courtesy of EJ Technologies
 
 ## Changelog
+
+### 0.7.6
+
+- Add support for Dotty (Scala 3)
 
 ### 0.7.4
 
