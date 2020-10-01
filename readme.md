@@ -46,6 +46,10 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.7.7
+
+- Fix published examples
+
 ### 0.7.6
 
 - Add support for Dotty (Scala 3)
