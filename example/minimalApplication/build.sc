@@ -2,6 +2,9 @@ import mill._, scalalib._
 
 
 trait AppModule extends CrossScalaModule{
+
+  def ivyDeps = Agg[Dep](
+  )
   object test extends Tests{
     def testFrameworks = Seq("utest.runner.Framework")
 
