@@ -22,6 +22,7 @@ object ExampleTests extends TestSuite{
       requests.get(s"$host/login").text() ==> "show_the_login_form"
       requests.delete(s"$host/session").text() ==> "delete_the_session"
       requests.get.copy(verb="secretmethod")(s"$host/session").text() ==> "security_by_obscurity"
+      requests.options(s"$host/api").text() ==> "allow_cors"
     }
   }
 }
