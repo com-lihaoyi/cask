@@ -45,7 +45,7 @@ object Macros {
 
     val idents = method.owner.tree.asInstanceOf[ClassDef].body
     idents.foreach{
-      case deff @ DefDef(Name(idx), _, _, _, tree) =>
+      case deff @ DefDef(Name(idx), _, _, _) =>
         val expr = Ref(deff.symbol).asExpr
         defaults += (params(idx.toInt - 1) -> expr)
       case _ =>
@@ -65,7 +65,7 @@ object Macros {
     val paramTpt = param.tree.asInstanceOf[ValDef].tpt
     val inputReaderTypeRaw = Applied(
       TypeSelect(
-        Term.of(decorator),
+        decorator.asTerm,
         "InputParser"
       ),
       List(paramTpt)
@@ -74,9 +74,9 @@ object Macros {
 
     val reader = Expr.summon(using inputReaderType) match {
       case None =>
-        Reporting.error(
+        report.error(
           s"no reader of type ${paramTpt.tpe.typeSymbol.fullName} found for parameter ${param.name}",
-          param.pos
+          param.pos.get
         )
         '{???}
       case Some(expr) => expr
@@ -111,7 +111,7 @@ object Macros {
     val paramss = method.paramSymss
 
     if (paramss.isEmpty) {
-      Reporting.error("At least one parameter list must be declared.", method.pos)
+      report.error("At least one parameter list must be declared.", method.pos.get)
       return '{???}
     }
 
@@ -123,7 +123,7 @@ object Macros {
         val e = '{
           $argss(${Expr(i)})(${Expr(j)}).asInstanceOf[$t]
         }
-        Term.of(e)
+        e.asTerm
       }
     }
 
@@ -150,29 +150,23 @@ object Macros {
   ): Expr[Any] = {
     import qctx.reflect._
 
-    val innerReturnedTpt = TypeSelect(
-      Term.of(endpoint),
-      "InnerReturnedAlias"
+    val innerReturnedTpt = endpoint.asTerm.tpe.asType match {
+      case '[Endpoint[_, innerReturned, _]] => TypeRepr.of[innerReturned]
+      case _ => ???
+    }
+
+    val rtp = method.tree.asInstanceOf[DefDef].returnTpt.tpe
+
+    val conversionTpe = TypeRepr.of[cask.internal.Conversion].appliedTo(
+      List(rtp, innerReturnedTpt)
     )
 
-    val rtpt = method.tree.asInstanceOf[DefDef].returnTpt
-
-    val conversionTpeRaw = Applied(
-      TypeTree.of[cask.internal.Conversion],
-      List(
-        rtpt, innerReturnedTpt
-      )
-    ).tpe
-
-    // the asInstanceOf is required to splice this back into an Expr; this is generally
-    // unsafe, but we know that it will work in the context that this macro is invoked in
-    val conversionTpe = conversionTpeRaw.asType.asInstanceOf[Type[Any]]
-
-    val conversion = Expr.summon(using conversionTpe) match {
-      case None =>
-        Reporting.error(s"can't convert ${rtpt.tpe.typeSymbol.fullName} to a response", method.pos)
+    val conversion = Implicits.search(conversionTpe) match {
+      case iss: ImplicitSearchSuccess =>
+        iss.tree.asExpr
+      case isf: ImplicitSearchFailure =>
+        report.error(s"can't convert ${rtp.typeSymbol.fullName} to a response", method.pos.get)
         '{???}
-      case Some(expr) => expr
     }
 
     '{
@@ -228,7 +222,7 @@ object Macros {
         val decoTpe = (decorator match {
           case Some(deco) =>
             TypeSelect(
-              Term.of(deco),
+              deco.asTerm,
               "InputTypeAlias"
             ).tpe.asType
           case None =>
@@ -281,10 +275,10 @@ object Macros {
             }
 
           Runtime.validateLists(parsedArgss).map{ validated =>
-            val result = ${call(method, '{validated})}
+            val result = ${call(using qctx)(method, '{validated})}
 
             ${
-              convertToResponse(
+              convertToResponse(using qctx)(
                 method,
                 endpoint,
                 '{result}

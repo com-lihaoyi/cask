@@ -27,7 +27,7 @@ import $file.example.websockets3.build
 import $file.example.websockets4.build
 
 val scala213 = "2.13.4"
-val scala3 = "3.0.0-M2"
+val scala3 = "3.0.0-RC2"
 val dottyCustomVersion = Option(sys.props("dottyVersion"))
 
 trait CaskModule extends CrossScalaModule with PublishModule{
@@ -51,7 +51,7 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
   def ivyDeps = T{
     Agg(
       ivy"io.undertow:undertow-core:2.2.3.Final",
-      ivy"com.lihaoyi::upickle:1.2.2"
+      ivy"com.lihaoyi::upickle:1.3.11"
     ) ++
     (if(!isDotty) Agg(ivy"org.scala-lang:scala-reflect:${scalaVersion()}") else Agg())
   }
@@ -62,8 +62,8 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
   object test extends Tests{
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.7.5",
-      ivy"com.lihaoyi::requests::0.6.5"
+      ivy"com.lihaoyi::utest::0.7.8",
+      ivy"com.lihaoyi::requests::0.6.7"
     )
   }
   def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
@@ -81,9 +81,9 @@ object cask extends Cross[CaskMainModule]((Seq(scala213, scala3) ++ dottyCustomV
         millSourcePath / s"src-$platformSegment"
       )
       def ivyDeps = Agg(
-        ivy"com.lihaoyi::sourcecode:0.2.1",
-        ivy"com.lihaoyi::pprint:0.6.0",
-        ivy"com.lihaoyi::geny:0.6.2"
+        ivy"com.lihaoyi::sourcecode:0.2.5",
+        ivy"com.lihaoyi::pprint:0.6.4",
+        ivy"com.lihaoyi::geny:0.6.8"
       )
     }
     class UtilJvmModule(val crossScalaVersion: String) extends UtilModule {
@@ -250,7 +250,7 @@ def uploadToGithub(authKey: String) = T.command{
       os.read(f / last / "build.sc")
         .replaceFirst(
           "trait AppModule extends CrossScalaModule\\s*\\{",
-          "object app extends ScalaModule \\{\n  def scalaVersion = \"2.13.4\"")
+          "object app extends ScalaModule \\{\n  def scalaVersion = \"2.13.5\"")
         .replaceFirst(
           "def ivyDeps = Agg\\[Dep\\]\\(",
           "def ivyDeps = Agg(\n    ivy\"com.lihaoyi::cask:" + releaseTag + "\","

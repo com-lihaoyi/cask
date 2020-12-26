@@ -15,8 +15,8 @@ trait AppModule extends CrossScalaModule with mill.twirllib.TwirlModule{
     def testFrameworks = Seq("utest.runner.Framework")
 
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.7.5",
-      ivy"com.lihaoyi::requests::0.6.5",
+      ivy"com.lihaoyi::utest::0.7.8",
+      ivy"com.lihaoyi::requests::0.6.7",
     )
   }
 }

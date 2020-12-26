@@ -6,7 +6,7 @@ case class RoutesEndpointsMetadata[T](value: Seq[EndpointMetadata[T]])
 object RoutesEndpointsMetadata{
   import scala.quoted._
 
-  inline given initialize[T] as RoutesEndpointsMetadata[T] = ${initializeImpl}
+  inline given initialize[T]: RoutesEndpointsMetadata[T] = ${initializeImpl}
 
   def setRoutesImpl[T](setter: Expr[RoutesEndpointsMetadata[T] => Unit])
     (using qctx: Quotes, tpe: Type[T]): Expr[Unit] = {
@@ -20,13 +20,13 @@ object RoutesEndpointsMetadata{
     import qctx.reflect._
 
     val routeParts: List[Expr[EndpointMetadata[T]]] = for {
-      m <- TypeRepr.of(using tpe).typeSymbol.methods
-      annotations = m.annots.filter(_.tpe <:< TypeRepr.of[Decorator[_, _, _]])
+      m <- TypeRepr.of(using tpe).typeSymbol.memberMethods
+      annotations = m.annotations.filter(_.tpe <:< TypeRepr.of[Decorator[_, _, _]])
       if (annotations.nonEmpty)
     } yield {
 
       if(!(annotations.head.tpe <:< TypeRepr.of[Endpoint[_, _, _]])) {
-        Reporting.error(s"Last annotation applied to a function must be an instance of Endpoint, " +
+        report.error(s"Last annotation applied to a function must be an instance of Endpoint, " +
           s"not ${annotations.head.tpe.show}",
           annotations.head.pos
         )
@@ -34,7 +34,7 @@ object RoutesEndpointsMetadata{
       }
       val allEndpoints = annotations.filter(_.tpe <:< TypeRepr.of[Endpoint[_, _, _]])
       if(allEndpoints.length > 1) {
-        Reporting.error(
+        report.error(
           s"You can only apply one Endpoint annotation to a function, not " +
             s"${allEndpoints.length} in ${allEndpoints.map(_.tpe.show).mkString(", ")}",
           annotations.last.pos,
@@ -52,7 +52,7 @@ object RoutesEndpointsMetadata{
       '{
 
         val entrypoint: EntryPoint[T, cask.Request] = ${
-          Macros.extractMethod[T](
+          Macros.extractMethod[T](using qctx)(
             m,
             decorators,
             endpoint
