@@ -81,9 +81,6 @@ trait RawDecorator extends Decorator[Response.Raw, Response.Raw, Any]{
 trait Endpoint[OuterReturned, InnerReturned, Input]
   extends Decorator[OuterReturned, InnerReturned, Input]{
 
-  // used internally to facilitate access to the type in macros
-  type InnerReturnedAlias = InnerReturned
-
   /**
     * What is the path that this particular endpoint matches?
     */
