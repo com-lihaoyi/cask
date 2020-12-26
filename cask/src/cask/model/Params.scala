@@ -81,7 +81,7 @@ case class Cookie(name: String,
                   discard: Boolean = false,
                   httpOnly: Boolean = false,
                   secure: Boolean = false,
-                  sameSite: String = null) {
+                  sameSite: String = "Lax") {
 
 }
 
