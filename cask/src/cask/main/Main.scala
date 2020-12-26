@@ -35,6 +35,7 @@ abstract class Main{
   def allRoutes: Seq[Routes]
   def port: Int = 8080
   def host: String = "localhost"
+  def verbose = false
   def debugMode: Boolean = true
 
   def createExecutionContext = castor.Context.Simple.executionContext
@@ -60,6 +61,7 @@ abstract class Main{
   }
 
   def main(args: Array[String]): Unit = {
+    if (!verbose) Main.silenceJboss()
     val server = Undertow.builder
       .addHttpListener(port, host)
       .setHandler(defaultHandler)
@@ -196,6 +198,22 @@ object Main{
 
     Response(str, statusCode = statusCode)
 
+  }
+
+  def silenceJboss(): Unit = {
+    // Some jboss classes litter logs from their static initializers. This is a
+    // workaround to stop this rather annoying behavior.
+    val tmp = System.out
+    System.setOut(null)
+    org.jboss.threads.Version.getVersionString() // this causes the static initializer to be run
+    System.setOut(tmp)
+
+    // Other loggers print way too much information. Set them to only print
+    // interesting stuff.
+    val level = java.util.logging.Level.WARNING
+    java.util.logging.Logger.getLogger("org.jboss").setLevel(level)
+    java.util.logging.Logger.getLogger("org.xnio").setLevel(level)
+    java.util.logging.Logger.getLogger("io.undertow").setLevel(level)
   }
 
 }
