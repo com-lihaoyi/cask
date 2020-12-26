@@ -74,9 +74,9 @@ object Macros {
 
     val reader = Expr.summon(using inputReaderType) match {
       case None =>
-        Reporting.error(
+        report.error(
           s"no reader of type ${paramTpt.tpe.typeSymbol.fullName} found for parameter ${param.name}",
-          param.pos
+          param.pos.get
         )
         '{???}
       case Some(expr) => expr
@@ -111,7 +111,7 @@ object Macros {
     val paramss = method.paramSymss
 
     if (paramss.isEmpty) {
-      Reporting.error("At least one parameter list must be declared.", method.pos)
+      report.error("At least one parameter list must be declared.", method.pos.get)
       return '{???}
     }
 
@@ -170,7 +170,7 @@ object Macros {
 
     val conversion = Expr.summon(using conversionTpe) match {
       case None =>
-        Reporting.error(s"can't convert ${rtpt.tpe.typeSymbol.fullName} to a response", method.pos)
+        report.error(s"can't convert ${rtpt.tpe.typeSymbol.fullName} to a response", method.pos.get)
         '{???}
       case Some(expr) => expr
     }
@@ -281,10 +281,10 @@ object Macros {
             }
 
           Runtime.validateLists(parsedArgss).map{ validated =>
-            val result = ${call(method, '{validated})}
+            val result = ${call(using qctx)(method, '{validated})}
 
             ${
-              convertToResponse(
+              convertToResponse(using qctx)(
                 method,
                 endpoint,
                 '{result}
