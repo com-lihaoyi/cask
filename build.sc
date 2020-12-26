@@ -26,12 +26,12 @@ import $file.example.websockets2.build
 import $file.example.websockets3.build
 import $file.example.websockets4.build
 
-val scala213  = "2.13.3"
-val scala3 = "0.27.0-RC1"
+val scala213 = "2.13.4"
+val scala3 = "3.0.0-M2"
 val dottyCustomVersion = Option(sys.props("dottyVersion"))
 
 trait CaskModule extends CrossScalaModule with PublishModule{
-  def isDotty = crossScalaVersion.startsWith("0")
+  def isDotty = crossScalaVersion.startsWith("3")
 
   def publishVersion = build.publishVersion()._2
 
@@ -51,7 +51,7 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
   def ivyDeps = T{
     Agg(
       ivy"io.undertow:undertow-core:2.0.13.Final",
-      ivy"com.lihaoyi::upickle:1.2.0"
+      ivy"com.lihaoyi::upickle:1.2.2"
     ) ++
     (if(!isDotty) Agg(ivy"org.scala-lang:scala-reflect:${scalaVersion()}") else Agg())
   }
@@ -62,7 +62,7 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
   object test extends Tests{
     def testFrameworks = Seq("utest.runner.Framework")
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.7.4",
+      ivy"com.lihaoyi::utest::0.7.5",
       ivy"com.lihaoyi::requests::0.6.5"
     )
   }
@@ -250,7 +250,7 @@ def uploadToGithub(authKey: String) = T.command{
       os.read(f / last / "build.sc")
         .replaceFirst(
           "trait AppModule extends CrossScalaModule\\s*\\{",
-          "object app extends ScalaModule \\{\n  def scalaVersion = \"2.13.3\"")
+          "object app extends ScalaModule \\{\n  def scalaVersion = \"2.13.4\"")
         .replaceFirst(
           "def ivyDeps = Agg\\[Dep\\]\\(",
           "def ivyDeps = Agg(\n    ivy\"com.lihaoyi::cask:" + releaseTag + "\","
