@@ -46,13 +46,18 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.7.8
+
+- Upgrade undertow
+- Add support for Scala 3
+
 ### 0.7.7
 
 - Fix published examples
 
 ### 0.7.6
 
-- Add support for Dotty (Scala 3)
+- Add support for Dotty (to be Scala 3)
 
 ### 0.7.4
 
