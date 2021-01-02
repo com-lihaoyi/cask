@@ -9,7 +9,7 @@ object Cookies extends cask.MainRoutes{
   def storeCookies() = {
     cask.Response(
       "Cookies Set!",
-      cookies = Seq(cask.Cookie("username", "the username"))
+      cookies = Seq(cask.Cookie("username", "the_username"))
     )
   }
 
