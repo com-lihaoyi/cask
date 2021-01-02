@@ -1,0 +1,1115 @@
+<html><head><meta charset="utf-8" /><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" /><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" /><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/styles/github-gist.min.css" rel="stylesheet" type="text/css" /><title>Cask: a Scala HTTP micro-framework</title><style>@media (min-width: 60em) {.WideStyles-header{
+  bottom: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: fixed;
+  top: 0px;
+  width: 25%;
+}
+
+.WideStyles-tableOfContentsItem{
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  width: 100%;
+}
+
+.WideStyles-tableOfContents{
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-height: 0px;
+  width: 100%;
+}
+
+.WideStyles-content{
+  box-sizing: border-box;
+  margin-left: 25%;
+  padding: 48px;
+}
+
+.WideStyles-footer{
+  bottom: 0px;
+  height: 50px;
+  position: fixed;
+  width: 25%;
+}
+
+.WideStyles-marginLeftZero{
+  margin-left: 0px;
+}
+}</style><style>@media (max-width: 60em) {.NarrowStyles-header{
+  margin-bottom: 10px;
+}
+
+.NarrowStyles-content{
+  padding: 16px;
+}
+
+.NarrowStyles-headerContent{
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.NarrowStyles-flexFont{
+  font-size: 4vw;
+}
+
+.NarrowStyles-disappear{
+  display: none;
+}
+
+.NarrowStyles-floatLeft{
+  float: left;
+  margin-left: 30px;
+}
+}</style><style>.Styles-hoverBox{
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.Styles-hoverBox:hover .Styles-hoverLink{
+  opacity: 0.5;
+}
+
+.Styles-hoverLink{
+  opacity: 0.1;
+}
+.Styles-hoverLink:hover{
+  opacity: 1.0;
+}
+
+.Styles-headerStyle{
+  background-color: rgb(61, 79, 93);
+  box-sizing: border-box;
+  display: flex;
+}
+
+.Styles-headerLinkBox{
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.Styles-headerLink{
+  align-items: center;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  padding: 10px 10px;
+}
+
+.Styles-footerStyle{
+  color: rgb(158, 167, 174);
+  display: flex;
+  justify-content: center;
+}
+
+.Styles-subtleLink{
+  text-decoration: none;
+}
+</style><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/languages/scala.min.js"></script><script>hljs.initHighlightingOnLoad();</script><meta name="viewport" content="initial-scale = 1.0,maximum-scale = 1.0" /></head><body style="margin: 0px;background-color: #f8f8f8;"><div class=" WideStyles-header NarrowStyles-header Styles-headerStyle"><div class=" NarrowStyles-headerContent"><h1 style="text-align: center;padding: 30px 30px;margin: 0px;"><a style="color: #f8f8f8;font-weight: bold;" href="" class=" Styles-subtleLink NarrowStyles-flexFont"> Cask</a></h1><div class=" Styles-headerLinkBox"><div class=" WideStyles-tableOfContents" style="color: #f8f8f8;"><div style="padding-left: 40px;" class=" NarrowStyles-disappear"><b>Pages</b></div><div style="overflow-y: auto;flex-shrink: 1;min-height: 0px;"><ul style="overflow: hidden;text-align: start;margin-top: 10px;white-space: nowrap;text-overflow: ellipsis;margin-right: 10px;"><li class=" WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="index.html">Cask: a Scala HTTP micro-framework</a></li><li class=" WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="page/main-customization.html">Main Customization</a></li><li class=" WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="page/about-cask.html">About Cask</a></li></ul></div></div></div></div><hr class=" NarrowStyles-disappear" style="background-color: #f8f8f8;width: 80%;" /><div class=" WideStyles-tableOfContents NarrowStyles-disappear" style="color: #f8f8f8;"><div style="padding-left: 40px;" class=" NarrowStyles-disappear"><b>Table of Contents</b></div><div style="overflow-y: auto;flex-shrink: 1;min-height: 0px;"><ul style="overflow: hidden;text-align: start;margin-top: 10px;white-space: nowrap;text-overflow: ellipsis;margin-right: 10px;"><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#getting-started">Getting Started</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#minimal-example">Minimal Example</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#variable-routes">Variable Routes</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#multi-method-routes">Multi-method Routes</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#receiving-form-encoded-or-json-data">Receiving Form-encoded or JSON data</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#processing-cookies">Processing Cookies</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#serving-static-files">Serving Static Files</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#redirects-or-aborts">Redirects or Aborts</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#html-rendering">HTML Rendering</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#extending-endpoints-with-decorators">Extending Endpoints with Decorators</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#custom-endpoints">Custom Endpoints</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#gzip--deflated-responses">Gzip &amp; Deflated Responses</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#websockets">Websockets</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#todomvc-api-server">TodoMVC Api Server</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#todomvc-database-integration">TodoMVC Database Integration</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#todomvc-full-stack-web">TodoMVC Full Stack Web</a></li></ul></div></div></div><div class=" WideStyles-content NarrowStyles-content" style="max-width: 900px;"><h1>Cask: a Scala HTTP micro-framework</h1><div style="margin-bottom: 10px;"><div style="display: flex;flex-direction: row;justify-content: space-between;"><div></div><a href="page/main-customization.html">Main Customization <i class="fa fa-arrow-right" aria-hidden="true"></i></a></div></div><p><a href="https://travis-ci.org/lihaoyi/cask"><div style="text-align: center"><img src="https://travis-ci.org/lihaoyi/cask.svg" alt="Build Status" style="max-width: 100%; max-height: 500px" /></div></a> <a href="https://gitter.im/lihaoyi/cask?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><div style="text-align: center"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Gitter Chat" style="max-width: 100%; max-height: 500px" /></div></a> <a href="https://www.patreon.com/lihaoyi"><div style="text-align: center"><img src="https://img.shields.io/badge/patreon-sponsor-ff69b4.svg" alt="Patreon" style="max-width: 100%; max-height: 500px" /></div></a></p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object MinimalApplication extends cask.MainRoutes{
+  @cask.get(&quot;/&quot;)
+  def hello() = {
+    &quot;Hello World!&quot;
+  }
+
+  @cask.post(&quot;/do-thing&quot;)
+  def doThing(request: cask.Request) = {
+    request.text().reverse
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/minimalApplication-0.7.8.zip">example project</a></li>
+</ul>
+<p><a href="https://github.com/lihaoyi/cask">Cask</a> is a simple Scala web framework inspired by Python's <a href="http://flask.pocoo.org/docs/1.0/">Flask</a> project. It aims to bring simplicity, flexibility and ease-of-use to Scala webservers, avoiding cryptic DSLs or complicated asynchrony.</p><h2 id="getting-started" class="Styles-hoverBox">Getting Started<a href="#getting-started" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>The easiest way to begin using Cask is by downloading the example project above.</p>
+<p>Unzip one of the example projects available on this page (e.g. above) into a folder. This should give you the following files:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="text">build.sc
+app/src/MinimalExample.scala
+app/test/src/ExampleTests.scala
+</code></pre>
+<ul>
+  <li><code>cd</code> into the folder, and run</li>
+</ul>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="bash">./mill -w app.runBackground
+</code></pre>
+<p>This will server up the Cask application on <code>http://localhost:8080</code>. You can immediately start interacting with it either via the browser, or programmatically via <code>curl</code> or a HTTP client like <a href="https://github.com/lihaoyi/requests-scala">Requests-Scala</a>:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">val host = &quot;http://localhost:8080&quot;
+
+val success = requests.get(host)
+
+success.text() ==&gt; &quot;Hello World!&quot;
+success.statusCode ==&gt; 200
+
+requests.get(host + &quot;/doesnt-exist&quot;).statusCode ==&gt; 404
+
+requests.post(host + &quot;/do-thing&quot;, data = &quot;hello&quot;).text() ==&gt; &quot;olleh&quot;
+
+requests.get(host + &quot;/do-thing&quot;).statusCode ==&gt; 404
+</code></pre>
+<p>These HTTP calls are part of the test suite for the example project, which you can run using:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="bash">./mill -w app.test
+</code></pre>
+<p>To configure your Cask application to work with IntelliJ, you can use:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="bash">./mill mill.scalalib.GenIdea/idea
+</code></pre>
+<p>This will need to be re-run when you re-configure your <code>build.sc</code> file, e.g. when adding additional modules or third-party dependencies.</p>
+<p>Cask is just a Scala library, and you can use Cask in any existing Scala project via the following coordinates:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">// Mill
+ivy&quot;com.lihaoyi::cask:0.7.3&quot;
+
+// SBT
+&quot;com.lihaoyi&quot; %% &quot;cask&quot; % &quot;0.7.3&quot;
+</code></pre>
+<p>The <code>./mill</code> command is just a wrapper around the <a href="http://www.lihaoyi.com/mill/">Mill build tool</a>; the <code>build.sc</code> files you see in all examples are Mill build files, and you can use your own installation of Mill instead of <code>./mill</code> if you wish. All normal Mill commands and functionality works for <code>./mill</code>.</p>
+<p>The following examples will walk you through how to use Cask to accomplish tasks common to anyone writing a web application. Each example comes with a downloadable example project with code and unit tests, which you can use via the same <code>./mill -w app.runBackground</code> or <code>./mill -w app.test</code> workflows we saw above.</p><h2 id="minimal-example" class="Styles-hoverBox">Minimal Example<a href="#minimal-example" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object MinimalApplication extends cask.MainRoutes{
+  @cask.get(&quot;/&quot;)
+  def hello() = {
+    &quot;Hello World!&quot;
+  }
+
+  @cask.post(&quot;/do-thing&quot;)
+  def doThing(request: cask.Request) = {
+    request.text().reverse
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/minimalApplication-0.7.8.zip">example project</a></li>
+</ul>
+<p>The rough outline of how the minimal example works should be easy to understand:</p>
+<ul>
+  <li>
+  <p>You define an object that inherits from <code>cask.MainRoutes</code></p></li>
+  <li>
+  <p>Define endpoints using annotated functions, using <code>@cask.get</code> or <code>@cask.post</code>  with the route they should match</p></li>
+  <li>
+  <p>Each function can return the data you want in the response, or a  <code>cask.Response</code> if you want further customization: response code, headers,  etc.</p></li>
+  <li>
+  <p>Your function can take an optional <code>cask.Request</code>, which exposes the entire  incoming HTTP request if necessary. In the above example, we use it to read  the request body into a string and return it reversed.</p></li>
+</ul>
+<p>In most cases, Cask provides convenient helpers to extract exactly the data from the incoming HTTP request that you need, while also de-serializing it into the data type you need and returning meaningful errors if they are missing. Thus, although you can always get all the data necessary through <code>cask.Request</code>, it is often more convenient to use another way, which will go into below.</p>
+<p>As your application grows, you will likely want to split up the routes into separate files, themselves separate from any configuration of the Main entrypoint (e.g. overriding the port, host, default error handlers, etc.). You can do this by splitting it up into <code>cask.Routes</code> and <code>cask.Main</code> objects:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+
+case class MinimalRoutes()(implicit cc: castor.Context,
+                           log: cask.Logger) extends cask.Routes{
+  @cask.get(&quot;/&quot;)
+  def hello() = {
+    &quot;Hello World!&quot;
+  }
+
+  @cask.post(&quot;/do-thing&quot;)
+  def doThing(request: cask.Request) = {
+    request.text().reverse
+  }
+
+  initialize()
+}
+object MinimalRoutesMain extends cask.Main{
+  val allRoutes = Seq(MinimalRoutes())
+}
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/minimalApplication2-0.7.8.zip">example project</a></li>
+</ul>
+<p>You can split up your routes into separate <code>cask.Routes</code> objects as makes sense and pass them all into <code>cask.Main</code>.</p><h2 id="variable-routes" class="Styles-hoverBox">Variable Routes<a href="#variable-routes" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object VariableRoutes extends cask.MainRoutes{
+  @cask.get(&quot;/user/:userName&quot;)
+  def showUserProfile(userName: String) = {
+    s&quot;User $userName&quot;
+  }
+
+  @cask.get(&quot;/post/:postId&quot;)
+  def showPost(postId: Int, param: Seq[String]) = {
+    s&quot;Post $postId $param&quot;
+  }
+
+  @cask.get(&quot;/path&quot;, subpath = true)
+  def showSubpath(request: cask.Request) = {
+    s&quot;Subpath ${request.remainingPathSegments}&quot;
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/variableRoutes-0.7.8.zip">example project</a></li>
+</ul>
+<p>You can bind variables to endpoints by declaring them as parameters: these are either taken from a path-segment matcher of the same name (e.g. <code>postId</code> above), or from query-parameters of the same name (e.g. <code>param</code> above). You can make <code>param</code> take a <code>: String</code> to match <code>?param=hello</code>, an <code>: Int</code> for <code>?param=123</code> a <code>Seq[T]</code> (as above) for repeated params such as <code>?param=hello&amp;param=world</code>, or <code>: Option[T]</code> for cases where the <code>?param=hello</code> is optional.</p>
+<p>If you need to capture the entire sub-path of the request, you can set the flag <code>subpath=true</code> and ask for a <code>: cask.Subpath</code> (the name of the param doesn't matter). This will make the route match any sub-path of the prefix given to the <code>@cask</code> decorator, and give you the remainder to use in your endpoint logic.</p><h2 id="multi-method-routes" class="Styles-hoverBox">Multi-method Routes<a href="#multi-method-routes" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object HttpMethods extends cask.MainRoutes{
+  @cask.route(&quot;/login&quot;, methods = Seq(&quot;get&quot;, &quot;post&quot;))
+  def login(request: cask.Request) = {
+    if (request.exchange.getRequestMethod.equalToString(&quot;post&quot;)) &quot;do_the_login&quot;
+    else &quot;show_the_login_form&quot;
+  }
+
+  @cask.route(&quot;/session&quot;, methods = Seq(&quot;delete&quot;))
+  def session(request: cask.Request) = {
+    &quot;delete_the_session&quot;
+  }
+
+  @cask.route(&quot;/session&quot;, methods = Seq(&quot;secretmethod&quot;))
+  def admin(request: cask.Request) = {
+    &quot;security_by_obscurity&quot;
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/httpMethods-0.7.8.zip">example project</a></li>
+</ul>
+<p>Sometimes, you may want to handle multiple kinds of HTTP requests in the same endpoint function, e.g. with code that can accept both GETs and POSTs and decide what to do in each case. You can use the <code>@cask.route</code> annotation to do so</p><h2 id="receiving-form-encoded-or-json-data" class="Styles-hoverBox">Receiving Form-encoded or JSON data<a href="#receiving-form-encoded-or-json-data" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object FormJsonPost extends cask.MainRoutes{
+  @cask.postJson(&quot;/json&quot;)
+  def jsonEndpoint(value1: ujson.Value, value2: Seq[Int]) = {
+    &quot;OK &quot; + value1 + &quot; &quot; + value2
+  }
+
+  @cask.postJson(&quot;/json-obj&quot;)
+  def jsonEndpointObj(value1: ujson.Value, value2: Seq[Int]) = {
+    ujson.Obj(
+      &quot;value1&quot; -&gt; value1,
+      &quot;value2&quot; -&gt; value2
+    )
+  }
+
+  @cask.postForm(&quot;/form&quot;)
+  def formEndpoint(value1: cask.FormValue, value2: Seq[Int]) = {
+    &quot;OK &quot; + value1 + &quot; &quot; + value2
+  }
+
+  @cask.postForm(&quot;/form-obj&quot;)
+  def formEndpointObj(value1: cask.FormValue, value2: Seq[Int]) = {
+    ujson.Obj(
+      &quot;value1&quot; -&gt; value1.value,
+      &quot;value2&quot; -&gt; value2
+    )
+  }
+
+  @cask.postForm(&quot;/upload&quot;)
+  def uploadFile(image: cask.FormFile) = {
+    image.fileName
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/formJsonPost-0.7.8.zip">example project</a></li>
+</ul>
+<p>If you need to handle a JSON-encoded POST request, you can use the <code>@cask.postJson</code> decorator. This assumes the posted request body is a JSON dict, and uses its keys to populate the endpoint's parameters, either as raw <code>ujson.Value</code>s or deserialized into <code>Seq[Int]</code>s or other things. Deserialization is handled using the <a href="https://github.com/lihaoyi/upickle">uPickle</a> JSON library, though you could write your own version of <code>postJson</code> to work with any other JSON library of your choice.</p>
+<p>Similarly, you can mark endpoints as <code>@cask.postForm</code>, in which case the endpoints params will be taken from the form-encoded POST body either raw (as <code>cask.FormValue</code>s) or deserialized into simple data structures. Use <code>cask.FormFile</code> if you want the given form value to be a file upload.</p>
+<p>Both normal forms and multipart forms are handled the same way.</p>
+<p>If the necessary keys are not present in the JSON/form-encoded POST body, or the deserialization into Scala data-types fails, a 400 response is returned automatically with a helpful error message.</p><h2 id="processing-cookies" class="Styles-hoverBox">Processing Cookies<a href="#processing-cookies" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object Cookies extends cask.MainRoutes{
+  @cask.get(&quot;/read-cookie&quot;)
+  def readCookies(username: cask.Cookie) = {
+    username.value
+  }
+
+  @cask.get(&quot;/store-cookie&quot;)
+  def storeCookies() = {
+    cask.Response(
+      &quot;Cookies Set!&quot;,
+      cookies = Seq(cask.Cookie(&quot;username&quot;, &quot;the_username&quot;))
+    )
+  }
+
+  @cask.get(&quot;/delete-cookie&quot;)
+  def deleteCookie() = {
+    cask.Response(
+      &quot;Cookies Deleted!&quot;,
+      cookies = Seq(cask.Cookie(&quot;username&quot;, &quot;&quot;, expires = java.time.Instant.EPOCH))
+    )
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/cookies-0.7.8.zip">example project</a></li>
+</ul>
+<p>Cookies are most easily read by declaring a <code>: cask.Cookie</code> parameter; the parameter name is used to fetch the cookie you are interested in. Cookies can be stored by setting the <code>cookie</code> attribute in the response, and deleted simply by setting <code>expires = java.time.Instant.EPOCH</code> (i.e. to have expired a long time ago)</p><h2 id="serving-static-files" class="Styles-hoverBox">Serving Static Files<a href="#serving-static-files" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object StaticFiles extends cask.MainRoutes{
+  @cask.get(&quot;/&quot;)
+  def index() = {
+    &quot;Hello!&quot;
+  }
+
+  @cask.staticFiles(&quot;/static/file&quot;)
+  def staticFileRoutes() = &quot;app/resources/cask&quot;
+
+  @cask.staticResources(&quot;/static/resource&quot;)
+  def staticResourceRoutes() = &quot;cask&quot;
+
+  @cask.staticResources(&quot;/static/resource2&quot;)
+  def staticResourceRoutes2() = &quot;.&quot;
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/staticFiles-0.7.8.zip">example project</a></li>
+</ul>
+<p>You can ask Cask to serve static files by defining a <code>@cask.staticFiles</code> endpoint. This will match any subpath of the value returned by the endpoint (e.g. above <code>/static/file.txt</code>, <code>/static/folder/file.txt</code>, etc.) and return the file contents from the corresponding file on disk (and 404 otherwise).</p>
+<p>Similarly, <code>@cask.staticResources</code> attempts to serve a request based on the JVM resource path, returning the data if a resource is present and a 404 otherwise.</p>
+<p>You can also configure the <code>headers</code> you wish to return to static file requests, or use <code>@cask.decorators.compress</code> to compress the responses:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object StaticFiles2 extends cask.MainRoutes{
+  @cask.get(&quot;/&quot;)
+  def index() = {
+    &quot;Hello!&quot;
+  }
+
+  @cask.staticFiles(&quot;/static/file&quot;, headers = Seq(&quot;Cache-Control&quot; -&gt; &quot;max-age=31536000&quot;))
+  def staticFileRoutes() = &quot;app/resources/cask&quot;
+
+  @cask.decorators.compress
+  @cask.staticResources(&quot;/static/resource&quot;)
+  def staticResourceRoutes() = &quot;cask&quot;
+
+  @cask.staticResources(&quot;/static/resource2&quot;)
+  def staticResourceRoutes2() = &quot;.&quot;
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/staticFiles2-0.7.8.zip">example project</a></li>
+</ul><h2 id="redirects-or-aborts" class="Styles-hoverBox">Redirects or Aborts<a href="#redirects-or-aborts" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object RedirectAbort extends cask.MainRoutes{
+  @cask.get(&quot;/&quot;)
+  def index() = {
+    cask.Redirect(&quot;/login&quot;)
+  }
+
+  @cask.get(&quot;/login&quot;)
+  def login() = {
+    cask.Abort(401)
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/redirectAbort-0.7.8.zip">example project</a></li>
+</ul>
+<p>Cask provides some convenient helpers <code>cask.Redirect</code> and <code>cask.Abort</code> which you can return; these are simple wrappers around <code>cask.Request</code>, and simply set up the relevant headers or status code for you.</p><h2 id="html-rendering" class="Styles-hoverBox">HTML Rendering<a href="#html-rendering" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>Cask doesn't come bundled with HTML templating functionality, but it makes it really easy to use community-standard libraries like <a href="https://github.com/lihaoyi/scalatags">Scalatags</a> to render your HTML. Simply adding the relevant <code>ivy&quot;com.lihaoyi::scalatags:0.9.1&quot;</code> dependency to your <code>build.sc</code> file is enough to render Scalatags templates:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+import scalatags.Text.all._
+object Scalatags extends cask.MainRoutes{
+  @cask.get(&quot;/&quot;)
+  def hello() = {
+    doctype(&quot;html&quot;)(
+      html(
+        body(
+          h1(&quot;Hello World&quot;),
+          p(&quot;I am cow&quot;)
+        )
+      )
+    )
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/scalatags-0.7.8.zip">example project</a></li>
+</ul>
+<p>If you prefer to use the <a href="https://www.playframework.com/documentation/2.6.x/ScalaTemplates">Twirl</a> templating engine, you can use that too:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object Twirl extends cask.MainRoutes{
+  @cask.get(&quot;/&quot;)
+  def hello() = {
+    &quot;&lt;!doctype html&gt;&quot; + html.hello(&quot;Hello World&quot;)
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/twirl-0.7.8.zip">example project</a></li>
+</ul>
+<p>With the following <code>app/views/hello.scala.html</code>:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="html">@(titleTxt: String)
+&lt;html&gt;
+    &lt;body&gt;
+        &lt;h1&gt;@titleTxt&lt;/h1&gt;
+        &lt;p&gt;I am cow&lt;/p&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><h2 id="extending-endpoints-with-decorators" class="Styles-hoverBox">Extending Endpoints with Decorators<a href="#extending-endpoints-with-decorators" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object Decorated extends cask.MainRoutes{
+  class User{
+    override def toString = &quot;[haoyi]&quot;
+  }
+  class loggedIn extends cask.RawDecorator {
+    def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
+      delegate(Map(&quot;user&quot; -&gt; new User()))
+    }
+  }
+  class withExtra extends cask.RawDecorator {
+    def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
+      delegate(Map(&quot;extra&quot; -&gt; 31337))
+    }
+  }
+
+  @withExtra()
+  @cask.get(&quot;/hello/:world&quot;)
+  def hello(world: String)(extra: Int) = {
+    world + extra
+  }
+
+  @loggedIn()
+  @cask.get(&quot;/internal/:world&quot;)
+  def internal(world: String)(user: User) = {
+    world + user
+  }
+
+  @withExtra()
+  @loggedIn()
+  @cask.get(&quot;/internal-extra/:world&quot;)
+  def internalExtra(world: String)(user: User)(extra: Int) = {
+    world + user + extra
+  }
+
+  @withExtra()
+  @loggedIn()
+  @cask.get(&quot;/ignore-extra/:world&quot;)
+  def ignoreExtra(world: String)(user: User) = {
+    world + user
+  }
+
+  @loggedIn()
+  @cask.get(&quot;/hello-default&quot;)
+  def defaults(world: String = &quot;world&quot;)(user: User) = {
+    world + user
+  }
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/decorated-0.7.8.zip">example project</a></li>
+</ul>
+<p>You can write extra decorator annotations that stack on top of the existing <code>@cask.get</code>/<code>@cask.post</code> to provide additional arguments or validation. This is done by implementing the <code>cask.Decorator</code> interface and it's <code>getRawParams</code> function. <code>getRawParams</code>:</p>
+<ul>
+  <li>
+  <p>Receives a <code>Request</code>, which basically gives you full access to the  underlying undertow HTTP connection so you can pick out whatever data you  would like</p></li>
+  <li>
+  <p>Returns an <code>Either[Response, cask.Decor[Any]]</code>. Returning a <code>Left</code> lets you  bail out early with a fixed <code>cask.Response</code>, avoiding further processing.  Returning a <code>Right</code> provides a map of parameter names and values that will  then get passed to the endpoint function in consecutive parameter lists (shown  above), as well as an optional cleanup function that is run after the endpoint  terminates.</p></li>
+</ul>
+<p>Each additional decorator is responsible for one additional parameter list to the right of the existing parameter lists, each of which can contain any number of parameters.</p>
+<p>Decorators are useful for things like:</p>
+<ul>
+  <li>
+  <p>Making an endpoint return a HTTP 403 if the user isn't logged in, but if they are  logged in providing the <code>: User</code> object to the body of the endpoint function</p></li>
+  <li>
+  <p>Rate-limiting users by returning early with a HTTP 429 if a user tries to  access an endpoint too many times too quickly</p></li>
+  <li>
+  <p>Providing request-scoped values to the endpoint function: perhaps a database  transaction that commits when the function succeeds (and rolls-back if it  fails), or access to some system resource that needs to be released.</p></li>
+</ul>
+<p>For decorators that you wish to apply to multiple routes at once, you can define them by overriding the <code>cask.Routes#decorators</code> field (to apply to every endpoint in that routes object) or <code>cask.Main#mainDecorators</code> (to apply to every endpoint, period):</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object Decorated2 extends cask.MainRoutes{
+  class User{
+    override def toString = &quot;[haoyi]&quot;
+  }
+  class loggedIn extends cask.RawDecorator {
+    def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
+      delegate(Map(&quot;user&quot; -&gt; new User()))
+    }
+  }
+  class withExtra extends cask.RawDecorator {
+    def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
+      delegate(Map(&quot;extra&quot; -&gt; 31337))
+    }
+  }
+
+  override def decorators = Seq(new withExtra())
+
+  @cask.get(&quot;/hello/:world&quot;)
+  def hello(world: String)(extra: Int) = {
+    world + extra
+  }
+
+  @loggedIn()
+  @cask.get(&quot;/internal-extra/:world&quot;)
+  def internalExtra(world: String)(user: User)(extra: Int) = {
+    world + user + extra
+  }
+
+  @loggedIn()
+  @cask.get(&quot;/ignore-extra/:world&quot;)
+  def ignoreExtra(world: String)(user: User)(extra: Int)  = {
+    world + user
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/decorated2-0.7.8.zip">example project</a></li>
+</ul>
+<p>This is convenient for cases where you want a set of decorators to apply broadly across your web application, and do not want to repeat them over and over at every single endpoint.</p><h2 id="custom-endpoints" class="Styles-hoverBox">Custom Endpoints<a href="#custom-endpoints" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+
+class custom(val path: String, val methods: Seq[String])
+  extends cask.HttpEndpoint[Int, Seq[String]]{
+  def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
+    delegate(Map()).map{num =&gt;
+      cask.Response(&quot;Echo &quot; + num, statusCode = num)
+    }
+  }
+
+  def wrapPathSegment(s: String) = Seq(s)
+
+  type InputParser[T] = cask.endpoints.QueryParamReader[T]
+}
+
+object Endpoints extends cask.MainRoutes{
+
+
+  @custom(&quot;/echo/:status&quot;, methods = Seq(&quot;get&quot;))
+  def echoStatus(status: String) = {
+    status.toInt
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/endpoints-0.7.8.zip">example project</a></li>
+</ul>
+<p>When you need more flexibility than decorators allow, you can define your own custom <code>cask.Endpoint</code>s to replace the default set that Cask provides. This allows you to</p>
+<ul>
+  <li>
+  <p>Change the expected return type of the annotated function, and how allows you  to that type gets processed: the above example trivially expects an allows you  to <code>Int</code> which becomes the status code, but you could make it e.g.  automatically serialize returned objects to JSON responses via your favorite  library, or serialize them to bytes via protobufs</p></li>
+  <li>
+  <p>Change where the first parameter list's params are taken from: <code>@cask.get</code>  takes them from query params, <code>@cask.postForm</code> takes them from the  form-encoded POST body, and you can write your own endpoint to take the params  from where-ever you like: perhaps from the request headers, or a protobuf-  encoded request body</p></li>
+  <li>
+  <p>Change how parameters are deserialized: e.g. <code>@cask.postJson</code> de-serializes  parameters using the <a href="https://github.com/lihaoyi/upickle">uPickle</a> JSON  library, and your own custom endpoint could change that to use another library  like <a href="https://github.com/circe/circe">Circe</a> or  <a href="https://github.com/FasterXML/jackson-module-scala">Jackson</a></p></li>
+  <li>
+  <p>DRY up common sets of decorators: if all your endpoint functions use the same  decorators, you can extract that functionality into a single <code>cask.Endpoint</code>  to do the job.</p></li>
+</ul>
+<p>Generally you should not be writing custom <code>cask.Endpoint</code>s every day, but if you find yourself trying to standardize on a way of doing things across your web application, it might make sense to write a custom endpoint decorator: to DRY things up , separate business logic (inside the annotated function) from plumbing (in the endpoint function and decorators), and enforcing a standard of how endpoint functions are written.</p><h2 id="gzip--deflated-responses" class="Styles-hoverBox">Gzip &amp; Deflated Responses<a href="#gzip--deflated-responses" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object Compress extends cask.MainRoutes{
+
+  @cask.decorators.compress
+  @cask.get(&quot;/&quot;)
+  def hello() = {
+    &quot;Hello World! Hello World! Hello World!&quot;
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/compress-0.7.8.zip">example project</a></li>
+</ul>
+<p>Cask provides a useful <code>@cask.decorators.compress</code> decorator that gzips or deflates a response body if possible. This is useful if you don't have a proxy like Nginx or similar in front of your server to perform the compression for you.</p>
+<p>Like all decorators, <code>@cask.decorators.compress</code> can be defined on a level of a set of <code>cask.Routes</code>:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+
+case class Compress2()(implicit cc: castor.Context,
+                       log: cask.Logger) extends cask.Routes{
+  override def decorators = Seq(new cask.decorators.compress())
+
+  @cask.get(&quot;/&quot;)
+  def hello() = {
+    &quot;Hello World! Hello World! Hello World!&quot;
+  }
+
+  initialize()
+}
+
+object Compress2Main extends cask.Main{
+  val allRoutes = Seq(Compress2())
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/compress2-0.7.8.zip">example project</a></li>
+</ul>
+<p>Or globally, in your <code>cask.Main</code>:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+
+case class Compress3()(implicit cc: castor.Context,
+                       log: cask.Logger) extends cask.Routes{
+
+  @cask.get(&quot;/&quot;)
+  def hello() = {
+    &quot;Hello World! Hello World! Hello World!&quot;
+  }
+
+  initialize()
+}
+
+object Compress3Main extends cask.Main{
+  override def mainDecorators = Seq(new cask.decorators.compress())
+  val allRoutes = Seq(Compress3())
+}
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/compress3-0.7.8.zip">example project</a></li>
+</ul><h2 id="websockets" class="Styles-hoverBox">Websockets<a href="#websockets" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+
+object Websockets extends cask.MainRoutes{
+  @cask.websocket(&quot;/connect/:userName&quot;)
+  def showUserProfile(userName: String): cask.WebsocketResult = {
+    if (userName != &quot;haoyi&quot;) cask.Response(&quot;&quot;, statusCode = 403)
+    else cask.WsHandler { channel =&gt;
+      cask.WsActor {
+        case cask.Ws.Text(&quot;&quot;) =&gt; channel.send(cask.Ws.Close())
+        case cask.Ws.Text(data) =&gt;
+          channel.send(cask.Ws.Text(userName + &quot; &quot; + data))
+      }
+    }
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/websockets-0.7.8.zip">example project</a></li>
+</ul>
+<p>Cask's Websocket endpoints are very similar to Cask's HTTP endpoints. Annotated with <code>@cask.websocket</code> instead of <code>@cask.get</code> or <code>@cask.post</code>, the primary difference is that instead of only returning a <code>cask.Response</code>, you now have an option of returning a <code>cask.WsHandler</code>.</p>
+<p>The <code>cask.WsHandler</code> allows you to pro-actively start sending websocket messages once a connection has been made, via the <code>channel: WsChannelActor</code> it exposes, and lets you react to messages via the <code>cask.WsActor</code> you create. You can use these two APIs to perform full bi-directional, asynchronous communications, as websockets are intended to be used for. Note that all messages received on a each individual Websocket connection by your <code>cask.WsActor</code> are handled in a single-threaded fashion by default: this means you can work with local mutable state in your <code>@cask.websocket</code> endpoint without worrying about race conditions or multithreading. If you want further parallelism, you can explicitly spin off <code>scala.concurrent.Future</code>s or other <code>cask.BatchActor</code>s to perform that parallel processing.</p>
+<p>Returning a <code>cask.Response</code> immediately closes the websocket connection, and is useful if you want to e.g. return a 404 or 403 due to the initial request being invalid.</p>
+<p>Cask also provides a lower-lever websocket interface, which allows you directly work with the underlying <code>io.undertow.websockets.WebSocketConnectionCallback</code>:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+
+import io.undertow.websockets.WebSocketConnectionCallback
+import io.undertow.websockets.core.{AbstractReceiveListener, BufferedTextMessage, WebSocketChannel, WebSockets}
+import io.undertow.websockets.spi.WebSocketHttpExchange
+
+object Websockets2 extends cask.MainRoutes{
+  @cask.websocket(&quot;/connect/:userName&quot;)
+  def showUserProfile(userName: String): cask.WebsocketResult = {
+    if (userName != &quot;haoyi&quot;) cask.Response(&quot;&quot;, statusCode = 403)
+    else new WebSocketConnectionCallback() {
+      override def onConnect(exchange: WebSocketHttpExchange, channel: WebSocketChannel): Unit = {
+        channel.getReceiveSetter.set(
+          new AbstractReceiveListener() {
+            override def onFullTextMessage(channel: WebSocketChannel, message: BufferedTextMessage) = {
+              message.getData match{
+                case &quot;&quot; =&gt; channel.close()
+                case data =&gt; WebSockets.sendTextBlocking(userName + &quot; &quot; + data, channel)
+              }
+            }
+          }
+        )
+        channel.resumeReceives()
+      }
+    }
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/websockets2-0.7.8.zip">example project</a></li>
+</ul>
+<p>It leaves it up to you to manage open channels, react to incoming messages, or pro-actively send them out, mostly using the underlying Undertow webserver interface. While Cask does not model streams, backpressure, iteratees, or provide any higher level API, it should not be difficult to take the Cask API and build whatever higher-level abstractions you prefer to use.</p>
+<p>If you are separating your <code>cask.Routes</code> from your <code>cask.Main</code>, you need to inject in a <code>cask.Logger</code> to handle errors reported when handling websocket requests:</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+
+case class Websockets3()(implicit cc: castor.Context,
+                         log: cask.Logger) extends cask.Routes{
+  @cask.websocket(&quot;/connect/:userName&quot;)
+  def showUserProfile(userName: String): cask.WebsocketResult = {
+    if (userName != &quot;haoyi&quot;) cask.Response(&quot;&quot;, statusCode = 403)
+    else cask.WsHandler { channel =&gt;
+      cask.WsActor {
+        case cask.Ws.Text(&quot;&quot;) =&gt; channel.send(cask.Ws.Close())
+        case cask.Ws.Text(data) =&gt;
+          channel.send(cask.Ws.Text(userName + &quot; &quot; + data))
+      }
+    }
+  }
+
+  initialize()
+}
+
+object Websockets3Main extends cask.Main{
+  val allRoutes = Seq(Websockets3())
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/websockets3-0.7.8.zip">example project</a></li>
+</ul><h2 id="todomvc-api-server" class="Styles-hoverBox">TodoMVC Api Server<a href="#todomvc-api-server" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+object TodoMvcApi extends cask.MainRoutes{
+  case class Todo(checked: Boolean, text: String)
+  object Todo{
+    implicit def todoRW: upickle.default.ReadWriter[Todo] = upickle.default.macroRW[Todo]
+  }
+  var todos = Seq(
+    Todo(true, &quot;Get started with Cask&quot;),
+    Todo(false, &quot;Profit!&quot;)
+  )
+
+  @cask.get(&quot;/list/:state&quot;)
+  def list(state: String) = {
+    val filteredTodos = state match{
+      case &quot;all&quot; =&gt; todos
+      case &quot;active&quot; =&gt; todos.filter(!_.checked)
+      case &quot;completed&quot; =&gt; todos.filter(_.checked)
+    }
+    upickle.default.write(filteredTodos)
+  }
+
+  @cask.post(&quot;/add&quot;)
+  def add(request: cask.Request) = {
+    todos = Seq(Todo(false, request.text())) ++ todos
+  }
+
+  @cask.post(&quot;/toggle/:index&quot;)
+  def toggle(index: Int) = {
+    todos = todos.updated(index, todos(index).copy(checked = !todos(index).checked))
+  }
+
+  @cask.post(&quot;/delete/:index&quot;)
+  def delete(index: Int) = {
+    todos = todos.patch(index, Nil, 1)
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/todoApi-0.7.8.zip">example project</a></li>
+</ul>
+<p>This is a simple self-contained example of using Cask to write an in-memory API server for the common <a href="http://todomvc.com/">TodoMVC example app</a>.</p>
+<p>This minimal example intentionally does not contain javascript, HTML, styles, etc.. Those can be managed via the normal mechanism for <a href="#serving-static-files">Serving Static Files</a>.</p><h2 id="todomvc-database-integration" class="Styles-hoverBox">TodoMVC Database Integration<a href="#todomvc-database-integration" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+import com.typesafe.config.ConfigFactory
+import io.getquill.{SqliteJdbcContext, SnakeCase}
+
+
+object TodoMvcDb extends cask.MainRoutes{
+  val tmpDb = java.nio.file.Files.createTempDirectory(&quot;todo-cask-sqlite&quot;)
+
+  object ctx extends SqliteJdbcContext(
+    SnakeCase,
+    ConfigFactory.parseString(
+      s&quot;&quot;&quot;{&quot;driverClassName&quot;:&quot;org.sqlite.JDBC&quot;,&quot;jdbcUrl&quot;:&quot;jdbc:sqlite:$tmpDb/file.db&quot;}&quot;&quot;&quot;
+    )
+  )
+
+  class transactional extends cask.RawDecorator{
+    class TransactionFailed(val value: cask.router.Result.Error) extends Exception
+    def wrapFunction(pctx: cask.Request, delegate: Delegate) = {
+      try ctx.transaction(
+        delegate(Map()) match{
+          case cask.router.Result.Success(t) =&gt; cask.router.Result.Success(t)
+          case e: cask.router.Result.Error =&gt; throw new TransactionFailed(e)
+        }
+      )
+      catch{case e: TransactionFailed =&gt; e.value}
+
+    }
+  }
+
+  case class Todo(id: Int, checked: Boolean, text: String)
+  object Todo{
+    implicit def todoRW = upickle.default.macroRW[Todo]
+  }
+
+  ctx.executeAction(
+    &quot;&quot;&quot;CREATE TABLE todo (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  checked BOOLEAN,
+  text TEXT
+);
+&quot;&quot;&quot;.stripMargin
+  )
+  ctx.executeAction(
+    &quot;&quot;&quot;INSERT INTO todo (checked, text) VALUES
+(1, &#39;Get started with Cask&#39;),
+(0, &#39;Profit!&#39;);
+&quot;&quot;&quot;.stripMargin
+  )
+
+  import ctx._
+
+  @transactional
+  @cask.get(&quot;/list/:state&quot;)
+  def list(state: String) = {
+    val filteredTodos = state match{
+      case &quot;all&quot; =&gt; run(query[Todo])
+      case &quot;active&quot; =&gt; run(query[Todo].filter(!_.checked))
+      case &quot;completed&quot; =&gt; run(query[Todo].filter(_.checked))
+    }
+    upickle.default.write(filteredTodos)
+  }
+
+  @transactional
+  @cask.post(&quot;/add&quot;)
+  def add(request: cask.Request) = {
+    val body = request.text()
+    run(
+      query[Todo]
+        .insert(_.checked -&gt; lift(false), _.text -&gt; lift(body))
+        .returningGenerated(_.id)
+    )
+  }
+
+  @transactional
+  @cask.post(&quot;/toggle/:index&quot;)
+  def toggle(index: Int) = {
+    run(query[Todo].filter(_.id == lift(index)).update(p =&gt; p.checked -&gt; !p.checked))
+  }
+
+  @transactional
+  @cask.post(&quot;/delete/:index&quot;)
+  def delete(index: Int) = {
+    run(query[Todo].filter(_.id == lift(index)).delete)
+  }
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/todoDb-0.7.8.zip">example project</a></li>
+</ul>
+<p>This example demonstrates how to use Cask to write a TodoMVC API server that persists it's state in a database rather than in memory. We use the <a href="http://getquill.io/">Quill</a> database access library to write a <code>@transactional</code> decorator that automatically opens one transaction per call to an endpoint, ensuring that database queries are properly committed on success or rolled-back on error. Note that because the default database connector propagates its transaction context in a thread-local, <code>@transactional</code> does not need to pass the <code>ctx</code> object into each endpoint as an additional parameter list, and so we simply leave it out.</p>
+<p>While this example is specific to Quill, you can easily modify the <code>@transactional</code> decorator to make it work with whatever database access library you happen to be using. For libraries which need an implicit transaction, it can be passed into each endpoint function as an additional parameter list as described in <a href="#extending-endpoints-with-decorators">Extending Endpoints with Decorators</a>. work with whatever database access library you happen to be using. For libraries which need an implicit transaction, it can be passed into each endpoint function as an additional parameter list as described in <a href="#extending-endpoints-with-decorators">Extending Endpoints with Decorators</a>.</p><h2 id="todomvc-full-stack-web" class="Styles-hoverBox">TodoMVC Full Stack Web<a href="#todomvc-full-stack-web" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>The following code snippet is the complete code for a full-stack TodoMVC implementation: including HTML generation for the web UI via <a href="https://github.com/lihaoyi/scalatags">Scalatags</a>, Javascript for the interactivity, static file serving, and database integration via <a href="https://github.com/getquill/quill">Quill</a>. While slightly long, this example should give you a tour of all the things you need to know to use Cask.</p>
+<p>Note that this is a "boring" server-side-rendered webapp with Ajax interactions, without any complex front-end frameworks or libraries: it's purpose is to demonstrate a simple working web application of using Cask end-to-end, which you can build upon to create your own Cask web application architected however you would like.</p>
+<pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
+import com.typesafe.config.ConfigFactory
+import io.getquill.{SnakeCase, SqliteJdbcContext}
+import scalatags.Text.all._
+import scalatags.Text.tags2
+
+object TodoServer extends cask.MainRoutes{
+  val tmpDb = java.nio.file.Files.createTempDirectory(&quot;todo-cask-sqlite&quot;)
+
+  object ctx extends SqliteJdbcContext(
+    SnakeCase,
+    ConfigFactory.parseString(
+      s&quot;&quot;&quot;{&quot;driverClassName&quot;:&quot;org.sqlite.JDBC&quot;,&quot;jdbcUrl&quot;:&quot;jdbc:sqlite:$tmpDb/file.db&quot;}&quot;&quot;&quot;
+    )
+  )
+
+  class transactional extends cask.RawDecorator{
+    class TransactionFailed(val value: cask.router.Result.Error) extends Exception
+    def wrapFunction(pctx: cask.Request, delegate: Delegate) = {
+      try ctx.transaction(
+        delegate(Map()) match{
+          case cask.router.Result.Success(t) =&gt; cask.router.Result.Success(t)
+          case e: cask.router.Result.Error =&gt; throw new TransactionFailed(e)
+        }
+      )
+      catch{case e: TransactionFailed =&gt; e.value}
+    }
+  }
+
+  case class Todo(id: Int, checked: Boolean, text: String)
+
+  ctx.executeAction(
+    &quot;&quot;&quot;CREATE TABLE todo (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  checked BOOLEAN,
+  text TEXT
+);
+&quot;&quot;&quot;.stripMargin
+  )
+  ctx.executeAction(
+    &quot;&quot;&quot;INSERT INTO todo (checked, text) VALUES
+(1, &#39;Get started with Cask&#39;),
+(0, &#39;Profit!&#39;);
+&quot;&quot;&quot;.stripMargin
+  )
+
+  import ctx._
+
+  @transactional
+  @cask.post(&quot;/list/:state&quot;)
+  def list(state: String) = renderBody(state).render
+
+  @transactional
+  @cask.post(&quot;/add/:state&quot;)
+  def add(state: String, request: cask.Request) = {
+    val body = request.text()
+    run(
+      query[Todo]
+        .insert(_.checked -&gt; lift(false), _.text -&gt; lift(body))
+        .returningGenerated(_.id)
+    )
+    renderBody(state).render
+  }
+
+  @transactional
+  @cask.post(&quot;/delete/:state/:index&quot;)
+  def delete(state: String, index: Int) = {
+    run(query[Todo].filter(_.id == lift(index)).delete)
+    renderBody(state).render
+  }
+
+  @transactional
+  @cask.post(&quot;/toggle/:state/:index&quot;)
+  def toggle(state: String, index: Int) = {
+    run(query[Todo].filter(_.id == lift(index)).update(p =&gt; p.checked -&gt; !p.checked))
+    renderBody(state).render
+  }
+
+  @transactional
+  @cask.post(&quot;/clear-completed/:state&quot;)
+  def clearCompleted(state: String) = {
+    run(query[Todo].filter(_.checked).delete)
+    renderBody(state).render
+  }
+
+  @transactional
+  @cask.post(&quot;/toggle-all/:state&quot;)
+  def toggleAll(state: String) = {
+    val next = run(query[Todo].filter(_.checked).size) != 0
+    run(query[Todo].update(_.checked -&gt; !lift(next)))
+    renderBody(state).render
+  }
+
+  def renderBody(state: String) = {
+    val filteredTodos = state match{
+      case &quot;all&quot; =&gt; run(query[Todo]).sortBy(-_.id)
+      case &quot;active&quot; =&gt; run(query[Todo].filter(!_.checked)).sortBy(-_.id)
+      case &quot;completed&quot; =&gt; run(query[Todo].filter(_.checked)).sortBy(-_.id)
+    }
+    frag(
+      header(cls := &quot;header&quot;,
+        h1(&quot;todos&quot;),
+        input(cls := &quot;new-todo&quot;, placeholder := &quot;What needs to be done?&quot;, autofocus := &quot;&quot;)
+      ),
+      tags2.section(cls := &quot;main&quot;,
+        input(
+          id := &quot;toggle-all&quot;,
+          cls := &quot;toggle-all&quot;,
+          `type` := &quot;checkbox&quot;,
+          if (run(query[Todo].filter(_.checked).size != 0)) checked else ()
+        ),
+        label(`for` := &quot;toggle-all&quot;,&quot;Mark all as complete&quot;),
+        ul(cls := &quot;todo-list&quot;,
+          for(todo &lt;- filteredTodos) yield li(
+            if (todo.checked) cls := &quot;completed&quot; else (),
+            div(cls := &quot;view&quot;,
+              input(
+                cls := &quot;toggle&quot;,
+                `type` := &quot;checkbox&quot;,
+                if (todo.checked) checked else (),
+                data(&quot;todo-index&quot;) := todo.id
+              ),
+              label(todo.text),
+              button(cls := &quot;destroy&quot;, data(&quot;todo-index&quot;) := todo.id)
+            ),
+            input(cls := &quot;edit&quot;, value := todo.text)
+          )
+        )
+      ),
+      footer(cls := &quot;footer&quot;,
+        span(cls := &quot;todo-count&quot;,
+          strong(run(query[Todo].filter(!_.checked).size).toInt),
+          &quot; items left&quot;
+        ),
+        ul(cls := &quot;filters&quot;,
+          li(cls := &quot;todo-all&quot;,
+            a(if (state == &quot;all&quot;) cls := &quot;selected&quot; else (), &quot;All&quot;)
+          ),
+          li(cls := &quot;todo-active&quot;,
+            a(if (state == &quot;active&quot;) cls := &quot;selected&quot; else (), &quot;Active&quot;)
+          ),
+          li(cls := &quot;todo-completed&quot;,
+            a(if (state == &quot;completed&quot;) cls := &quot;selected&quot; else (), &quot;Completed&quot;)
+          )
+        ),
+        button(cls := &quot;clear-completed&quot;,&quot;Clear completed&quot;)
+      )
+    )
+  }
+
+  @transactional
+  @cask.get(&quot;/&quot;)
+  def index() = {
+    cask.Response(
+      &quot;&lt;!doctype html&gt;&quot; + html(lang := &quot;en&quot;,
+        head(
+          meta(charset := &quot;utf-8&quot;),
+          meta(name := &quot;viewport&quot;, content := &quot;width=device-width, initial-scale=1&quot;),
+          tags2.title(&quot;Template • TodoMVC&quot;),
+          link(rel := &quot;stylesheet&quot;, href := &quot;/static/index.css&quot;)
+        ),
+        body(
+          tags2.section(cls := &quot;todoapp&quot;, renderBody(&quot;all&quot;)),
+          footer(cls := &quot;info&quot;,
+            p(&quot;Double-click to edit a todo&quot;),
+            p(&quot;Created by &quot;,
+              a(href := &quot;http://todomvc.com&quot;,&quot;Li Haoyi&quot;)
+            ),
+            p(&quot;Part of &quot;,
+              a(href := &quot;http://todomvc.com&quot;,&quot;TodoMVC&quot;)
+            )
+          ),
+          script(src := &quot;/static/app.js&quot;)
+        )
+      )
+    )
+  }
+
+  @cask.staticResources(&quot;/static&quot;)
+  def static() = &quot;todo&quot;
+
+  initialize()
+}
+
+</code></pre>
+<ul>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.7.8/todo-0.7.8.zip">example project</a></li>
+</ul><hr /><p><b>About the Author:</b><i> Haoyi is a software engineer, an early contributor to <a href="http://www.scala-js.org/">Scala.js</a>, and the author of many open-source Scala tools such as Cask, the <a href="lihaoyi.com/Ammonite">Ammonite REPL</a> and <a href="https://github.com/lihaoyi/fastparse">FastParse</a>. </i></p><p><i>If you've enjoy using Cask, or enjoyed using Haoyi's other open source libraries, please chip in (or get your Company to chip in!) via <a href="https://www.patreon.com/lihaoyi">Patreon</a> so he can continue his open-source work</i></p><hr /><div style="display: flex;flex-direction: row;justify-content: space-between;"><div></div><a href="page/main-customization.html">Main Customization <i class="fa fa-arrow-right" aria-hidden="true"></i></a></div></div></body></html>

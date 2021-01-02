@@ -1,0 +1,154 @@
+<html><head><meta charset="utf-8" /><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" /><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" /><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/styles/github-gist.min.css" rel="stylesheet" type="text/css" /><title>About Cask</title><style>@media (min-width: 60em) {.WideStyles-header{
+  bottom: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: fixed;
+  top: 0px;
+  width: 25%;
+}
+
+.WideStyles-tableOfContentsItem{
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  width: 100%;
+}
+
+.WideStyles-tableOfContents{
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-height: 0px;
+  width: 100%;
+}
+
+.WideStyles-content{
+  box-sizing: border-box;
+  margin-left: 25%;
+  padding: 48px;
+}
+
+.WideStyles-footer{
+  bottom: 0px;
+  height: 50px;
+  position: fixed;
+  width: 25%;
+}
+
+.WideStyles-marginLeftZero{
+  margin-left: 0px;
+}
+}</style><style>@media (max-width: 60em) {.NarrowStyles-header{
+  margin-bottom: 10px;
+}
+
+.NarrowStyles-content{
+  padding: 16px;
+}
+
+.NarrowStyles-headerContent{
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.NarrowStyles-flexFont{
+  font-size: 4vw;
+}
+
+.NarrowStyles-disappear{
+  display: none;
+}
+
+.NarrowStyles-floatLeft{
+  float: left;
+  margin-left: 30px;
+}
+}</style><style>.Styles-hoverBox{
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.Styles-hoverBox:hover .Styles-hoverLink{
+  opacity: 0.5;
+}
+
+.Styles-hoverLink{
+  opacity: 0.1;
+}
+.Styles-hoverLink:hover{
+  opacity: 1.0;
+}
+
+.Styles-headerStyle{
+  background-color: rgb(61, 79, 93);
+  box-sizing: border-box;
+  display: flex;
+}
+
+.Styles-headerLinkBox{
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.Styles-headerLink{
+  align-items: center;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  padding: 10px 10px;
+}
+
+.Styles-footerStyle{
+  color: rgb(158, 167, 174);
+  display: flex;
+  justify-content: center;
+}
+
+.Styles-subtleLink{
+  text-decoration: none;
+}
+</style><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/languages/scala.min.js"></script><script>hljs.initHighlightingOnLoad();</script><meta name="viewport" content="initial-scale = 1.0,maximum-scale = 1.0" /></head><body style="margin: 0px;background-color: #f8f8f8;"><div class=" WideStyles-header NarrowStyles-header Styles-headerStyle"><div class=" NarrowStyles-headerContent"><h1 style="text-align: center;padding: 30px 30px;margin: 0px;"><a style="color: #f8f8f8;font-weight: bold;" href=".." class=" Styles-subtleLink NarrowStyles-flexFont"> Cask</a></h1><div class=" Styles-headerLinkBox"><div class=" WideStyles-tableOfContents" style="color: #f8f8f8;"><div style="padding-left: 40px;" class=" NarrowStyles-disappear"><b>Pages</b></div><div style="overflow-y: auto;flex-shrink: 1;min-height: 0px;"><ul style="overflow: hidden;text-align: start;margin-top: 10px;white-space: nowrap;text-overflow: ellipsis;margin-right: 10px;"><li class=" WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="../index.html">Cask: a Scala HTTP micro-framework</a></li><li class=" WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="main-customization.html">Main Customization</a></li><li class=" WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="about-cask.html">About Cask</a></li></ul></div></div></div></div><hr class=" NarrowStyles-disappear" style="background-color: #f8f8f8;width: 80%;" /><div class=" WideStyles-tableOfContents NarrowStyles-disappear" style="color: #f8f8f8;"><div style="padding-left: 40px;" class=" NarrowStyles-disappear"><b>Table of Contents</b></div><div style="overflow-y: auto;flex-shrink: 1;min-height: 0px;"><ul style="overflow: hidden;text-align: start;margin-top: 10px;white-space: nowrap;text-overflow: ellipsis;margin-right: 10px;"><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#functions-first">Functions First</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#extensible-annotations">Extensible Annotations</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#simple-first">Simple First</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#thin-wrapper">Thin Wrapper</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class=" WideStyles-tableOfContentsItem" href="#community-libraries">Community Libraries</a></li></ul></div></div></div><div class=" WideStyles-content NarrowStyles-content" style="max-width: 900px;"><h1>About Cask</h1><div style="margin-bottom: 10px;"><div style="display: flex;flex-direction: row;justify-content: space-between;"><a href="main-customization.html"><i class="fa fa-arrow-left" aria-hidden="true"></i> Main Customization</a><div></div></div></div><h2 id="functions-first" class="Styles-hoverBox">Functions First<a href="#functions-first" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>Inspired by <a href="http://flask.pocoo.org/">Flask</a>, Cask allows you to define your web applications endpoints using simple function <code>def</code>s that you already know and love, annotated with the minimal additional metadata necessary to work as HTTP endpoints.</p>
+<p>It turns out that function <code>def</code>s already provide almost everything you need in a HTTP endpoint:</p>
+<ul>
+  <li>The parameters the endpoint takes</li>
+  <li>If any parameters are optional, and their default values</li>
+  <li>The ability to return a <code>Response</code></li>
+</ul>
+<p>Cask extends these basics with annotations, providing:</p>
+<ul>
+  <li>What request path the endpoint is available at</li>
+  <li>Automated deserialization of endpoint parameters from the respective format  (Form-encoded? Query-string? JSON?)</li>
+  <li>Wrapping the endpoint's function <code>def</code> with custom logic: logging,  authentication, ...</li>
+</ul>
+<p>While these annotations add a bit of complexity, they allow Cask to avoid needing custom DSLs for defining your HTTP routes, custom action-types, and many other things which you may be used to working with HTTP in Scala.</p><h2 id="extensible-annotations" class="Styles-hoverBox">Extensible Annotations<a href="#extensible-annotations" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>Unlike most other annotation-based frameworks in Scala or Java, Cask's annotations are not magic markers, but self-contained classes containing all the logic they need to function. This has several benefits:</p>
+<ul>
+  <li>
+  <p>You can jump to the definition of an annotation and see what it does</p></li>
+  <li>
+  <p>It trivial to implement your own annotations as  <a href="/cask#extending-endpoints-with-decorators">decorators</a> or  <a href="/cask#custom-endpoints">endpoints</a>.</p></li>
+  <li>
+  <p>Stacking multiple annotations on a single function has a well-defined contract  and semantics</p></li>
+</ul>
+<p>Overall, Cask annotations behave a lot more like Python decorators than "traditional" Java/Scala annotations: first-class, customizable, inspectable, and self-contained. This allows Cask to have the syntactic convenience of an annotation-based API, without the typical downsides of inflexibility and undiscoverability.</p><h2 id="simple-first" class="Styles-hoverBox">Simple First<a href="#simple-first" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>Cask intentionally eskews many things that other, more enterprise-grade frameworks provide:</p>
+<ul>
+  <li>Async</li>
+  <li>Akka</li>
+  <li>Streaming Computations</li>
+  <li>Backpressure</li>
+</ul>
+<p>While these features all are valuable in specific cases, Cask aims for the 99% of code for which simple, boring code is perfectly fine. Cask's endpoints are synchronous by default, do not tie you to any underlying concurrency model, and should "just work" without any advanced knowledge apart from basic Scala and HTTP. Cask's <a href="/cask#websockets">websockets</a> API is intentionally low-level, making it both simple to use and also simple to build on top of if you want to wrap it in your own concurrency-library-of-choice.</p><h2 id="thin-wrapper" class="Styles-hoverBox">Thin Wrapper<a href="#thin-wrapper" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>Cask is implemented as a thin wrapper around the excellent Undertow HTTP server. If you need more advanced functionality, Cask lets you ask for the <code>exchange:
+HttpServerExchange</code> in your endpoint, override <a href="/cask#def-defaulthandler">defaultHandler</a> and add your own Undertow handlers next to Cask's and avoid Cask's routing/endpoint system altogether, or override <a href="/cask#def-main">main</a> if you want to change how the server is initialized.</p>
+<p>Rather than trying to provide APIs for all conceivable functionality, Cask simply provides what it does best - simple routing for simple endpoints - and leaves the door wide open in case you need to drop down to the lower level Undertow APIs.</p><h2 id="community-libraries" class="Styles-hoverBox">Community Libraries<a href="#community-libraries" class=" Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<p>Cask aims to re-use much of the excellent code that is already written and being used out in the Scala community, rather than trying to re-invent the wheel. Cask uses the <a href="https://github.com/lihaoyi/mill">Mill</a> build tool, comes bundled with the <a href="https://github.com/lihaoyi/upickle">uPickle</a> JSON library, and makes it trivial to pull in libraries like <a href="https://github.com/lihaoyi/scalatags">Scalatags</a> to render HTML or <a href="https://github.com/getquill/quill">Quill</a> for database access.</p>
+<p>Each of these are stable, well-known, well-documented libraries you may already be familiar with, and Cask simply provides the HTTP/routing layer with the hooks necessary to tie everything together (e.g. into a <a href="/cask#todomvc-full-stack-web">TodoMVC</a> webapp)</p><hr /><p><b>About the Author:</b><i> Haoyi is a software engineer, an early contributor to <a href="http://www.scala-js.org/">Scala.js</a>, and the author of many open-source Scala tools such as Cask, the <a href="lihaoyi.com/Ammonite">Ammonite REPL</a> and <a href="https://github.com/lihaoyi/fastparse">FastParse</a>. </i></p><p><i>If you've enjoy using Cask, or enjoyed using Haoyi's other open source libraries, please chip in (or get your Company to chip in!) via <a href="https://www.patreon.com/lihaoyi">Patreon</a> so he can continue his open-source work</i></p><hr /><div style="display: flex;flex-direction: row;justify-content: space-between;"><a href="main-customization.html"><i class="fa fa-arrow-left" aria-hidden="true"></i> Main Customization</a><div></div></div></div></body></html>
