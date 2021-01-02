@@ -1,6 +1,6 @@
 package cask.router
 
-import scala.quoted.{ given _, _ }
+import scala.quoted.{ given, _ }
 
 object Macros {
 
@@ -9,30 +9,34 @@ object Macros {
     * This replicates EndpointMetadata.seqify, but in a macro where error
     * positions can be controlled.
     */
-  def checkDecorators(using qctx: QuoteContext)(decorators: List[Expr[Decorator[_, _, _]]]) = {
-    import qctx.tasty._
+  def checkDecorators(using qctx: Quotes)(decorators: List[Expr[Decorator[_, _, _]]]): Boolean = {
+    import qctx.reflect._
 
-    def check(prevOuter: quoted.Type[_], decorators: List[Expr[Decorator[_, _, _]]]): Unit =
+    var hasErrors = false
+
+    def check(prevOuter: TypeRepr, decorators: List[Expr[Decorator[_, _, _]]]): Unit =
       decorators match {
         case Nil =>
-        case '{ $d: Decorator[$outer, $inner, _] } :: tail =>
-          if (inner.unseal.tpe <:< prevOuter.unseal.tpe) {
-            check(outer, tail)
+        case '{ $d: Decorator[outer, inner, _] } :: tail =>
+          if (TypeRepr.of[inner] <:< prevOuter) {
+            check(TypeRepr.of[outer], tail)
           } else {
-            error(
-              s"required: cask.router.Decorator[_, ${prevOuter.unseal.tpe.show}, _]",
-              d.unseal.pos
+            hasErrors = true
+            report.error(
+              s"required: cask.router.Decorator[_, ${prevOuter.show}, _]",
+              d
             )
           }
         case _ => sys.error("internal error: expected only check decorators")
       }
 
-    check('[Any], decorators)
+    check(TypeRepr.of[Any], decorators)
+    !hasErrors
   }
 
   /** Lookup default values for a method's parameters. */
-  def getDefaultParams(using qctx: QuoteContext)(method: qctx.tasty.Symbol): Map[qctx.tasty.Symbol, Expr[Any]] = {
-    import qctx.tasty._
+  def getDefaultParams(using qctx: Quotes)(method: qctx.reflect.Symbol): Map[qctx.reflect.Symbol, Expr[Any]] = {
+    import qctx.reflect._
 
     val params = method.paramSymss.flatten
     val defaults = collection.mutable.Map.empty[Symbol, Expr[Any]]
@@ -42,7 +46,7 @@ object Macros {
     val idents = method.owner.tree.asInstanceOf[ClassDef].body
     idents.foreach{
       case deff @ DefDef(Name(idx), _, _, _, tree) =>
-        val expr = Ref(deff.symbol).seal
+        val expr = Ref(deff.symbol).asExpr
         defaults += (params(idx.toInt - 1) -> expr)
       case _ =>
     }
@@ -51,26 +55,26 @@ object Macros {
   }
 
   /** Summon the reader for a parameter. */
-  def summonReader(using qctx: QuoteContext)(
+  def summonReader(using qctx: Quotes)(
     decorator: Expr[Decorator[_,_,_]],
-    param: qctx.tasty.Symbol
+    param: qctx.reflect.Symbol
   ): Expr[ArgReader[_, _, _]] = {
-    import qctx.tasty._
+    import qctx.reflect._
 
 
     val paramTpt = param.tree.asInstanceOf[ValDef].tpt
     val inputReaderTypeRaw = Applied(
       TypeSelect(
-        decorator.unseal,
+        Term.of(decorator),
         "InputParser"
       ),
       List(paramTpt)
     ).tpe
-    val inputReaderType = inputReaderTypeRaw.seal.asInstanceOf[quoted.Type[Any]]
+    val inputReaderType = inputReaderTypeRaw.asType.asInstanceOf[quoted.Type[Any]]
 
     val reader = Expr.summon(using inputReaderType) match {
       case None =>
-        error(
+        Reporting.error(
           s"no reader of type ${paramTpt.tpe.typeSymbol.fullName} found for parameter ${param.name}",
           param.pos
         )
@@ -99,31 +103,33 @@ object Macros {
     *   foo(argss(0)(0), argss(0)(1))(argss(1)(0))
     *
     */
-  def call(using qctx: QuoteContext)(
-    method: qctx.tasty.Symbol,
+  def call(using qctx: Quotes)(
+    method: qctx.reflect.Symbol,
     argss: Expr[Seq[Seq[Any]]]
   ): Expr[_] = {
-    import qctx.tasty._
+    import qctx.reflect._
     val paramss = method.paramSymss
 
     if (paramss.isEmpty) {
-      error("At least one parameter list must be declared.", method.pos)
+      Reporting.error("At least one parameter list must be declared.", method.pos)
       return '{???}
     }
-
-    def get(i: Int, j: Int) = '{ $argss(${Expr(i)})(${Expr(j)}) }
 
     val fct = Ref(method)
 
     val accesses: List[List[Term]] = for (i <- paramss.indices.toList) yield {
       for (j <- paramss(i).indices.toList) yield {
-        get(i, j).unseal
+        val t = paramss(i)(j).tree.asInstanceOf[ValDef].tpt.tpe.asType.asInstanceOf[Type[Any]]
+        val e = '{
+          $argss(${Expr(i)})(${Expr(j)}).asInstanceOf[$t]
+        }
+        Term.of(e)
       }
     }
 
     val base = Apply(fct, accesses.head)
     val application: Apply = accesses.tail.foldLeft(base)((lhs, args) => Apply(lhs, args))
-    val expr = application.seal
+    val expr = application.asExpr
     expr
   }
 
@@ -137,22 +143,22 @@ object Macros {
     * in the macro, but if the error were to come from the expanded code the position
     * would be completely off.
     */
-  def convertToResponse(using qctx: QuoteContext)(
-    method: qctx.tasty.Symbol,
+  def convertToResponse(using qctx: Quotes)(
+    method: qctx.reflect.Symbol,
     endpoint: Expr[Endpoint[_, _, _]],
     result: Expr[Any]
   ): Expr[Any] = {
-    import qctx.tasty._
+    import qctx.reflect._
 
     val innerReturnedTpt = TypeSelect(
-      endpoint.unseal,
+      Term.of(endpoint),
       "InnerReturnedAlias"
     )
 
     val rtpt = method.tree.asInstanceOf[DefDef].returnTpt
 
     val conversionTpeRaw = Applied(
-      '[cask.internal.Conversion].unseal,
+      TypeTree.of[cask.internal.Conversion],
       List(
         rtpt, innerReturnedTpt
       )
@@ -160,11 +166,11 @@ object Macros {
 
     // the asInstanceOf is required to splice this back into an Expr; this is generally
     // unsafe, but we know that it will work in the context that this macro is invoked in
-    val conversionTpe = conversionTpeRaw.seal.asInstanceOf[quoted.Type[Any]]
+    val conversionTpe = conversionTpeRaw.asType.asInstanceOf[Type[Any]]
 
     val conversion = Expr.summon(using conversionTpe) match {
       case None =>
-        error(s"can't convert ${rtpt.tpe.typeSymbol.fullName} to a response", method.pos)
+        Reporting.error(s"can't convert ${rtpt.tpe.typeSymbol.fullName} to a response", method.pos)
         '{???}
       case Some(expr) => expr
     }
@@ -175,8 +181,8 @@ object Macros {
   }
 
   /** The type of paramters displayed in error messages */
-  def friendlyName(using qctx: QuoteContext)(param: qctx.tasty.ValDef): String = {
-    import qctx.tasty._
+  def friendlyName(using qctx: Quotes)(param: qctx.reflect.ValDef): String = {
+    import qctx.reflect._
 
     // Note: manipulating strings here feels hacky. Maybe there is a better way?
     // We do it so that the name matches the name generated by the Scala 2 version,
@@ -186,12 +192,12 @@ object Macros {
       .replaceAll("""scala\.""", "")
   }
 
-  def extractMethod[Cls](using qctx: QuoteContext, curCls: Type[Cls])(
-    method: qctx.tasty.Symbol,
+  def extractMethod[Cls](using qctx: Quotes, curCls: Type[Cls])(
+    method: qctx.reflect.Symbol,
     decorators: List[Expr[Decorator[_, _, _]]], // these must also include the endpoint
     endpoint: Expr[Endpoint[_, _, _]]
   ): Expr[EntryPoint[Cls, cask.Request]] = {
-    import qctx.tasty._
+    import qctx.reflect._
 
     val defaults = getDefaultParams(method)
 
@@ -205,7 +211,7 @@ object Macros {
       val exprs1 = for (param <- params) yield {
         val paramTree = param.tree.asInstanceOf[ValDef]
         val paramTpeName = friendlyName(paramTree)
-        val paramTpe = paramTree.tpt.tpe.seal.asInstanceOf[quoted.Type[Any]]
+        val paramTpe = paramTree.tpt.tpe.asType.asInstanceOf[Type[Any]]
 
         // The Scala 2 version uses a getter that takes as input an instance of
         // the current class.
@@ -222,12 +228,12 @@ object Macros {
         val decoTpe = (decorator match {
           case Some(deco) =>
             TypeSelect(
-              deco.unseal,
+              Term.of(deco),
               "InputTypeAlias"
-            ).tpe
+            ).tpe.asType
           case None =>
-            typeOf[Any]
-        }).seal.asInstanceOf[quoted.Type[Any]]
+            Type.of[Any]
+        }).asInstanceOf[Type[Any]]
 
         val reader = decorator match {
           case Some(deco) => summonReader(deco, param)
@@ -235,12 +241,12 @@ object Macros {
         }
 
         '{
-          ArgSig[$decoTpe, Cls, $paramTpe, cask.Request](
+          ArgSig[Any, Cls, Any, cask.Request](
             ${Expr(param.name)},
             ${Expr(paramTpeName)},
             doc = None, // TODO
             default = ${defaultGetter}
-          )(using ${reader}.asInstanceOf[ArgReader[$decoTpe, $paramTpe, cask.Request]])
+          )(using ${reader}.asInstanceOf[ArgReader[Any, Any, cask.Request]])
         }
       }
       Expr.ofList(exprs1)
