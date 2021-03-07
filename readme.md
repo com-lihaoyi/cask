@@ -29,7 +29,7 @@ Cask is a simple Scala web framework inspired by Python's
 flexibility and ease-of-use to Scala webservers, avoiding cryptic DSLs or
 complicated asynchrony.
 
-- [Documentation](http://www.lihaoyi.com/cask/)
+- [Documentation](https://com-lihaoyi.github.io/cask/)
 
 If you use Cask and like it, you will probably enjoy the following book by the Author:
 
