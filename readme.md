@@ -46,10 +46,14 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.7.9
+
+- Add support for Scala 3.0.0-RC2
+
 ### 0.7.8
 
 - Upgrade undertow
-- Add support for Scala 3
+- Add support for Scala 3.0.0-M2
 
 ### 0.7.7
 
