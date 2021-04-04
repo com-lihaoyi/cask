@@ -20,6 +20,7 @@ object ExampleTests extends TestSuite{
     test("HttpMethods") - withServer(HttpMethods){ host =>
       requests.post(s"$host/login").text() ==> "do_the_login"
       requests.get(s"$host/login").text() ==> "show_the_login_form"
+      requests.put(s"$host/login", check = false).statusCode ==> 405
       requests.delete(s"$host/session").text() ==> "delete_the_session"
       requests.get.copy(verb="secretmethod")(s"$host/session").text() ==> "security_by_obscurity"
     }
