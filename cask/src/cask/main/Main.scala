@@ -49,10 +49,12 @@ abstract class Main{
   def routeTries = Main.prepareRouteTries(allRoutes)
 
   def defaultHandler = new BlockingHandler(
-    new Main.DefaultHandler(routeTries, mainDecorators, debugMode, handleNotFound, handleEndpointError)
+    new Main.DefaultHandler(routeTries, mainDecorators, debugMode, handleNotFound, handleMethodNotAllowed, handleEndpointError)
   )
 
   def handleNotFound() = Main.defaultHandleNotFound()
+
+  def handleMethodNotAllowed() = Main.defaultHandleMethodNotAllowed()
 
   def handleEndpointError(routes: Routes,
                           metadata: EndpointMetadata[_],
@@ -76,6 +78,7 @@ object Main{
                        mainDecorators: Seq[Decorator[_, _, _]],
                        debugMode: Boolean,
                        handleNotFound: () => Response.Raw,
+                       handleMethodNotAllowed: () => Response.Raw,
                        handleError: (Routes, EndpointMetadata[_], Result.Error) => Response.Raw)
                       (implicit log: Logger) extends HttpHandler() {
     def handleRequest(exchange: HttpServerExchange): Unit = try {
@@ -98,7 +101,14 @@ object Main{
         (r: Any) => Main.writeResponse(exchange, r.asInstanceOf[Response.Raw])
       )
 
-      routeTries(effectiveMethod).lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match {
+      val dispatchTrie: DispatchTrie[(Routes, EndpointMetadata[_])] = routeTries.get(effectiveMethod) match {
+        case None =>
+          Main.writeResponse(exchange, handleMethodNotAllowed())
+          return
+        case Some(trie) => trie
+      }
+
+      dispatchTrie.lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match {
         case None => Main.writeResponse(exchange, handleNotFound())
         case Some(((routes, metadata), routeBindings, remaining)) =>
           Decorator.invoke(
@@ -129,6 +139,13 @@ object Main{
     Response(
       s"Error 404: ${Status.codesToStatus(404).reason}",
       statusCode = 404
+    )
+  }
+
+  def defaultHandleMethodNotAllowed(): Response.Raw = {
+    Response(
+      s"Error 405: ${Status.codesToStatus(405).reason}",
+      statusCode = 405
     )
   }
 
