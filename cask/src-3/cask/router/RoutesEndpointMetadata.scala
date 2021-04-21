@@ -8,19 +8,18 @@ object RoutesEndpointsMetadata{
 
   inline given initialize[T]: RoutesEndpointsMetadata[T] = ${initializeImpl}
 
-  def setRoutesImpl[T](setter: Expr[RoutesEndpointsMetadata[T] => Unit])
-    (using qctx: Quotes, tpe: Type[T]): Expr[Unit] = {
+  def setRoutesImpl[T: Type](setter: Expr[RoutesEndpointsMetadata[T] => Unit])(using Quotes): Expr[Unit] = {
     '{
       $setter(${initializeImpl[T]})
       ()
     }
   }
 
-  def initializeImpl[T](using qctx: Quotes, tpe: Type[T]): Expr[RoutesEndpointsMetadata[T]] = {
-    import qctx.reflect._
+  def initializeImpl[T: Type](using q: Quotes): Expr[RoutesEndpointsMetadata[T]] = {
+    import quotes.reflect._
 
     val routeParts: List[Expr[EndpointMetadata[T]]] = for {
-      m <- TypeRepr.of(using tpe).typeSymbol.memberMethods
+      m <- TypeRepr.of[T].typeSymbol.memberMethods
       annotations = m.annotations.filter(_.tpe <:< TypeRepr.of[Decorator[_, _, _]])
       if (annotations.nonEmpty)
     } yield {
@@ -47,22 +46,16 @@ object RoutesEndpointsMetadata{
       if (!Macros.checkDecorators(decorators))
         return '{???} // there was a type mismatch in the decorator chain
 
-      val endpoint = decorators.head.asExprOf[Endpoint[_, _, _]]
+      val endpointExpr = decorators.head.asExprOf[Endpoint[_, _, _]]
+      val entrypointExpr = Macros.extractMethod[T](m, decorators, endpointExpr)
 
       '{
-
-        val entrypoint: EntryPoint[T, cask.Request] = ${
-          Macros.extractMethod[T](using qctx)(
-            m,
-            decorators,
-            endpoint
-          )
-        }
+        val entrypoint: EntryPoint[T, cask.Request] = ${entrypointExpr}
 
         EndpointMetadata[T](
           // the Scala 2 version and non-macro code expects decorators to be reversed
           ${Expr.ofList(decorators.drop(1).reverse)},
-          ${endpoint},
+          ${endpointExpr},
           entrypoint
         )
       }
