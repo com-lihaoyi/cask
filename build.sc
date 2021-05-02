@@ -26,7 +26,7 @@ import $file.example.websockets2.build
 import $file.example.websockets3.build
 import $file.example.websockets4.build
 
-val scala213 = "2.13.4"
+val scala213 = "2.13.5"
 val scala3 = "3.0.0-RC3"
 val dottyCustomVersion = Option(sys.props("dottyVersion"))
 
@@ -103,7 +103,7 @@ object cask extends Cross[CaskMainModule]((Seq(scala213, scala3) ++ dottyCustomV
         ivy"org.scala-js::scalajs-dom::0.9.7"
       )
     }
-    object js extends Cross[UtilJsModule](scala213)
+    object js extends Cross[UtilJsModule]("2.13.4")
 
   }
 }
