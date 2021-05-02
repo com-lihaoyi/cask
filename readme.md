@@ -46,6 +46,11 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.7.10
+
+- Return 405 for unsupported HTTP methods
+- Upgrade Scala versions to 2.13.5 and 3.0.0-RC3
+
 ### 0.7.9
 
 - Add support for Scala 3.0.0-RC2
