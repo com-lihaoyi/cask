@@ -46,6 +46,10 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.7.11
+
+- Build for Scala 3.0.0
+
 ### 0.7.10
 
 - Return 405 for unsupported HTTP methods
