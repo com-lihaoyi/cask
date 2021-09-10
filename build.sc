@@ -1,4 +1,9 @@
 import mill._, scalalib._, scalajslib._, publish._
+import mill.scalalib.api.Util.isScala3
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version_mill0.9:0.1.1`
+import de.tobiasroeser.mill.vcs.version.VcsVersion
+import $ivy.`com.github.lolgab::mill-mima_mill0.9:0.0.4`
+import com.github.lolgab.mill.mima._
 
 import $file.example.compress.build
 import $file.example.compress2.build
@@ -24,17 +29,22 @@ import $file.example.websockets.build
 import $file.example.websockets2.build
 import $file.example.websockets3.build
 import $file.example.websockets4.build
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version_mill0.9:0.1.1`
-import de.tobiasroeser.mill.vcs.version.VcsVersion
 
 val scala213 = "2.13.5"
 val scala3 = "3.0.0"
-val dottyCustomVersion = Option(sys.props("dottyVersion"))
+val dottyCustomVersion = sys.props.get("dottyVersion").toList
 
-trait CaskModule extends CrossScalaModule with PublishModule{
-  def isDotty = crossScalaVersion.startsWith("3")
+val allVersions = scala3 :: scala213 :: dottyCustomVersion
 
-  def publishVersion = VcsVersion.vcsState().format()
+trait CaskModule extends CrossScalaModule with PublishModule with Mima {
+  def publishVersion = build.publishVersion()
+
+  def mimaPreviousVersions = Seq(
+    VcsVersion
+      .vcsState()
+      .lastTag
+      .getOrElse(throw new Exception("Missing last tag"))
+  )
 
   def pomSettings = PomSettings(
     description = artifactName(),
@@ -54,14 +64,13 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
       ivy"io.undertow:undertow-core:2.2.3.Final",
       ivy"com.lihaoyi::upickle:1.3.13"
     ) ++
-    (if(!isDotty) Agg(ivy"org.scala-lang:scala-reflect:${scalaVersion()}") else Agg())
+    (if(!isScala3(crossScalaVersion)) Agg(ivy"org.scala-lang:scala-reflect:${scalaVersion()}") else Agg())
   }
-  def compileIvyDeps = T{ if (!isDotty) Agg(ivy"com.lihaoyi::acyclic:0.2.0") else Agg() }
-  def scalacOptions = T{ if (!isDotty) Seq("-P:acyclic:force") else Seq() }
-  def scalacPluginIvyDeps = T{ if (!isDotty) Agg(ivy"com.lihaoyi::acyclic:0.2.0") else Agg() }
+  def compileIvyDeps = T{ if (!isScala3(crossScalaVersion)) Agg(ivy"com.lihaoyi::acyclic:0.2.0") else Agg() }
+  def scalacOptions = T{ if (!isScala3(crossScalaVersion)) Seq("-P:acyclic:force") else Seq() }
+  def scalacPluginIvyDeps = T{ if (!isScala3(crossScalaVersion)) Agg(ivy"com.lihaoyi::acyclic:0.2.0") else Agg() }
 
-  object test extends Tests{
-    def testFrameworks = Seq("utest.runner.Framework")
+  object test extends Tests with TestModule.Utest {
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.7.10",
       ivy"com.lihaoyi::requests::0.6.9"
@@ -70,7 +79,7 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
   def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
   def artifactName = "cask"
 }
-object cask extends Cross[CaskMainModule]((Seq(scala213, scala3) ++ dottyCustomVersion): _*) {
+object cask extends Cross[CaskMainModule](allVersions: _*) {
   object util extends Module {
     trait UtilModule extends CaskModule {
       def artifactName = "cask-util"
@@ -94,7 +103,7 @@ object cask extends Cross[CaskMainModule]((Seq(scala213, scala3) ++ dottyCustomV
         ivy"org.java-websocket:Java-WebSocket:1.5.0"
       )
     }
-    object jvm extends Cross[UtilJvmModule]((Seq(scala213, scala3) ++ dottyCustomVersion): _*)
+    object jvm extends Cross[UtilJvmModule](allVersions: _*)
 
     class UtilJsModule(val crossScalaVersion: String) extends UtilModule with ScalaJSModule {
       def platformSegment = "js"
@@ -114,8 +123,6 @@ object example extends Module{
     override def millSourcePath = super.millSourcePath / "app"
     def moduleDeps = Seq(cask(crossScalaVersion))
   }
-
-  val allVersions = Seq(scala213, scala3) ++ dottyCustomVersion
 
   class CompressModule(val crossScalaVersion: String) extends $file.example.compress.build.AppModule with LocalModule
   object compress extends Cross[CompressModule](allVersions: _*)
