@@ -90,7 +90,7 @@ object cask extends Cross[CaskMainModule]((Seq(scala213, scala3) ++ dottyCustomV
     class UtilJvmModule(val crossScalaVersion: String) extends UtilModule {
       def platformSegment = "jvm"
       def ivyDeps = super.ivyDeps() ++ Agg(
-        ivy"com.lihaoyi::castor::0.1.7".withDottyCompat(scalaVersion()),
+        ivy"com.lihaoyi::castor::0.1.8",
         ivy"org.java-websocket:Java-WebSocket:1.5.0"
       )
     }
