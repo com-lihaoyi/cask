@@ -48,7 +48,12 @@ object TodoServer extends cask.MainRoutes{
 
   @transactional
   @cask.post("/list/:state")
-  def list(state: String) = renderBody(state).render
+  def list(state: String) = {
+    cask.Response( 
+      renderBody(state).render,
+      headers = Seq("Content-Type" -> "text/html") 
+    )
+  }
 
   @transactional
   @cask.post("/add/:state")
@@ -59,28 +64,40 @@ object TodoServer extends cask.MainRoutes{
         .insert(_.checked -> lift(false), _.text -> lift(body))
         .returningGenerated(_.id)
     )
-    renderBody(state).render
+    cask.Response( 
+      renderBody(state).render,
+      headers = Seq("Content-Type" -> "text/html") 
+    )
   }
 
   @transactional
   @cask.post("/delete/:state/:index")
   def delete(state: String, index: Int) = {
     run(query[Todo].filter(_.id == lift(index)).delete)
-    renderBody(state).render
+    cask.Response( 
+      renderBody(state).render,
+      headers = Seq("Content-Type" -> "text/html") 
+    )
   }
 
   @transactional
   @cask.post("/toggle/:state/:index")
   def toggle(state: String, index: Int) = {
     run(query[Todo].filter(_.id == lift(index)).update(p => p.checked -> !p.checked))
-    renderBody(state).render
+    cask.Response( 
+      renderBody(state).render,
+      headers = Seq("Content-Type" -> "text/html") 
+    )
   }
 
   @transactional
   @cask.post("/clear-completed/:state")
   def clearCompleted(state: String) = {
     run(query[Todo].filter(_.checked).delete)
-    renderBody(state).render
+    cask.Response( 
+      renderBody(state).render,
+      headers = Seq("Content-Type" -> "text/html") 
+    )
   }
 
   @transactional
@@ -88,7 +105,10 @@ object TodoServer extends cask.MainRoutes{
   def toggleAll(state: String) = {
     val next = run(query[Todo].filter(_.checked).size) != 0
     run(query[Todo].update(_.checked -> !lift(next)))
-    renderBody(state).render
+    cask.Response( 
+      renderBody(state).render,
+      headers = Seq("Content-Type" -> "text/html") 
+    )
   }
 
   def renderBody(state: String) = {
@@ -172,7 +192,8 @@ object TodoServer extends cask.MainRoutes{
           ),
           script(src := "/static/app.js")
         )
-      )
+      ),
+      headers = Seq("Content-Type" -> "text/html") 
     )
   }
 

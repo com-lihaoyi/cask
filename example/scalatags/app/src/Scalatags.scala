@@ -3,13 +3,16 @@ import scalatags.Text.all._
 object Scalatags extends cask.MainRoutes{
   @cask.get("/")
   def hello() = {
-    doctype("html")(
-      html(
-        body(
-          h1("Hello World"),
-          p("I am cow")
+    cask.Response( 
+      doctype("html")(
+        html(
+          body(
+            h1("Hello World"),
+            p("I am cow")
+          )
         )
-      )
+      ),
+      headers = Seq("Content-Type" -> "text/html") 
     )
   }
 
