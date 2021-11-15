@@ -24,7 +24,6 @@ import $file.example.websockets.build
 import $file.example.websockets2.build
 import $file.example.websockets3.build
 import $file.example.websockets4.build
-import $file.ci.version
 import $file.ci.upload
 import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version_mill0.9:0.1.1`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
@@ -195,12 +194,12 @@ object example extends Module{
 }
 
 
-def publishVersion = T.input($file.ci.version.publishVersion)
-def gitHead = T.input($file.ci.version.gitHead)
 
 def uploadToGithub(authKey: String) = T.command{
-  val (releaseTag, label) = publishVersion()
+  val vcsState = VcsVersion.vcsState()
 
+  val releaseTag = vcsState.lastTag.getOrElse("")
+  val label = vcsState.format()
   if (releaseTag == label){
     requests.post(
       "https://api.github.com/repos/lihaoyi/cask/releases",
