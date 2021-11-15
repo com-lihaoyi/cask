@@ -1,5 +1,5 @@
-Cask 0.7.21: a Scala HTTP micro-framework [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
-============================================================================================================================================================================
+Cask 0.8.0: a Scala HTTP micro-framework [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+===========================================================================================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/cask.svg
 [travis-link]: https://travis-ci.org/lihaoyi/cask
@@ -45,6 +45,11 @@ Cask is profiled using the
 courtesy of EJ Technologies
 
 ## Changelog
+
+### 0.8.0
+
+- Improve handling on 404/405 responses with unsupported methods
+  ([#52](https://github.com/com-lihaoyi/cask/pull/52))
 
 ### 0.7.21
 
