@@ -46,6 +46,10 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.7.13
+
+- Update Castor to 0.1.8
+
 ### 0.7.11
 
 - Build for Scala 3.0.0
