@@ -195,9 +195,10 @@ object example extends Module{
 
 
 
-def uploadToGithub(authKey: String) = T.command{
+def uploadToGithub() = T.command{
   val vcsState = VcsVersion.vcsState()
 
+  val authKey = T.env.apply("AMMONITE_BOT_AUTH_TOKEN")
   val releaseTag = vcsState.lastTag.getOrElse("")
   val label = vcsState.format()
   if (releaseTag == label){
