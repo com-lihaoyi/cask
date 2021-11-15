@@ -57,7 +57,7 @@ jobs:
               --release true \
               --signed true
           fi
-  publishExecutable:
+  uploadExamples:
     runs-on: ubuntu-latest
     env:
       AMMONITE_BOT_AUTH_TOKEN: ${{ secrets.AMMONITE_BOT_AUTH_TOKEN }}
@@ -68,6 +68,7 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: '8'
+      - name: Upload Example Zips
         run: ./mill uploadToGithub
 
 
