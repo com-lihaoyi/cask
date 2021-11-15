@@ -18,7 +18,7 @@ def apply(uploadedFile: Path,
           uploadName: String,
           authKey: String): String = {
   val body = requests.get(
-    s"https://api.github.com/repos/lihaoyi/cask/releases/tags/$tagName",
+    s"https://api.github.com/repos/com-lihaoyi/cask/releases/tags/$tagName",
     headers = Seq("Authorization" -> s"token $authKey")
   ).text
 
@@ -30,7 +30,7 @@ def apply(uploadedFile: Path,
 
 
   val uploadUrl =
-    s"https://uploads.github.com/repos/lihaoyi/cask/releases/" +
+    s"https://uploads.github.com/repos/com-lihaoyi/cask/releases/" +
       s"$snapshotReleaseId/assets?name=$uploadName"
 
   val res = requests.post(

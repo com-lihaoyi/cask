@@ -1,4 +1,4 @@
-Cask 0.7.20: a Scala HTTP micro-framework [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+Cask 0.7.21: a Scala HTTP micro-framework [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 ============================================================================================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/cask.svg
@@ -46,7 +46,7 @@ courtesy of EJ Technologies
 
 ## Changelog
 
-### 0.7.20
+### 0.7.21
 
 - Fix example project zips
 
