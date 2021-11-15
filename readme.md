@@ -49,6 +49,7 @@ courtesy of EJ Technologies
 ### 0.7.13
 
 - Update Castor to 0.1.8
+- Add `@cask.options` decorator
 
 ### 0.7.11
 
