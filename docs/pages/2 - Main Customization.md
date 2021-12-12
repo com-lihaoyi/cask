@@ -32,6 +32,12 @@ internally support.
 
 The host & port to attach your webserver to.
 
+Note: If you are planning on running your Cask-based service inside a Docker image, the following is a quick and easy way to ensure that your service will work both natively and when run from within Docker
+```
+override def host: String = InetAddress.getLocalHost.getHostAddress
+```
+Of course, make sure to import `java.net.InetAddress` somewhere in your class.
+
 ## def handleNotFound
 
 The response to serve when the incoming request does not match any of the routes
