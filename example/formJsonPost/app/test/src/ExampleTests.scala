@@ -19,7 +19,10 @@ object ExampleTests extends TestSuite{
   val tests = Tests{
     test("FormJsonPost") - withServer(FormJsonPost){ host =>
       val response1 = requests.post(s"$host/json", data = """{"value1": true, "value2": [3]}""")
-      ujson.read(response1.text()) ==> ujson.Str("OK true List(3)")
+      assert(
+        ujson.read(response1.text()) == ujson.Str("OK true List(3)") ||
+        ujson.read(response1.text()) == ujson.Str("OK true Vector(3)")
+      )
 
       val response2 = requests.post(
         s"$host/json-obj",
@@ -31,7 +34,10 @@ object ExampleTests extends TestSuite{
         s"$host/form",
         data = Seq("value1" -> "hello", "value2" -> "1", "value2" -> "2")
       )
-      response3.text() ==> "OK FormValue(hello,null) List(1, 2)"
+      assert(
+        response3.text() == "OK FormValue(hello,null) List(1, 2)" ||
+        response3.text() == "OK FormValue(hello,null) Vector(1, 2)"
+      )
 
       val response4 = requests.post(
         s"$host/form-obj",

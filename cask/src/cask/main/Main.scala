@@ -148,7 +148,8 @@ object Main{
       metadata <- routes.caskMetadata.value
     } yield {
       val segments = Util.splitPath(metadata.endpoint.path)
-      val methodMap = metadata.endpoint.methods.map(_ -> (routes, metadata: EndpointMetadata[_])).toMap
+      val methods = metadata.endpoint.methods.map(_ -> (routes, metadata: EndpointMetadata[_]))
+      val methodMap = methods.toMap[String, (Routes, EndpointMetadata[_])]
       (segments, methodMap, metadata.endpoint.subpath)
     }
 

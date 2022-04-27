@@ -26,8 +26,12 @@ object ExampleTests extends TestSuite{
       requests.get(s"$host/user", check = false).statusCode ==> 404
 
 
-      requests.get(s"$host/post/123?param=xyz&param=abc").text() ==>
-        "Post 123 ArraySeq(xyz, abc)"
+      assert(
+        requests.get(s"$host/post/123?param=xyz&param=abc").text() ==
+          "Post 123 ArraySeq(xyz, abc)" ||
+        requests.get(s"$host/post/123?param=xyz&param=abc").text() ==
+          "Post 123 ArrayBuffer(xyz, abc)"
+      )
 
       requests.get(s"$host/post/123", check = false).text() ==>
         """Missing argument: (param: Seq[String])

@@ -29,6 +29,7 @@ import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version_mill0.9:0.1.1`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 
 val scala213 = "2.13.5"
+val scala212 = "2.12.14"
 val scala3 = "3.0.0"
 val dottyCustomVersion = Option(sys.props("dottyVersion"))
 
@@ -71,7 +72,7 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
   def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
   def artifactName = "cask"
 }
-object cask extends Cross[CaskMainModule]((Seq(scala213, scala3) ++ dottyCustomVersion): _*) {
+object cask extends Cross[CaskMainModule]((Seq(scala212, scala213, scala3) ++ dottyCustomVersion): _*) {
   object util extends Module {
     trait UtilModule extends CaskModule {
       def artifactName = "cask-util"
@@ -95,7 +96,7 @@ object cask extends Cross[CaskMainModule]((Seq(scala213, scala3) ++ dottyCustomV
         ivy"org.java-websocket:Java-WebSocket:1.5.0"
       )
     }
-    object jvm extends Cross[UtilJvmModule]((Seq(scala213, scala3) ++ dottyCustomVersion): _*)
+    object jvm extends Cross[UtilJvmModule]((Seq(scala212, scala213, scala3) ++ dottyCustomVersion): _*)
 
     class UtilJsModule(val crossScalaVersion: String) extends UtilModule with ScalaJSModule {
       def platformSegment = "js"
@@ -116,7 +117,7 @@ object example extends Module{
     def moduleDeps = Seq(cask(crossScalaVersion))
   }
 
-  val allVersions = Seq(scala213, scala3) ++ dottyCustomVersion
+  val allVersions = Seq(scala212, scala213, scala3) ++ dottyCustomVersion
 
   class CompressModule(val crossScalaVersion: String) extends $file.example.compress.build.AppModule with LocalModule
   object compress extends Cross[CompressModule](allVersions: _*)
@@ -156,7 +157,7 @@ object example extends Module{
 
   // java.lang.NoSuchMethodError: 'void geny.Writable.$init$(geny.Writable)' - geny mismatch, need to upgrade
   class ScalatagsModule(val crossScalaVersion: String) extends $file.example.scalatags.build.AppModule with LocalModule
-  object scalatags extends Cross[ScalatagsModule](scala213)
+  object scalatags extends Cross[ScalatagsModule](scala212, scala213)
 
   class StaticFilesModule(val crossScalaVersion: String) extends $file.example.staticFiles.build.AppModule with LocalModule
   object staticFiles extends Cross[StaticFilesModule](allVersions: _*)
@@ -165,13 +166,13 @@ object example extends Module{
   object staticFiles2 extends Cross[StaticFiles2Module](allVersions: _*)
 
   class TodoModule(val crossScalaVersion: String) extends $file.example.todo.build.AppModule with LocalModule
-  object todo extends Cross[TodoModule](scala213) // uses quill, can't enable for Dotty yet
+  object todo extends Cross[TodoModule](scala212, scala213) // uses quill, can't enable for Dotty yet
 
   class TodoApiModule(val crossScalaVersion: String) extends $file.example.todoApi.build.AppModule with LocalModule
   object todoApi extends Cross[TodoApiModule](allVersions: _*)
 
   class TodoDbModule(val crossScalaVersion: String) extends $file.example.todoDb.build.AppModule with LocalModule
-  object todoDb extends Cross[TodoDbModule](scala213) // uses quill, can't enable for Dotty yet
+  object todoDb extends Cross[TodoDbModule](scala212, scala213) // uses quill, can't enable for Dotty yet
 
   class TwirlModule(val crossScalaVersion: String) extends $file.example.twirl.build.AppModule with LocalModule
   object twirl extends Cross[TwirlModule](allVersions: _*)
