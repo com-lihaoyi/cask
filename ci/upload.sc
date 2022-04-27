@@ -2,17 +2,6 @@
 import ammonite.ops._
 
 @main
-def shorten(longUrl: String) = {
-  println("shorten longUrl " + longUrl)
-  val shortUrl = requests.post(
-    "https://git.io",
-    data = Seq("url" -> longUrl),
-  ).headers("location").head
-
-  println("shorten shortUrl " + shortUrl)
-  shortUrl
-}
-@main
 def apply(uploadedFile: Path,
           tagName: String,
           uploadName: String,
@@ -47,10 +36,5 @@ def apply(uploadedFile: Path,
   println(res.text)
   val longUrl = ujson.read(res.text)("browser_download_url").str.toString
 
-  println("Long Url " + longUrl)
-
-  val shortUrl = shorten(longUrl)
-
-  println("Short Url " + shortUrl)
-  shortUrl
+  longUrl
 }
