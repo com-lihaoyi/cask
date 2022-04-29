@@ -46,6 +46,11 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+
+### 0.8.2
+
+- Bump uPickle to 1.6.0
+
 ### 0.8.1
 
 - Publish Cask for Scala 2.12 again

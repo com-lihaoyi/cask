@@ -54,7 +54,7 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
   def ivyDeps = T{
     Agg(
       ivy"io.undertow:undertow-core:2.2.3.Final",
-      ivy"com.lihaoyi::upickle:1.3.13"
+      ivy"com.lihaoyi::upickle:1.6.0"
     ) ++
     (if(!isDotty) Agg(ivy"org.scala-lang:scala-reflect:${scalaVersion()}") else Agg())
   }
