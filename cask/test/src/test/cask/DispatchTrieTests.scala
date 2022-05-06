@@ -8,7 +8,7 @@ object DispatchTrieTests extends TestSuite {
     "hello" - {
       val x = DispatchTrie.construct(0,
         Seq((Vector("hello"), 1, false))
-      )
+      )(Seq(_))
 
       assert(
         x.lookup(List("hello"), Map()) == Some((1, Map(), Nil)),
@@ -22,7 +22,7 @@ object DispatchTrieTests extends TestSuite {
           (Vector("hello", "world"), 1, false),
           (Vector("hello", "cow"), 2, false)
         )
-      )
+      )(Seq(_))
       assert(
         x.lookup(List("hello", "world"), Map()) == Some((1, Map(), Nil)),
         x.lookup(List("hello", "cow"), Map()) == Some((2, Map(), Nil)),
@@ -34,7 +34,7 @@ object DispatchTrieTests extends TestSuite {
     "bindings" - {
       val x = DispatchTrie.construct(0,
         Seq((Vector(":hello", ":world"), 1, false))
-      )
+      )(Seq(_))
       assert(
         x.lookup(List("hello", "world"), Map()) == Some((1, Map("hello" -> "hello", "world" -> "world"), Nil)),
         x.lookup(List("world", "hello"), Map()) == Some((1, Map("hello" -> "world", "world" -> "hello"), Nil)),
@@ -47,7 +47,7 @@ object DispatchTrieTests extends TestSuite {
     "path" - {
       val x = DispatchTrie.construct(0,
         Seq((Vector("hello"), 1, true))
-      )
+      )(Seq(_))
 
       assert(
         x.lookup(List("hello", "world"), Map()) ==  Some((1,Map(), Seq("world"))),
@@ -58,44 +58,113 @@ object DispatchTrieTests extends TestSuite {
     }
 
     "errors" - {
-      intercept[Exception]{
+      test - {
         DispatchTrie.construct(0,
           Seq(
             (Vector("hello", ":world"), 1, false),
             (Vector("hello", "world"),  2, false)
           )
+        )(Seq(_))
+
+        val ex = intercept[Exception]{
+          DispatchTrie.construct(0,
+            Seq(
+              (Vector("hello", ":world"), 1, false),
+              (Vector("hello", "world"),  1, false)
+            )
+          )(Seq(_))
+        }
+
+        assert(
+          ex.getMessage ==
+          "Routes overlap with wildcards: 1 /hello/:world, 1 /hello/world"
         )
       }
-      intercept[Exception]{
+      test - {
         DispatchTrie.construct(0,
           Seq(
             (Vector("hello", ":world"), 1, false),
             (Vector("hello", "world", "omg"), 2, false)
           )
+        )(Seq(_))
+
+        val ex = intercept[Exception]{
+          DispatchTrie.construct(0,
+            Seq(
+              (Vector("hello", ":world"), 1, false),
+              (Vector("hello", "world", "omg"), 1, false)
+            )
+          )(Seq(_))
+        }
+
+        assert(
+          ex.getMessage ==
+          "Routes overlap with wildcards: 1 /hello/:world, 1 /hello/world/omg"
         )
       }
-      intercept[Exception]{
+      test - {
         DispatchTrie.construct(0,
           Seq(
             (Vector("hello"), 1, true),
             (Vector("hello", "cow", "omg"), 2, false)
           )
+        )(Seq(_))
+
+        val ex = intercept[Exception]{
+          DispatchTrie.construct(0,
+            Seq(
+              (Vector("hello"), 1, true),
+              (Vector("hello", "cow", "omg"), 1, false)
+            )
+          )(Seq(_))
+        }
+
+        assert(
+          ex.getMessage ==
+          "Routes overlap with subpath capture: 1 /hello, 1 /hello/cow/omg"
         )
       }
-      intercept[Exception]{
+      test - {
         DispatchTrie.construct(0,
           Seq(
             (Vector("hello", ":world"), 1, false),
             (Vector("hello", ":cow"), 2, false)
           )
+        )(Seq(_))
+
+        val ex = intercept[Exception]{
+          DispatchTrie.construct(0,
+            Seq(
+              (Vector("hello", ":world"), 1, false),
+              (Vector("hello", ":cow"), 1, false)
+            )
+          )(Seq(_))
+        }
+
+        assert(
+          ex.getMessage ==
+          "Routes overlap with wildcards: 1 /hello/:world, 1 /hello/:cow"
         )
       }
-      intercept[Exception]{
+      test - {
         DispatchTrie.construct(0,
           Seq(
             (Vector("hello", "world"), 1, false),
             (Vector("hello", "world"), 2, false)
           )
+        )(Seq(_))
+
+        val ex = intercept[Exception]{
+          DispatchTrie.construct(0,
+            Seq(
+              (Vector("hello", "world"), 1, false),
+              (Vector("hello", "world"), 1, false)
+            )
+          )(Seq(_))
+        }
+        assert(
+          ex.getMessage ==
+          "More than one endpoint has the same path: 1 /hello/world, 1 /hello/world"
         )
       }
     }

@@ -46,6 +46,9 @@ object ExampleTests extends TestSuite{
 
       requests.get(s"$host/path/one/two/three").text() ==>
         "Subpath List(one, two, three)"
+
+      requests.post(s"$host/path/one/two/three").text() ==>
+        "POST Subpath List(one, two, three)"
     }
 
   }

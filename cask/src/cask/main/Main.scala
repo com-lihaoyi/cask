@@ -154,12 +154,12 @@ object Main{
     }
 
     val dispatchInputs = flattenedRoutes.groupBy(_._1).map { case (segments, values) =>
-      val methodMap = values.map(_._2).flatten.toMap
+      val methodMap = values.map(_._2).flatten
       val hasSubpath = values.map(_._3).contains(true)
       (segments, methodMap, hasSubpath)
     }.toSeq
 
-    DispatchTrie.construct(0, dispatchInputs)
+    DispatchTrie.construct(0, dispatchInputs)(_.map(_._1)).map(_.toMap)
   }
 
   def writeResponse(exchange: HttpServerExchange, response: Response.Raw) = {

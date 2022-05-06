@@ -15,5 +15,10 @@ object VariableRoutes extends cask.MainRoutes{
     s"Subpath ${request.remainingPathSegments}"
   }
 
+  @cask.post("/path", subpath = true)
+  def postShowSubpath(request: cask.Request) = {
+    s"POST Subpath ${request.remainingPathSegments}"
+  }
+
   initialize()
 }
