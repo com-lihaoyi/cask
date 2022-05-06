@@ -1,8 +1,9 @@
 package cask.internal
 import collection.mutable
 object DispatchTrie{
-  def construct[T](index: Int,
-                   inputs: collection.Seq[(collection.IndexedSeq[String], T, Boolean)]): DispatchTrie[T] = {
+  def construct[T, V](index: Int,
+                      inputs: collection.Seq[(collection.IndexedSeq[String], T, Boolean)])
+                     (validationGroups: T => Seq[V]): DispatchTrie[T] = {
     val continuations = mutable.Map.empty[String, mutable.Buffer[(collection.IndexedSeq[String], T, Boolean)]]
 
     val terminals = mutable.Buffer.empty[(collection.IndexedSeq[String], T, Boolean)]
@@ -17,29 +18,66 @@ object DispatchTrie{
       }
     }
 
+    for(group <- inputs.flatMap(t => validationGroups(t._2)).distinct) {
+      validateGroup(
+        terminals.flatMap{case (path, v, allowSubpath) =>
+          validationGroups(v)
+            .filter(_ == group)
+            .map{group => (path, v, allowSubpath, group)}
+        },
+        continuations.map { case (k, vs) =>
+          k -> vs.flatMap { case (path, v, allowSubpath) =>
+            validationGroups(v)
+              .filter(_ == group)
+              .map { group => (path, v, allowSubpath, group) }
+          }
+        }
+      )
+    }
+
+    DispatchTrie[T](
+      current = terminals.headOption.map(x => x._2 -> x._3),
+      children = continuations
+        .map{ case (k, vs) => (k, construct(index + 1, vs)(validationGroups))}
+        .toMap
+    )
+  }
+
+  def validateGroup[T, V](terminals: collection.Seq[(collection.Seq[String], T, Boolean, V)],
+                          continuations: mutable.Map[String, mutable.Buffer[(collection.IndexedSeq[String], T, Boolean, V)]]) = {
     val wildcards = continuations.filter(_._1(0) == ':')
-    if (terminals.length > 1){
+
+    def renderTerminals = terminals
+      .map{case (path, v, allowSubpath, group) => group + renderPath(path)}
+      .mkString(", ")
+
+    def renderWildcardsAndContinuations = (wildcards ++ continuations)
+        .flatMap(_._2)
+        .map{case (path, v, allowSubpath, group) => group + renderPath(path)}
+        .mkString(", ")
+
+    if (terminals.length > 1) {
       throw new Exception(
-        "More than one endpoint has the same path: " +
-          terminals.map(_._1.map(_.mkString("/"))).mkString(", ")
+        s"More than one endpoint has the same path: $renderTerminals"
       )
-    } else if(wildcards.size >= 1 && continuations.size > 1) {
+    }
+
+
+
+    if (wildcards.size >= 1 && continuations.size > 1) {
       throw new Exception(
-        "Routes overlap with wildcards: " +
-          (wildcards ++ continuations).flatMap(_._2).map(_._1.mkString("/"))
+        s"Routes overlap with wildcards: $renderWildcardsAndContinuations"
       )
-    }else if (terminals.headOption.exists(_._3) && continuations.size == 1){
+    }
+
+    if (terminals.headOption.exists(_._3) && continuations.size == 1) {
       throw new Exception(
-        "Routes overlap with subpath capture: " +
-          (wildcards ++ continuations).flatMap(_._2).map(_._1.mkString("/"))
-      )
-    }else{
-      DispatchTrie[T](
-        current = terminals.headOption.map(x => x._2 -> x._3),
-        children = continuations.map{ case (k, vs) => (k, construct(index + 1, vs))}.toMap
+        s"Routes overlap with subpath capture: $renderTerminals, $renderWildcardsAndContinuations"
       )
     }
   }
+
+  def renderPath(p: collection.Seq[String]) = " /" + p.mkString("/")
 }
 
 /**
@@ -72,4 +110,9 @@ case class DispatchTrie[T](current: Option[(T, Boolean)],
 
     }
   }
+
+  def map[V](f: T => V): DispatchTrie[V] = DispatchTrie(
+    current.map{case (t, v) => (f(t), v)},
+    children.map { case (k, v) => (k, v.map(f))}
+  )
 }
