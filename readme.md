@@ -1,4 +1,4 @@
-Cask 0.8.1: a Scala HTTP micro-framework [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+Cask 0.8.3: a Scala HTTP micro-framework [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 ===========================================================================================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/cask.svg
@@ -46,6 +46,10 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+
+### 0.8.3
+
+- Fix error reporting for invalid routes [#70](https://github.com/com-lihaoyi/cask/pull/70)
 
 ### 0.8.2
 
