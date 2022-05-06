@@ -19,20 +19,23 @@ object DispatchTrie{
     }
 
     for(group <- inputs.flatMap(t => validationGroups(t._2)).distinct) {
-      validateGroup(
-        terminals.flatMap{case (path, v, allowSubpath) =>
-          validationGroups(v)
-            .filter(_ == group)
-            .map{group => (path, v, allowSubpath, group)}
-        },
-        continuations.map { case (k, vs) =>
+      val groupTerminals = terminals.flatMap{case (path, v, allowSubpath) =>
+        validationGroups(v)
+          .filter(_ == group)
+          .map{group => (path, v, allowSubpath, group)}
+      }
+
+      val groupContinuations = continuations
+        .map { case (k, vs) =>
           k -> vs.flatMap { case (path, v, allowSubpath) =>
             validationGroups(v)
               .filter(_ == group)
               .map { group => (path, v, allowSubpath, group) }
           }
         }
-      )
+        .filter(_._2.nonEmpty)
+
+      validateGroup(groupTerminals, groupContinuations)
     }
 
     DispatchTrie[T](
@@ -48,12 +51,12 @@ object DispatchTrie{
     val wildcards = continuations.filter(_._1(0) == ':')
 
     def renderTerminals = terminals
-      .map{case (path, v, allowSubpath, group) => group + renderPath(path)}
+      .map{case (path, v, allowSubpath, group) => s"$group${renderPath(path)}"}
       .mkString(", ")
 
-    def renderWildcardsAndContinuations = (wildcards ++ continuations)
+    def renderContinuations = continuations.toSeq
         .flatMap(_._2)
-        .map{case (path, v, allowSubpath, group) => group + renderPath(path)}
+        .map{case (path, v, allowSubpath, group) => s"$group${renderPath(path)}"}
         .mkString(", ")
 
     if (terminals.length > 1) {
@@ -62,17 +65,15 @@ object DispatchTrie{
       )
     }
 
-
-
     if (wildcards.size >= 1 && continuations.size > 1) {
       throw new Exception(
-        s"Routes overlap with wildcards: $renderWildcardsAndContinuations"
+        s"Routes overlap with wildcards: $renderContinuations"
       )
     }
 
     if (terminals.headOption.exists(_._3) && continuations.size == 1) {
       throw new Exception(
-        s"Routes overlap with subpath capture: $renderTerminals, $renderWildcardsAndContinuations"
+        s"Routes overlap with subpath capture: $renderTerminals, $renderContinuations"
       )
     }
   }
