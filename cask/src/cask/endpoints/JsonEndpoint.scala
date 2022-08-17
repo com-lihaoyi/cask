@@ -50,9 +50,7 @@ class postJson(val path: String, override val subpath: Boolean = false)
     val obj = for{
       str <-
         try {
-          val boas = new ByteArrayOutputStream()
-          Util.transferTo(ctx.exchange.getInputStream, boas)
-          Right(new String(boas.toByteArray))
+          Right(new String(ctx.bytes))
         }
         catch{case e: Throwable => Left(cask.model.Response(
           "Unable to deserialize input JSON text: " + e + "\n" + Util.stackTraceString(e),
