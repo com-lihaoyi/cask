@@ -1,8 +1,9 @@
 #!/usr/bin/env amm
-import ammonite.ops._
+
+import $ivy.`com.lihaoyi::os-lib:0.8.1`
 
 @main
-def apply(uploadedFile: Path,
+def apply(uploadedFile: os.Path,
           tagName: String,
           uploadName: String,
           authKey: String): String = {
@@ -24,7 +25,7 @@ def apply(uploadedFile: Path,
 
   val res = requests.post(
     uploadUrl,
-    data = read.bytes! uploadedFile,
+    data = os.read.bytes(uploadedFile),
     headers = Seq(
       "Content-Type" -> "application/octet-stream",
       "Authorization" -> s"token $authKey"

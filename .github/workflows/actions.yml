@@ -14,11 +14,11 @@ jobs:
         java: [ '8' ]
     name: Tests for Java ${{ matrix.Java }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: ${{ matrix.java }}
       - name: Run tests
         run: |
@@ -38,10 +38,11 @@ jobs:
       LC_MESSAGES: "en_US.UTF-8"
       LC_ALL: "en_US.UTF-8"
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
         with:
-          java-version: 9
+          distribution: 'temurin'
+          java-version: 8
       - name: Publish to Maven Central
         run: |
           if [[ $(git tag --points-at HEAD) != '' ]]; then
@@ -65,8 +66,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
+          distribution: 'temurin'
           java-version: '8'
       - name: Upload Example Zips
         run: ./mill uploadToGithub
@@ -81,14 +83,15 @@ jobs:
       LC_MESSAGES: "en_US.UTF-8"
       LC_ALL: "en_US.UTF-8"
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
         with:
+          distribution: 'temurin'
           java-version: 8
       - name: Generate Website
         run: |
           set -eux
-          curl -L -o ~/amm https://github.com/lihaoyi/Ammonite/releases/download/1.1.0/2.12-1.1.0 && chmod +x ~/amm
+          curl -L -o ~/amm https://github.com/com-lihaoyi/Ammonite/releases/download/2.5.4/2.13-2.5.4 && chmod +x ~/amm
           cd docs
           ~/amm build.sc
       - name: Deploy Website
