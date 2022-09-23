@@ -49,3 +49,26 @@ useful stack traces or metadata for debugging if `debugMode = true`.
 Any `cask.Decorator`s that you want to apply to all routes and all endpoints in
 the entire web application. Useful for inserting application-wide
 instrumentation, logging, security-checks, and similar things.
+
+## def createExecutionContext
+
+A `scala.concurrent.ExecutionContextExecutorService` to which all requests
+(including WebSockets) are dispatched. By default uses a fixed thread pool with
+N threads where N is the number of CPUs.
+
+Can be overridden by a custom executor, e.g. suppose you want to use an
+unbounded pool of JDK 19's [virtual threads](https://openjdk.org/jeps/425):
+
+```scala
+import java.util.concurrent.Executors
+import scala.concurrent.ExecutionContext
+
+object MyCaskApp extends cask.MainRoutes {
+  override def createExecutionContext =
+    ExecutionContext.fromExecutorService(Executors.newVirtualThreadPerTaskExecutor())
+
+  @cask.get("/")
+  def hello() = "Hello, World!"
+}
+```
+

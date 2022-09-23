@@ -12,6 +12,7 @@ import io.undertow.server.handlers.BlockingHandler
 import io.undertow.util.HttpString
 
 import scala.concurrent.ExecutionContext
+import java.util.concurrent.Executor
 
 /**
   * A combination of [[cask.Main]] and [[cask.Routes]], ideal for small
@@ -46,9 +47,14 @@ abstract class Main{
 
   def dispatchTrie = Main.prepareDispatchTrie(allRoutes)
 
-  def defaultHandler = new BlockingHandler(
-    new Main.DefaultHandler(dispatchTrie, mainDecorators, debugMode, handleNotFound, handleMethodNotAllowed, handleEndpointError)
-  )
+  def defaultHandler = new BlockingHandler(new Main.DefaultHandler(
+    dispatchTrie,
+    mainDecorators,
+    debugMode,
+    handleNotFound,
+    handleMethodNotAllowed,
+    handleEndpointError,
+    executionContext))
 
   def handleNotFound() = Main.defaultHandleNotFound()
 
@@ -77,55 +83,58 @@ object Main{
                        debugMode: Boolean,
                        handleNotFound: () => Response.Raw,
                        handleMethodNotAllowed: () => Response.Raw,
-                       handleError: (Routes, EndpointMetadata[_], Result.Error) => Response.Raw)
+                       handleError: (Routes, EndpointMetadata[_], Result.Error) => Response.Raw,
+                       executor: Executor)
                       (implicit log: Logger) extends HttpHandler() {
-    def handleRequest(exchange: HttpServerExchange): Unit = try {
-      //        println("Handling Request: " + exchange.getRequestPath)
-      val (effectiveMethod, runner) = if (exchange.getRequestHeaders.getFirst("Upgrade") == "websocket") {
-        Tuple2(
-          "websocket",
-          (r: Any) =>
-            r.asInstanceOf[WebsocketResult] match{
-              case l: WsHandler =>
-                io.undertow.Handlers.websocket(l).handleRequest(exchange)
-              case l: WebsocketResult.Listener =>
-                io.undertow.Handlers.websocket(l.value).handleRequest(exchange)
-              case r: WebsocketResult.Response[Response.Data] =>
-                Main.writeResponse(exchange, r.value)
-            }
-        )
-      } else Tuple2(
-        exchange.getRequestMethod.toString.toLowerCase(),
-        (r: Any) => Main.writeResponse(exchange, r.asInstanceOf[Response.Raw])
-      )
-
-      dispatchTrie.lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match {
-        case None => Main.writeResponse(exchange, handleNotFound())
-        case Some((methodMap, routeBindings, remaining)) =>
-          methodMap.get(effectiveMethod) match {
-            case None => Main.writeResponse(exchange, handleMethodNotAllowed())
-            case Some((routes, metadata)) =>
-              Decorator.invoke(
-                Request(exchange, remaining),
-                metadata.endpoint,
-                metadata.entryPoint.asInstanceOf[EntryPoint[Routes, _]],
-                routes,
-                routeBindings,
-                (mainDecorators ++ routes.decorators ++ metadata.decorators).toList,
-                Nil
-              ) match {
-                case Result.Success(res) => runner(res)
-                case e: Result.Error =>
-                  Main.writeResponse(
-                    exchange,
-                    handleError(routes, metadata, e)
-                  )
+    def handleRequest(exchange: HttpServerExchange): Unit = exchange.dispatch(executor, new Runnable {
+      def run(): Unit = try {
+        //        println("Handling Request: " + exchange.getRequestPath)
+        val (effectiveMethod, runner) = if (exchange.getRequestHeaders.getFirst("Upgrade") == "websocket") {
+          Tuple2(
+            "websocket",
+            (r: Any) =>
+              r.asInstanceOf[WebsocketResult] match{
+                case l: WsHandler =>
+                  io.undertow.Handlers.websocket(l).handleRequest(exchange)
+                case l: WebsocketResult.Listener =>
+                  io.undertow.Handlers.websocket(l.value).handleRequest(exchange)
+                case r: WebsocketResult.Response[Response.Data] =>
+                  Main.writeResponse(exchange, r.value)
               }
-          }
+          )
+        } else Tuple2(
+          exchange.getRequestMethod.toString.toLowerCase(),
+          (r: Any) => Main.writeResponse(exchange, r.asInstanceOf[Response.Raw])
+        )
+
+        dispatchTrie.lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match {
+          case None => Main.writeResponse(exchange, handleNotFound())
+          case Some((methodMap, routeBindings, remaining)) =>
+            methodMap.get(effectiveMethod) match {
+              case None => Main.writeResponse(exchange, handleMethodNotAllowed())
+              case Some((routes, metadata)) =>
+                Decorator.invoke(
+                  Request(exchange, remaining),
+                  metadata.endpoint,
+                  metadata.entryPoint.asInstanceOf[EntryPoint[Routes, _]],
+                  routes,
+                  routeBindings,
+                  (mainDecorators ++ routes.decorators ++ metadata.decorators).toList,
+                  Nil
+                ) match {
+                  case Result.Success(res) => runner(res)
+                  case e: Result.Error =>
+                    Main.writeResponse(
+                      exchange,
+                      handleError(routes, metadata, e)
+                    )
+                }
+            }
+        }
+      }catch{case e: Throwable =>
+        e.printStackTrace()
       }
-    }catch{case e: Throwable =>
-      e.printStackTrace()
-    }
+    })
   }
 
   def defaultHandleNotFound(): Response.Raw = {
