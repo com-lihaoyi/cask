@@ -81,7 +81,7 @@ object Main{
                       (implicit log: Logger) extends HttpHandler() {
     def handleRequest(exchange: HttpServerExchange): Unit = try {
       //        println("Handling Request: " + exchange.getRequestPath)
-      val (effectiveMethod, runner) = if (exchange.getRequestHeaders.getFirst("Upgrade") == "websocket") {
+      val (effectiveMethod, runner) = if ("websocket".equalsIgnoreCase(exchange.getRequestHeaders.getFirst("Upgrade"))) {
         Tuple2(
           "websocket",
           (r: Any) =>
