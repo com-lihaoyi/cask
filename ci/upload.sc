@@ -25,7 +25,7 @@ def apply(uploadedFile: os.Path,
 
   val res = requests.post(
     uploadUrl,
-    data = os.read.bytes(uploadedFile),
+    data = os.read.stream(uploadedFile),
     headers = Seq(
       "Content-Type" -> "application/octet-stream",
       "Authorization" -> s"token $authKey"

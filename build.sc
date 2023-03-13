@@ -1,4 +1,5 @@
 import mill._, scalalib._, scalajslib._, publish._
+import mill.scalalib.api.ZincWorkerUtil
 
 import $file.example.compress.build
 import $file.example.compress2.build
@@ -25,18 +26,19 @@ import $file.example.websockets2.build
 import $file.example.websockets3.build
 import $file.example.websockets4.build
 import $file.ci.upload
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.1.4`
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.3.0`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 
-val scala213 = "2.13.8"
-val scala212 = "2.12.16"
-val scala3 = "3.1.3"
+val scala213 = "2.13.10"
+val scala212 = "2.12.17"
+val scala3 = "3.2.2"
+val scalaJS = "1.13.0"
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
 val scalaVersions = scala212 :: scala213 :: scala3 :: communityBuildDottyVersion 
 
 trait CaskModule extends CrossScalaModule with PublishModule{
-  def isDotty = crossScalaVersion.startsWith("3")
+  def isScala3 = ZincWorkerUtil.isScala3(crossScalaVersion)
 
   def publishVersion = VcsVersion.vcsState().format()
 
@@ -55,19 +57,19 @@ trait CaskModule extends CrossScalaModule with PublishModule{
 class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
   def ivyDeps = T{
     Agg(
-      ivy"io.undertow:undertow-core:2.2.18.Final",
-      ivy"com.lihaoyi::upickle:2.0.0"
+      ivy"io.undertow:undertow-core:2.2.20.Final",
+      ivy"com.lihaoyi::upickle:3.0.0"
     ) ++
-    (if(!isDotty) Agg(ivy"org.scala-lang:scala-reflect:${scalaVersion()}") else Agg())
+    (if(!isScala3) Agg(ivy"org.scala-lang:scala-reflect:$crossScalaVersion") else Agg())
   }
-  def compileIvyDeps = T{ if (!isDotty) Agg(ivy"com.lihaoyi::acyclic:0.2.1") else Agg() }
-  def scalacOptions = T{ if (!isDotty) Seq("-P:acyclic:force") else Seq() }
-  def scalacPluginIvyDeps = T{ if (!isDotty) Agg(ivy"com.lihaoyi::acyclic:0.2.1") else Agg() }
+  def compileIvyDeps = T{ if (!isScala3) Agg(ivy"com.lihaoyi:::acyclic:0.3.6") else Agg() }
+  def scalacOptions = T{ if (!isScala3) Seq("-P:acyclic:force") else Seq() }
+  def scalacPluginIvyDeps = T{ if (!isScala3) Agg(ivy"com.lihaoyi:::acyclic:0.3.6") else Agg() }
 
-  object test extends Tests with TestModule.Utest {
+  object test extends Tests with TestModule.Utest{
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.8.0",
-      ivy"com.lihaoyi::requests::0.7.1"
+      ivy"com.lihaoyi::utest::0.8.1",
+      ivy"com.lihaoyi::requests::0.8.0"
     )
   }
   def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
@@ -85,9 +87,9 @@ object cask extends Cross[CaskMainModule](scalaVersions: _*) {
         millSourcePath / s"src-$platformSegment"
       )
       def ivyDeps = Agg(
-        ivy"com.lihaoyi::sourcecode:0.2.8",
-        ivy"com.lihaoyi::pprint:0.7.3",
-        ivy"com.lihaoyi::geny:0.7.1"
+        ivy"com.lihaoyi::sourcecode:0.3.0",
+        ivy"com.lihaoyi::pprint:0.8.1",
+        ivy"com.lihaoyi::geny:1.0.0"
       )
     }
     class UtilJvmModule(val crossScalaVersion: String) extends UtilModule {
@@ -101,10 +103,10 @@ object cask extends Cross[CaskMainModule](scalaVersions: _*) {
 
     class UtilJsModule(val crossScalaVersion: String) extends UtilModule with ScalaJSModule {
       def platformSegment = "js"
-      def scalaJSVersion = "1.10.1"
+      def scalaJSVersion = scalaJS
       def ivyDeps = super.ivyDeps() ++ Agg(
         ivy"com.lihaoyi::castor::0.2.1",
-        ivy"org.scala-js::scalajs-dom::2.2.0"
+        ivy"org.scala-js::scalajs-dom::2.4.0"
       )
     }
     object js extends Cross[UtilJsModule](scala213)
