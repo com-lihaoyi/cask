@@ -59,6 +59,7 @@ jobs:
               --signed true
           fi
   uploadExamples:
+    if: github.repository == 'com-lihaoyi/cask' && contains(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     env:
       AMMONITE_BOT_AUTH_TOKEN: ${{ secrets.AMMONITE_BOT_AUTH_TOKEN }}
