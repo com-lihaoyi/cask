@@ -81,7 +81,7 @@ extends castor.SimpleActor[Ws.Event]{
     case Ws.Text(value) => WebSockets.sendTextBlocking(value, channel)
     case Ws.Binary(value) => WebSockets.sendBinaryBlocking(ByteBuffer.wrap(value), channel)
     case Ws.Ping(value) => WebSockets.sendPingBlocking(ByteBuffer.wrap(value), channel)
-    case Ws.Pong(value) => WebSockets.sendPingBlocking(ByteBuffer.wrap(value), channel)
+    case Ws.Pong(value) => WebSockets.sendPongBlocking(ByteBuffer.wrap(value), channel)
     case Ws.Close(code, reason) => WebSockets.sendCloseBlocking(code, reason, channel)
   }
 }
