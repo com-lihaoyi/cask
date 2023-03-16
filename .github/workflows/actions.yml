@@ -95,10 +95,8 @@ jobs:
           java-version: 8
       - name: Generate Website
         run: |
-          set -eux
-          curl -L -o ~/amm https://github.com/com-lihaoyi/Ammonite/releases/download/2.5.4/2.13-2.5.4 && chmod +x ~/amm
           cd docs
-          ~/amm build.sc
+          ./amm build.sc
       - name: Deploy Website
         uses: peaceiris/actions-gh-pages@v3
         with:

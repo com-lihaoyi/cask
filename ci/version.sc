@@ -1,5 +1,3 @@
-import ammonite.ops.{%%, pwd}
-
 val isMasterCommit = {
   sys.env.get("TRAVIS_PULL_REQUEST").contains("false") &&
     (sys.env.get("TRAVIS_BRANCH").contains("master") || sys.env("TRAVIS_TAG") != "")
@@ -7,7 +5,7 @@ val isMasterCommit = {
 
 def gitHead =
   sys.env.get("TRAVIS_COMMIT").getOrElse(
-    %%('git, "rev-parse", "HEAD")(pwd).out.string.trim()
+    os.proc("git", "rev-parse", "HEAD").call().out.string.trim()
   )
 
 
@@ -15,11 +13,11 @@ def gitHead =
 def publishVersion = {
   val tag =
     try Option(
-      %%('git, 'describe, "--exact-match", "--tags", "--always", gitHead)(pwd).out.string.trim()
+      os.proc("git", "describe", "--exact-match", "--tags", "--always", gitHead).call().out.string.trim()
     )
     catch{case e => None}
 
-  val dirtySuffix = %%('git, 'diff)(pwd).out.string.trim() match{
+  val dirtySuffix = os.proc("git", "diff").call().out.string.trim() match{
     case "" => ""
     case s => "-DIRTY" + Integer.toHexString(s.hashCode)
   }
@@ -27,10 +25,10 @@ def publishVersion = {
   tag match{
     case Some(t) => (t, t)
     case None =>
-      val latestTaggedVersion = %%('git, 'describe, "--abbrev=0", "--always", "--tags")(pwd).out.trim
+      val latestTaggedVersion = os.proc("git", "describe", "--abbrev=0", "--always", "--tags").call().out.trim
 
       val commitsSinceLastTag =
-        %%('git, "rev-list", gitHead, "--not", latestTaggedVersion, "--count")(pwd).out.trim.toInt
+        os.proc("git", "rev-list", gitHead, "--not", latestTaggedVersion, "--count").call().out.trim.toInt
 
       (latestTaggedVersion, s"$latestTaggedVersion-$commitsSinceLastTag-${gitHead.take(6)}$dirtySuffix")
   }
