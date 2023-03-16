@@ -95,7 +95,7 @@ object cask extends Cross[CaskMainModule](scalaVersions: _*) {
     class UtilJvmModule(val crossScalaVersion: String) extends UtilModule {
       def platformSegment = "jvm"
       def ivyDeps = super.ivyDeps() ++ Agg(
-        ivy"com.lihaoyi::castor::0.2.1",
+        ivy"com.lihaoyi::castor::0.3.0",
         ivy"org.java-websocket:Java-WebSocket:1.5.3"
       )
     }
@@ -105,7 +105,7 @@ object cask extends Cross[CaskMainModule](scalaVersions: _*) {
       def platformSegment = "js"
       def scalaJSVersion = scalaJS
       def ivyDeps = super.ivyDeps() ++ Agg(
-        ivy"com.lihaoyi::castor::0.2.1",
+        ivy"com.lihaoyi::castor::0.3.0",
         ivy"org.scala-js::scalajs-dom::2.4.0"
       )
     }
