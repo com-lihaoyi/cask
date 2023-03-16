@@ -1,4 +1,4 @@
-Cask 0.8.3: a Scala HTTP micro-framework [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+Cask 0.9.0: a Scala HTTP micro-framework [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 ===========================================================================================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/cask.svg
@@ -46,6 +46,15 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.9.0
+
+- Update uPickle to 3.0.0
+- Update Geny to 1.0.0
+- Update Scala 3 to 3.2.2
+- Update Scala.js to 1.13.0
+- Update SourceCode to 0.3.0
+- Update PPrint to 0.8.1
+- Update Castor to 0.3.0
 
 ### 0.8.3
 
