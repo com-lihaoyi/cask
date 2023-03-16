@@ -1,24 +1,23 @@
 // Load dependencies
-import $ivy.{`org.pegdown:pegdown:1.6.0`, `com.lihaoyi::scalatags:0.6.5`}
+import $ivy.{`org.pegdown:pegdown:1.6.0`, `com.lihaoyi::scalatags:0.9.4`}
 import $file.pageStyles, pageStyles._
 import $file.pages, pages._
 import scalatags.Text.all._
 import $file.^.ci.version
-import ammonite.ops._
 import collection.JavaConverters._
 import org.pegdown.{PegDownProcessor, ToHtmlSerializer, LinkRenderer, Extensions}
 import org.pegdown.ast.{VerbatimNode, ExpImageNode, HeaderNode, TextNode, SimpleNode, TableNode}
 
 val (releaseTag, label) = version.publishVersion
 
-val postsFolder = cwd/'pages
+val postsFolder = os.pwd/'pages
 
 interp.watch(postsFolder)
 
-val targetFolder = cwd/'target
+val targetFolder = os.pwd/'target
 
 
-val (markdownFiles, otherFiles) = ls! postsFolder partition (_.ext == "md")
+val (markdownFiles, otherFiles) = os.list(postsFolder).partition (_.ext == "md")
 markdownFiles.foreach(println)
 // Walk the posts/ folder and parse out the name, full- and first-paragraph-
 // HTML of each post to be used on their respective pages and on the index
@@ -35,10 +34,10 @@ val posts = {
 
     val txt =
       """\$\$\$([a-zA-Z_0-9]+)""".r.replaceAllIn(
-        read(path),
+        os.read(path),
         m => {
           val g = m.group(1)
-          val txt = read(ls(pwd/up/'example/g/'app/'src).head).replace("$", "\\$")
+          val txt = os.read(os.list(os.pwd/os.up/"example"/g/"app"/"src").head).replace("$", "\\$")
           val downloadLink =
             s"https://github.com/lihaoyi/cask/releases/download/$releaseTag/$g-$releaseTag.zip"
 
@@ -61,8 +60,7 @@ val posts = {
         if(!rendering.text.equals("")){
           printAttribute("alt", rendering.text)
         }
-        import collection.JavaConversions._
-        for (attr <- rendering.attributes) {
+        for (attr <- rendering.attributes.asScala) {
           printAttribute(attr.name, attr.value)
         }
         printer.print(" style=\"max-width: 100%; max-height: 500px\"")
@@ -141,7 +139,7 @@ val posts = {
     ).render
 
     val rawHtmlContent = new Serializer().toHtml(ast) + postlude
-    PostInfo(name, headers, rawHtmlContent)
+    PostInfo(name, headers.toSeq, rawHtmlContent)
   }
 }
 
@@ -155,15 +153,15 @@ def formatRssDate(date: java.time.LocalDate) = {
 @main
 def main(publish: Boolean = false) = {
 
-  rm! targetFolder
+  os.remove.all(targetFolder)
 
-  mkdir! targetFolder/'page
+  os.makeDir.all(targetFolder/"page")
   for(otherFile <- otherFiles){
-    cp(otherFile, targetFolder/'page/(otherFile relativeTo postsFolder))
+    os.copy(otherFile, targetFolder/'page/(otherFile relativeTo postsFolder))
   }
 
-  cp(pwd/"favicon.png", targetFolder/"favicon.ico")
-  cp(pwd/"logo-white.svg", targetFolder/"logo-white.svg")
+  os.copy(os.pwd/"favicon.png", targetFolder/"favicon.ico")
+  os.copy(os.pwd/"logo-white.svg", targetFolder/"logo-white.svg")
 
   for(i <- posts.indices){
     val post = posts(i)
@@ -187,7 +185,7 @@ def main(publish: Boolean = false) = {
     )
 
 
-    write(
+    os.write(
       if (i == 0) targetFolder / "index.html"
       else targetFolder/'page/s"${sanitize(post.name)}.html",
       postContent(
