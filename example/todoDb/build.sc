@@ -4,7 +4,7 @@ import mill._, scalalib._
 trait AppModule extends CrossScalaModule{
 
   def ivyDeps = Agg[Dep](
-    ivy"org.xerial:sqlite-jdbc:3.18.0",
+    ivy"org.xerial:sqlite-jdbc:3.41.2.1",
     ivy"io.getquill::quill-jdbc:3.4.10"
   )
 
