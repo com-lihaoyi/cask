@@ -1,8 +1,6 @@
-Cask 0.9.0: a Scala HTTP micro-framework [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+Cask 0.9.1: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 ===========================================================================================================================================================================
 
-[travis-badge]: https://travis-ci.org/lihaoyi/cask.svg
-[travis-link]: https://travis-ci.org/lihaoyi/cask
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/lihaoyi/cask?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [patreon-badge]: https://img.shields.io/badge/patreon-sponsor-ff69b4.svg
