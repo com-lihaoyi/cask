@@ -46,6 +46,13 @@ courtesy of EJ Technologies
 
 ## Changelog
 
+### 0.9.1
+
+- Update `org.xerial:sqlite-jdbc` library in examples to version `3.41.2.1` to  
+  support Apple Silicon
+- `@staticResources` and `@staticFiles` decorators now automatically infer 
+  content types based on file extension
+
 ### 0.9.0
 
 - Update uPickle to 3.0.0
