@@ -26,7 +26,8 @@ import $file.example.websockets2.build
 import $file.example.websockets3.build
 import $file.example.websockets4.build
 import $file.ci.upload
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.3.0`
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.3.1-6-e80da7`
+import $ivy.`com.github.lolgab::mill-mima::0.0.20`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 
 val scala213 = "2.13.10"
@@ -35,7 +36,7 @@ val scala3 = "3.2.2"
 val scalaJS = "1.13.0"
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
-val scalaVersions = scala212 :: scala213 :: scala3 :: communityBuildDottyVersion 
+val scalaVersions = List(scala212, scala213, scala3) ++ communityBuildDottyVersion
 
 trait CaskModule extends CrossScalaModule with PublishModule{
   def isScala3 = ZincWorkerUtil.isScala3(crossScalaVersion)
@@ -54,7 +55,7 @@ trait CaskModule extends CrossScalaModule with PublishModule{
   )
 }
 
-class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
+trait CaskMainModule extends CaskModule {
   def ivyDeps = T{
     Agg(
       ivy"io.undertow:undertow-core:2.2.20.Final",
@@ -62,6 +63,7 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
     ) ++
     (if(!isScala3) Agg(ivy"org.scala-lang:scala-reflect:$crossScalaVersion") else Agg())
   }
+
   def compileIvyDeps = T{ if (!isScala3) Agg(ivy"com.lihaoyi:::acyclic:0.3.6") else Agg() }
   def scalacOptions = T{ if (!isScala3) Seq("-P:acyclic:force") else Seq() }
   def scalacPluginIvyDeps = T{ if (!isScala3) Agg(ivy"com.lihaoyi:::acyclic:0.3.6") else Agg() }
@@ -73,44 +75,34 @@ class CaskMainModule(val crossScalaVersion: String) extends CaskModule {
     )
   }
   def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
-  def artifactName = "cask"
 }
-object cask extends Cross[CaskMainModule](scalaVersions: _*) {
-  object util extends Module {
-    trait UtilModule extends CaskModule {
-      def artifactName = "cask-util"
-      def platformSegment: String
-      def millSourcePath = super.millSourcePath / os.up
 
-      def sources = T.sources(
-        millSourcePath / "src",
-        millSourcePath / s"src-$platformSegment"
-      )
+object cask extends Cross[CaskMainModule](scalaVersions) {
+  object util extends Module {
+    trait UtilModule extends CaskModule with PlatformScalaModule{
       def ivyDeps = Agg(
         ivy"com.lihaoyi::sourcecode:0.3.0",
         ivy"com.lihaoyi::pprint:0.8.1",
         ivy"com.lihaoyi::geny:1.0.0"
       )
     }
-    class UtilJvmModule(val crossScalaVersion: String) extends UtilModule {
-      def platformSegment = "jvm"
+
+    object jvm extends Cross[UtilJvmModule](scalaVersions)
+    trait UtilJvmModule extends UtilModule {
       def ivyDeps = super.ivyDeps() ++ Agg(
         ivy"com.lihaoyi::castor::0.3.0",
         ivy"org.java-websocket:Java-WebSocket:1.5.3"
       )
     }
-    object jvm extends Cross[UtilJvmModule](scalaVersions: _*)
 
-    class UtilJsModule(val crossScalaVersion: String) extends UtilModule with ScalaJSModule {
-      def platformSegment = "js"
+    object js extends Cross[UtilJsModule](scala213)
+    trait UtilJsModule extends UtilModule with ScalaJSModule {
       def scalaJSVersion = scalaJS
       def ivyDeps = super.ivyDeps() ++ Agg(
         ivy"com.lihaoyi::castor::0.3.0",
         ivy"org.scala-js::scalajs-dom::2.4.0"
       )
     }
-    object js extends Cross[UtilJsModule](scala213)
-
   }
 }
 
@@ -120,78 +112,77 @@ object example extends Module{
     def moduleDeps = Seq(cask(crossScalaVersion))
   }
 
-  class CompressModule(val crossScalaVersion: String) extends $file.example.compress.build.AppModule with LocalModule
-  object compress extends Cross[CompressModule](scalaVersions: _*)
+  trait CompressModule extends millbuild.example.compress.build.AppModule with LocalModule
+  object compress extends Cross[CompressModule](scalaVersions)
 
-  class Compress2Module(val crossScalaVersion: String) extends $file.example.compress2.build.AppModule with LocalModule
-  object compress2 extends Cross[Compress2Module](scalaVersions: _*)
+  trait Compress2Module extends millbuild.example.compress2.build.AppModule with LocalModule
+  object compress2 extends Cross[Compress2Module](scalaVersions)
 
-  class Compress3Module(val crossScalaVersion: String) extends $file.example.compress3.build.AppModule with LocalModule
-  object compress3 extends Cross[Compress3Module](scalaVersions: _*)
+  trait Compress3Module extends millbuild.example.compress3.build.AppModule with LocalModule
+  object compress3 extends Cross[Compress3Module](scalaVersions)
 
-  class CookiesModule(val crossScalaVersion: String) extends $file.example.cookies.build.AppModule with LocalModule
-  object cookies extends Cross[CookiesModule](scalaVersions: _*)
+  trait CookiesModule extends millbuild.example.cookies.build.AppModule with LocalModule
+  object cookies extends Cross[CookiesModule](scalaVersions)
 
-  class DecoratedModule(val crossScalaVersion: String) extends $file.example.decorated.build.AppModule with LocalModule
-  object decorated extends Cross[DecoratedModule](scalaVersions: _*)
+  trait DecoratedModule extends millbuild.example.decorated.build.AppModule with LocalModule
+  object decorated extends Cross[DecoratedModule](scalaVersions)
 
-  class Decorated2Module(val crossScalaVersion: String) extends $file.example.decorated2.build.AppModule with LocalModule
-  object decorated2 extends Cross[Decorated2Module](scalaVersions: _*)
+  trait Decorated2Module extends millbuild.example.decorated2.build.AppModule with LocalModule
+  object decorated2 extends Cross[Decorated2Module](scalaVersions)
 
-  class EndpointsModule(val crossScalaVersion: String) extends $file.example.endpoints.build.AppModule with LocalModule
-  object endpoints extends Cross[EndpointsModule](scalaVersions: _*)
+  trait EndpointsModule extends millbuild.example.endpoints.build.AppModule with LocalModule
+  object endpoints extends Cross[EndpointsModule](scalaVersions)
 
-  class FormJsonPostModule(val crossScalaVersion: String) extends $file.example.formJsonPost.build.AppModule with LocalModule
-  object formJsonPost extends Cross[FormJsonPostModule](scalaVersions: _*)
+  trait FormJsonPostModule extends millbuild.example.formJsonPost.build.AppModule with LocalModule
+  object formJsonPost extends Cross[FormJsonPostModule](scalaVersions)
 
-  class HttpMethodsModule(val crossScalaVersion: String) extends $file.example.httpMethods.build.AppModule with LocalModule
-  object httpMethods extends Cross[HttpMethodsModule](scalaVersions: _*)
+  trait HttpMethodsModule extends millbuild.example.httpMethods.build.AppModule with LocalModule
+  object httpMethods extends Cross[HttpMethodsModule](scalaVersions)
 
-  class MinimalApplicationModule(val crossScalaVersion: String) extends $file.example.minimalApplication.build.AppModule with LocalModule
-  object minimalApplication extends Cross[MinimalApplicationModule](scalaVersions: _*)
+  trait MinimalApplicationModule extends millbuild.example.minimalApplication.build.AppModule with LocalModule
+  object minimalApplication extends Cross[MinimalApplicationModule](scalaVersions)
 
-  class MinimalApplication2Module(val crossScalaVersion: String) extends $file.example.minimalApplication2.build.AppModule with LocalModule
-  object minimalApplication2 extends Cross[MinimalApplication2Module](scalaVersions: _*)
+  trait MinimalApplication2Module extends millbuild.example.minimalApplication2.build.AppModule with LocalModule
+  object minimalApplication2 extends Cross[MinimalApplication2Module](scalaVersions)
 
-  class RedirectAbortModule(val crossScalaVersion: String) extends $file.example.redirectAbort.build.AppModule with LocalModule
-  object redirectAbort extends Cross[RedirectAbortModule](scalaVersions: _*)
+  trait RedirectAbortModule extends millbuild.example.redirectAbort.build.AppModule with LocalModule
+  object redirectAbort extends Cross[RedirectAbortModule](scalaVersions)
 
-  // java.lang.NoSuchMethodError: 'void geny.Writable.$init$(geny.Writable)' - geny mismatch, need to upgrade
-  class ScalatagsModule(val crossScalaVersion: String) extends $file.example.scalatags.build.AppModule with LocalModule
+  trait ScalatagsModule extends millbuild.example.scalatags.build.AppModule with LocalModule
   object scalatags extends Cross[ScalatagsModule](scala212, scala213)
 
-  class StaticFilesModule(val crossScalaVersion: String) extends $file.example.staticFiles.build.AppModule with LocalModule
-  object staticFiles extends Cross[StaticFilesModule](scalaVersions: _*)
+  trait StaticFilesModule extends millbuild.example.staticFiles.build.AppModule with LocalModule
+  object staticFiles extends Cross[StaticFilesModule](scalaVersions)
 
-  class StaticFiles2Module(val crossScalaVersion: String) extends $file.example.staticFiles2.build.AppModule with LocalModule
-  object staticFiles2 extends Cross[StaticFiles2Module](scalaVersions: _*)
+  trait StaticFiles2Module extends millbuild.example.staticFiles2.build.AppModule with LocalModule
+  object staticFiles2 extends Cross[StaticFiles2Module](scalaVersions)
 
-  class TodoModule(val crossScalaVersion: String) extends $file.example.todo.build.AppModule with LocalModule
+  trait TodoModule extends millbuild.example.todo.build.AppModule with LocalModule
   object todo extends Cross[TodoModule](scala212, scala213) // uses quill, can't enable for Dotty yet
 
-  class TodoApiModule(val crossScalaVersion: String) extends $file.example.todoApi.build.AppModule with LocalModule
-  object todoApi extends Cross[TodoApiModule](scalaVersions: _*)
+  trait TodoApiModule extends millbuild.example.todoApi.build.AppModule with LocalModule
+  object todoApi extends Cross[TodoApiModule](scalaVersions)
 
-  class TodoDbModule(val crossScalaVersion: String) extends $file.example.todoDb.build.AppModule with LocalModule
+  trait TodoDbModule extends millbuild.example.todoDb.build.AppModule with LocalModule
   object todoDb extends Cross[TodoDbModule](scala212, scala213) // uses quill, can't enable for Dotty yet
 
-  class TwirlModule(val crossScalaVersion: String) extends $file.example.twirl.build.AppModule with LocalModule
-  object twirl extends Cross[TwirlModule](scalaVersions: _*)
+  trait TwirlModule extends millbuild.example.twirl.build.AppModule with LocalModule
+  object twirl extends Cross[TwirlModule](scalaVersions)
 
-  class VariableRoutesModule(val crossScalaVersion: String) extends $file.example.variableRoutes.build.AppModule with LocalModule
-  object variableRoutes extends Cross[VariableRoutesModule](scalaVersions: _*)
+  trait VariableRoutesModule extends millbuild.example.variableRoutes.build.AppModule with LocalModule
+  object variableRoutes extends Cross[VariableRoutesModule](scalaVersions)
 
-  class WebsocketsModule(val crossScalaVersion: String) extends $file.example.websockets.build.AppModule with LocalModule
-  object websockets extends Cross[WebsocketsModule](scalaVersions: _*)
+  trait WebsocketsModule extends millbuild.example.websockets.build.AppModule with LocalModule
+  object websockets extends Cross[WebsocketsModule](scalaVersions)
 
-  class Websockets2Module(val crossScalaVersion: String) extends $file.example.websockets2.build.AppModule with LocalModule
-  object websockets2 extends Cross[Websockets2Module](scalaVersions: _*)
+  trait Websockets2Module extends millbuild.example.websockets2.build.AppModule with LocalModule
+  object websockets2 extends Cross[Websockets2Module](scalaVersions)
 
-  class Websockets3Module(val crossScalaVersion: String) extends $file.example.websockets3.build.AppModule with LocalModule
-  object websockets3 extends Cross[Websockets3Module](scalaVersions: _*)
+  trait Websockets3Module extends millbuild.example.websockets3.build.AppModule with LocalModule
+  object websockets3 extends Cross[Websockets3Module](scalaVersions)
 
-  class Websockets4Module(val crossScalaVersion: String) extends $file.example.websockets4.build.AppModule with LocalModule
-  object websockets4 extends Cross[Websockets4Module](scalaVersions: _*)
+  trait Websockets4Module extends millbuild.example.websockets4.build.AppModule with LocalModule
+  object websockets4 extends Cross[Websockets4Module](scalaVersions)
 
 }
 
@@ -217,31 +208,32 @@ def uploadToGithub() = T.command{
   }
 
   val examples = Seq(
-    $file.example.compress.build.millSourcePath,
-    $file.example.compress2.build.millSourcePath,
-    $file.example.compress3.build.millSourcePath,
-    $file.example.cookies.build.millSourcePath,
-    $file.example.decorated.build.millSourcePath,
-    $file.example.decorated2.build.millSourcePath,
-    $file.example.endpoints.build.millSourcePath,
-    $file.example.formJsonPost.build.millSourcePath,
-    $file.example.httpMethods.build.millSourcePath,
-    $file.example.minimalApplication.build.millSourcePath,
-    $file.example.minimalApplication2.build.millSourcePath,
-    $file.example.redirectAbort.build.millSourcePath,
-    $file.example.scalatags.build.millSourcePath,
-    $file.example.staticFiles.build.millSourcePath,
-    $file.example.staticFiles2.build.millSourcePath,
-    $file.example.todo.build.millSourcePath,
-    $file.example.todoApi.build.millSourcePath,
-    $file.example.todoDb.build.millSourcePath,
-    $file.example.twirl.build.millSourcePath,
-    $file.example.variableRoutes.build.millSourcePath,
-    $file.example.websockets.build.millSourcePath,
-    $file.example.websockets2.build.millSourcePath,
-    $file.example.websockets3.build.millSourcePath,
-    $file.example.websockets4.build.millSourcePath,
+    millbuild.example.compress.build.millSourcePath,
+    millbuild.example.compress2.build.millSourcePath,
+    millbuild.example.compress3.build.millSourcePath,
+    millbuild.example.cookies.build.millSourcePath,
+    millbuild.example.decorated.build.millSourcePath,
+    millbuild.example.decorated2.build.millSourcePath,
+    millbuild.example.endpoints.build.millSourcePath,
+    millbuild.example.formJsonPost.build.millSourcePath,
+    millbuild.example.httpMethods.build.millSourcePath,
+    millbuild.example.minimalApplication.build.millSourcePath,
+    millbuild.example.minimalApplication2.build.millSourcePath,
+    millbuild.example.redirectAbort.build.millSourcePath,
+    millbuild.example.scalatags.build.millSourcePath,
+    millbuild.example.staticFiles.build.millSourcePath,
+    millbuild.example.staticFiles2.build.millSourcePath,
+    millbuild.example.todo.build.millSourcePath,
+    millbuild.example.todoApi.build.millSourcePath,
+    millbuild.example.todoDb.build.millSourcePath,
+    millbuild.example.twirl.build.millSourcePath,
+    millbuild.example.variableRoutes.build.millSourcePath,
+    millbuild.example.websockets.build.millSourcePath,
+    millbuild.example.websockets2.build.millSourcePath,
+    millbuild.example.websockets3.build.millSourcePath,
+    millbuild.example.websockets4.build.millSourcePath,
   )
+
   for(example <- examples){
     val f = T.ctx().dest
     val last = example.last + "-" + label

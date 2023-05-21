@@ -2,7 +2,7 @@
 
 import $ivy.`com.lihaoyi::os-lib:0.8.1`
 
-@main
+@mainargs.main
 def apply(uploadedFile: os.Path,
           tagName: String,
           uploadName: String,
