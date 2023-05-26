@@ -65,7 +65,7 @@ trait CaskMainModule extends CaskModule {
   }
 
   def compileIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.6")
-  def scalacOptions = Agg.when(!isScala3)("-P:acyclic:force")
+  def scalacOptions = Agg.when(!isScala3)("-P:acyclic:force").toSeq
   def scalacPluginIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.6")
 
   object test extends Tests with TestModule.Utest{
