@@ -26,8 +26,8 @@ import $file.example.websockets2.build
 import $file.example.websockets3.build
 import $file.example.websockets4.build
 import $file.ci.upload
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.3.1-6-e80da7`
-import $ivy.`com.github.lolgab::mill-mima::0.0.20`
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.3.1-8-37c08a`
+import $ivy.`com.github.lolgab::mill-mima::0.0.21`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 
 val scala213 = "2.13.10"
@@ -61,12 +61,12 @@ trait CaskMainModule extends CaskModule {
       ivy"io.undertow:undertow-core:2.2.20.Final",
       ivy"com.lihaoyi::upickle:3.0.0"
     ) ++
-    (if(!isScala3) Agg(ivy"org.scala-lang:scala-reflect:$crossScalaVersion") else Agg())
+    Agg.when(!isScala3)(ivy"org.scala-lang:scala-reflect:$crossScalaVersion")
   }
 
-  def compileIvyDeps = T{ if (!isScala3) Agg(ivy"com.lihaoyi:::acyclic:0.3.6") else Agg() }
-  def scalacOptions = T{ if (!isScala3) Seq("-P:acyclic:force") else Seq() }
-  def scalacPluginIvyDeps = T{ if (!isScala3) Agg(ivy"com.lihaoyi:::acyclic:0.3.6") else Agg() }
+  def compileIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.6")
+  def scalacOptions = Agg.when(!isScala3)("-P:acyclic:force")
+  def scalacPluginIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.6")
 
   object test extends Tests with TestModule.Utest{
     def ivyDeps = Agg(
