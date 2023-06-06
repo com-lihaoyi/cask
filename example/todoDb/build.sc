@@ -8,7 +8,7 @@ trait AppModule extends CrossScalaModule{
     ivy"io.getquill::quill-jdbc:3.4.10"
   )
 
-  object test extends Tests{
+  object test extends ScalaModuleTests{
     def testFramework = "utest.runner.Framework"
 
     def ivyDeps = Agg(

@@ -7,7 +7,7 @@ trait AppModule extends CrossScalaModule{
   def forkWorkingDir = build.millSourcePath
   def ivyDeps = Agg[Dep](
   )
-  object test extends Tests{
+  object test extends ScalaModuleTests{
     def testFramework = "utest.runner.Framework"
 
     def ivyDeps = Agg(
