@@ -26,8 +26,8 @@ import $file.example.websockets2.build
 import $file.example.websockets3.build
 import $file.example.websockets4.build
 import $file.ci.upload
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.3.1-14-7e2bd2`
-import $ivy.`com.github.lolgab::mill-mima::0.0.22`
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.0`
+import $ivy.`com.github.lolgab::mill-mima::0.0.23`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 
 val scala213 = "2.13.10"
@@ -68,7 +68,7 @@ trait CaskMainModule extends CaskModule {
   def scalacOptions = Agg.when(!isScala3)("-P:acyclic:force").toSeq
   def scalacPluginIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.6")
 
-  object test extends ScalaModuleTests with TestModule.Utest{
+  object test extends ScalaTests with TestModule.Utest{
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.8.1",
       ivy"com.lihaoyi::requests::0.8.0"
