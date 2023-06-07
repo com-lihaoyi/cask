@@ -12,7 +12,7 @@ trait AppModule extends CrossScalaModule with mill.twirllib.TwirlModule{
     ivy"com.typesafe.play::twirl-api:${twirlVersion()}".withDottyCompat(scalaVersion()),
   )
 
-  object test extends Tests{
+  object test extends ScalaModuleTests{
     def testFramework = "utest.runner.Framework"
 
     def ivyDeps = Agg(

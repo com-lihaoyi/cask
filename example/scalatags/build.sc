@@ -7,7 +7,7 @@ trait AppModule extends CrossScalaModule{
     ivy"com.lihaoyi::scalatags:0.9.1".withDottyCompat(scalaVersion()),
   )
 
-  object test extends Tests{
+  object test extends ScalaModuleTests{
     def testFramework = "utest.runner.Framework"
 
     def ivyDeps = Agg(
