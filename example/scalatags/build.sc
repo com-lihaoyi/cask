@@ -1,18 +1,16 @@
 import mill._, scalalib._
 
-
 trait AppModule extends CrossScalaModule{
 
   def ivyDeps = Agg[Dep](
-    ivy"com.lihaoyi::scalatags:0.9.1".withDottyCompat(scalaVersion()),
+    ivy"com.lihaoyi::scalatags:0.12.0"
   )
 
-  object test extends ScalaModuleTests{
-    def testFramework = "utest.runner.Framework"
+  object test extends ScalaTests with TestModule.Utest{
 
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.7.10",
-      ivy"com.lihaoyi::requests::0.6.9",
+      ivy"com.lihaoyi::utest::0.8.1",
+      ivy"com.lihaoyi::requests::0.8.0",
     )
   }
 }

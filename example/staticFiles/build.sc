@@ -1,18 +1,15 @@
 import mill._, scalalib._
 
-
 trait AppModule extends CrossScalaModule{
-
 
   def forkWorkingDir = build.millSourcePath
   def ivyDeps = Agg[Dep](
   )
-  object test extends ScalaModuleTests{
-    def testFramework = "utest.runner.Framework"
+  object test extends ScalaTests with TestModule.Utest{
 
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.7.10",
-      ivy"com.lihaoyi::requests::0.6.9",
+      ivy"com.lihaoyi::utest::0.8.1",
+      ivy"com.lihaoyi::requests::0.8.0",
     )
 
     def forkWorkingDir = build.millSourcePath
