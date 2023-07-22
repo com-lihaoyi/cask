@@ -36,7 +36,7 @@ object TodoServer extends cask.MainRoutes{
       |  checked BOOLEAN,
       |  text TEXT
       |);
-      |""".stripMargin,
+      |""".stripMargin
   )(ExecutionInfo.unknown, ())
   ctx.executeAction(
     """INSERT INTO todo (checked, text) VALUES
