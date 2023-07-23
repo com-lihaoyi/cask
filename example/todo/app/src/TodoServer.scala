@@ -1,6 +1,7 @@
 package app
 import com.typesafe.config.ConfigFactory
 import io.getquill.{SnakeCase, SqliteJdbcContext}
+import io.getquill.context.ExecutionInfo
 import scalatags.Text.all._
 import scalatags.Text.tags2
 
@@ -36,13 +37,13 @@ object TodoServer extends cask.MainRoutes{
       |  text TEXT
       |);
       |""".stripMargin
-  )
+  )(ExecutionInfo.unknown, ())
   ctx.executeAction(
     """INSERT INTO todo (checked, text) VALUES
       |(1, 'Get started with Cask'),
       |(0, 'Profit!');
       |""".stripMargin
-  )
+  )(ExecutionInfo.unknown, ())
 
   import ctx._
 

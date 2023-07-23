@@ -1,7 +1,7 @@
 package app
 import com.typesafe.config.ConfigFactory
 import io.getquill.{SqliteJdbcContext, SnakeCase}
-
+import io.getquill.context.ExecutionInfo
 
 object TodoMvcDb extends cask.MainRoutes{
   val tmpDb = java.nio.file.Files.createTempDirectory("todo-cask-sqlite")
@@ -39,13 +39,13 @@ object TodoMvcDb extends cask.MainRoutes{
       |  text TEXT
       |);
       |""".stripMargin
-  )
+  )(ExecutionInfo.unknown, ())
   ctx.executeAction(
     """INSERT INTO todo (checked, text) VALUES
       |(1, 'Get started with Cask'),
       |(0, 'Profit!');
       |""".stripMargin
-  )
+  )(ExecutionInfo.unknown, ())
 
   import ctx._
 

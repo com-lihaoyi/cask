@@ -10,7 +10,7 @@ def apply(uploadedFile: os.Path,
   val body = requests.get(
     s"https://api.github.com/repos/com-lihaoyi/cask/releases/tags/$tagName",
     headers = Seq("Authorization" -> s"token $authKey")
-  ).text
+  ).text()
 
   val parsed = ujson.read(body)
 
@@ -34,8 +34,8 @@ def apply(uploadedFile: os.Path,
   )
 
 
-  println(res.text)
-  val longUrl = ujson.read(res.text)("browser_download_url").str.toString
+  println(res.text())
+  val longUrl = ujson.read(res.text())("browser_download_url").str.toString
 
   longUrl
 }
