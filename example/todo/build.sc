@@ -3,10 +3,10 @@ import mill._, scalalib._
 trait AppModule extends CrossScalaModule{
 
   def ivyDeps = Agg[Dep](
-    ivy"org.xerial:sqlite-jdbc:3.42.0.0",
-    ivy"io.getquill::quill-jdbc:4.6.1",
+    ivy"org.xerial:sqlite-jdbc:3.43.0.0",
+    ivy"io.getquill::quill-jdbc:4.7.3",
     ivy"com.lihaoyi::scalatags:0.12.0",
-    ivy"org.slf4j:slf4j-simple:1.7.30",
+    ivy"org.slf4j:slf4j-simple:1.7.36",
   )
 
   object test extends ScalaTests with TestModule.Utest{
