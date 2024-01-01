@@ -158,13 +158,13 @@ object example extends Module{
   object staticFiles2 extends Cross[StaticFiles2Module](scalaVersions)
 
   trait TodoModule extends millbuild.example.todo.build.AppModule with LocalModule
-  object todo extends Cross[TodoModule](scala212, scala213) // uses quill, can't enable for Dotty yet
+  object todo extends Cross[TodoModule](scala213) // uses quill, can't enable for Dotty yet
 
   trait TodoApiModule extends millbuild.example.todoApi.build.AppModule with LocalModule
   object todoApi extends Cross[TodoApiModule](scalaVersions)
 
   trait TodoDbModule extends millbuild.example.todoDb.build.AppModule with LocalModule
-  object todoDb extends Cross[TodoDbModule](scala212, scala213) // uses quill, can't enable for Dotty yet
+  object todoDb extends Cross[TodoDbModule](scala213) // uses quill, can't enable for Dotty yet
 
   trait TwirlModule extends millbuild.example.twirl.build.AppModule with LocalModule
   object twirl extends Cross[TwirlModule](scalaVersions)

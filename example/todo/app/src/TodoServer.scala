@@ -1,102 +1,96 @@
 package app
-import com.typesafe.config.ConfigFactory
-import io.getquill.{SnakeCase, SqliteJdbcContext}
-import io.getquill.context.ExecutionInfo
+import scalasql.DbApi.Txn
+import scalasql.Sc
+import scalasql.SqliteDialect._
 import scalatags.Text.all._
 import scalatags.Text.tags2
 
 object TodoServer extends cask.MainRoutes{
   val tmpDb = java.nio.file.Files.createTempDirectory("todo-cask-sqlite")
 
-  object ctx extends SqliteJdbcContext(
-    SnakeCase,
-    ConfigFactory.parseString(
-      s"""{"driverClassName":"org.sqlite.JDBC","jdbcUrl":"jdbc:sqlite:$tmpDb/file.db"}"""
-    )
+  val sqliteDataSource = new org.sqlite.SQLiteDataSource()
+  sqliteDataSource.setUrl(s"jdbc:sqlite:$tmpDb/file.db")
+  lazy val sqliteClient = new scalasql.DbClient.DataSource(
+    sqliteDataSource,
+    config = new scalasql.Config {}
   )
 
   class transactional extends cask.RawDecorator{
     class TransactionFailed(val value: cask.router.Result.Error) extends Exception
     def wrapFunction(pctx: cask.Request, delegate: Delegate) = {
-      try ctx.transaction(
-        delegate(Map()) match{
+      try sqliteClient.transaction( txn =>
+        delegate(Map("txn" -> txn)) match{
           case cask.router.Result.Success(t) => cask.router.Result.Success(t)
           case e: cask.router.Result.Error => throw new TransactionFailed(e)
         }
       )
       catch{case e: TransactionFailed => e.value}
+
     }
   }
 
-  case class Todo(id: Int, checked: Boolean, text: String)
+  case class Todo[T[_]](id: T[Int], checked: T[Boolean], text: T[String])
+  object Todo extends scalasql.Table[Todo]
 
-  ctx.executeAction(
+  sqliteClient.getAutoCommitClientConnection.updateRaw(
     """CREATE TABLE todo (
       |  id INTEGER PRIMARY KEY AUTOINCREMENT,
       |  checked BOOLEAN,
       |  text TEXT
       |);
-      |""".stripMargin
-  )(ExecutionInfo.unknown, ())
-  ctx.executeAction(
-    """INSERT INTO todo (checked, text) VALUES
+      |
+      |INSERT INTO todo (checked, text) VALUES
       |(1, 'Get started with Cask'),
       |(0, 'Profit!');
       |""".stripMargin
-  )(ExecutionInfo.unknown, ())
-
-  import ctx._
+  )
 
   @transactional
   @cask.post("/list/:state")
-  def list(state: String) = renderBody(state).render
+  def list(state: String)(txn: Txn) = renderBody(state)(txn).render
 
   @transactional
   @cask.post("/add/:state")
-  def add(state: String, request: cask.Request) = {
+  def add(state: String, request: cask.Request)(implicit txn: Txn) = {
     val body = request.text()
-    run(
-      query[Todo]
-        .insert(_.checked -> lift(false), _.text -> lift(body))
-        .returningGenerated(_.id)
-    )
+    txn.run(Todo.insert.columns(_.checked := false, _.text := body))
     renderBody(state).render
   }
 
   @transactional
   @cask.post("/delete/:state/:index")
-  def delete(state: String, index: Int) = {
-    run(query[Todo].filter(_.id == lift(index)).delete)
+  def delete(state: String, index: Int)(implicit txn: Txn) = {
+    txn.run(Todo.delete(_.id === index))
     renderBody(state).render
   }
 
   @transactional
   @cask.post("/toggle/:state/:index")
-  def toggle(state: String, index: Int) = {
-    run(query[Todo].filter(_.id == lift(index)).update(p => p.checked -> !p.checked))
+  def toggle(state: String, index: Int)(implicit txn: Txn) = {
+    txn.run(Todo.update(_.id === index).set(p => p.checked := !p.checked))
     renderBody(state).render
   }
 
   @transactional
   @cask.post("/clear-completed/:state")
-  def clearCompleted(state: String) = {
-    run(query[Todo].filter(_.checked).delete)
+  def clearCompleted(state: String)(implicit txn: Txn) = {
+    txn.run(Todo.delete(_.checked))
     renderBody(state).render
   }
 
   @transactional
   @cask.post("/toggle-all/:state")
-  def toggleAll(state: String) = {
-    val next = run(query[Todo].filter(_.checked).size) != 0
-    run(query[Todo].update(_.checked -> !lift(next)))
+  def toggleAll(state: String)(implicit txn: Txn) = {
+    val next = txn.run(Todo.select.filter(_.checked).size) != 0
+    txn.run(Todo.update(_ => true).set(_.checked := !next))
     renderBody(state).render
   }
 
-  def renderBody(state: String) = {
+  def renderBody(state: String)(implicit txn: Txn) = {
     val filteredTodos = state match{
-      case "all" => run(query[Todo]).sortBy(-_.id)
-      case "active" => run(query[Todo].filter(!_.checked)).sortBy(-_.id)
-      case "completed" => run(query[Todo].filter(_.checked)).sortBy(-_.id)
+      case "all" => txn.run(Todo.select).sortBy(-_.id)
+      case "active" => txn.run(Todo.select.filter(!_.checked)).sortBy(-_.id)
+      case "completed" => txn.run(Todo.select.filter(_.checked)).sortBy(-_.id)
     }
     frag(
       header(cls := "header",
@@ -108,7 +102,7 @@ object TodoServer extends cask.MainRoutes{
           id := "toggle-all",
           cls := "toggle-all",
           `type` := "checkbox",
-          if (run(query[Todo].filter(_.checked).size != 0)) checked else ()
+          if (txn.run(Todo.select.filter(_.checked).size !== 0)) checked else ()
         ),
         label(`for` := "toggle-all","Mark all as complete"),
         ul(cls := "todo-list",
@@ -130,7 +124,7 @@ object TodoServer extends cask.MainRoutes{
       ),
       footer(cls := "footer",
         span(cls := "todo-count",
-          strong(run(query[Todo].filter(!_.checked).size).toInt),
+          strong(txn.run(Todo.select.filter(!_.checked).size).toInt),
           " items left"
         ),
         ul(cls := "filters",
@@ -151,7 +145,7 @@ object TodoServer extends cask.MainRoutes{
 
   @transactional
   @cask.get("/")
-  def index() = {
+  def index()(implicit txn: Txn) = {
     doctype("html")(
       html(lang := "en",
         head(
