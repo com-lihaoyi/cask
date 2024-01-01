@@ -58,7 +58,7 @@ trait CaskModule extends CrossScalaModule with PublishModule{
 trait CaskMainModule extends CaskModule {
   def ivyDeps = T{
     Agg(
-      ivy"io.undertow:undertow-core:2.2.20.Final",
+      ivy"io.undertow:undertow-core:2.3.10.Final",
       ivy"com.lihaoyi::upickle:3.0.0"
     ) ++
     Agg.when(!isScala3)(ivy"org.scala-lang:scala-reflect:$crossScalaVersion")
