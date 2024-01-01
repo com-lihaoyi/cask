@@ -145,9 +145,10 @@ or from query-parameters of the same name (e.g. `param` above). You can make
 `: Option[T]` for cases where the `?param=hello` is optional.
 
 If you need to capture the entire sub-path of the request, you can set the flag
-`subpath=true` and ask for a `: cask.Subpath` (the name of the param doesn't
+`subpath=true` and ask for a `request: cask.Request` (the name of the param doesn't
 matter). This will make the route match any sub-path of the prefix given to the
-`@cask` decorator, and give you the remainder to use in your endpoint logic.
+`@cask` decorator, and give you the remainder to use in your endpoint logic
+as `request.remainingPathSegments`
 
 ## Multi-method Routes
 
