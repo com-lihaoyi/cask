@@ -13,16 +13,12 @@ object TodoMvcDb extends cask.MainRoutes{
   )
 
   class transactional extends cask.RawDecorator{
-    class TransactionFailed(val value: cask.router.Result.Error) extends Exception
     def wrapFunction(pctx: cask.Request, delegate: Delegate) = {
-      try sqliteClient.transaction( txn =>
-        delegate(Map("txn" -> txn)) match{
-          case cask.router.Result.Success(t) => cask.router.Result.Success(t)
-          case e: cask.router.Result.Error => throw new TransactionFailed(e)
-        }
-      )
-      catch{case e: TransactionFailed => e.value}
-
+      sqliteClient.transaction { txn =>
+        val res = delegate(Map("txn" -> txn))
+        if (res.isInstanceOf[cask.router.Result.Error]) txn.rollback()
+        res
+      }
     }
   }
 
@@ -66,6 +62,8 @@ object TodoMvcDb extends cask.MainRoutes{
         .returning(_.id)
         .single
     )
+
+    if (body == "FORCE FAILURE") throw new Exception("FORCE FAILURE BODY")
   }
 
   @transactional
