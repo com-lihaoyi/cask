@@ -28,23 +28,32 @@ object WebEndpoint{
     b.result()
   }
 }
-class get(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
+class get(val path: String,
+          override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("get")
 }
-class post(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
+class post(val path: String,
+           override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("post")
 }
-class put(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
+class put(val path: String,
+          override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("put")
 }
-class patch(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
+class patch(val path: String,
+            override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("patch")
 }
-class delete(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
+class delete(val path: String,
+             override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("delete")
 }
-class route(val path: String, val methods: Seq[String], override val subpath: Boolean = false) extends WebEndpoint
-class options(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
+class route(val path: String,
+            val methods: Seq[String],
+            override val subpath: Boolean = false) extends WebEndpoint
+
+class options(val path: String,
+              override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("options")
 }
 
@@ -54,6 +63,15 @@ abstract class QueryParamReader[T]
   def read(ctx: cask.model.Request, label: String, v: Seq[String]): T
 }
 object QueryParamReader{
+  implicit object QueryParams extends QueryParamReader[cask.model.QueryParams]{
+    def arity: Int = 0
+
+    override def unknownQueryParams = true
+    def read(ctx: cask.model.Request, label: String, v: Seq[String]) = {
+      cask.model.QueryParams(ctx.queryParams)
+    }
+
+  }
   class SimpleParam[T](f: String => T) extends QueryParamReader[T]{
     def arity = 1
     def read(ctx: cask.model.Request, label: String, v: Seq[String]): T = f(v.head)

@@ -96,6 +96,25 @@ object ExampleTests extends TestSuite{
 
       requests.post(s"$host/path/one/two/three").text() ==>
         "POST Subpath List(one, two, three)"
+
+      requests.get(s"$host/user/lihaoyi?unknown1=123&unknown2=abc", check = false).text() ==>
+        """Unknown arguments: "unknown1" "unknown2"
+          |
+          |Arguments provided did not match expected signature:
+          |
+          |getUserProfile
+          |  userName  String
+          |
+          |""".stripMargin
+
+
+      assert(
+        requests.get(s"$host/user2/lihaoyi?unknown1=123&unknown2=abc", check = false).text() ==
+          "User lihaoyi Map(unknown1 -> ArrayBuffer(123), unknown2 -> ArrayBuffer(abc))" ||
+        requests.get(s"$host/user2/lihaoyi?unknown1=123&unknown2=abc", check = false).text() ==
+          "User lihaoyi Map(unknown1 -> ArraySeq(123), unknown2 -> ArraySeq(abc))"
+      )
+
     }
 
   }

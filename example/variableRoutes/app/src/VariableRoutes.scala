@@ -16,7 +16,7 @@ object VariableRoutes extends cask.MainRoutes{
   }
 
   @cask.get("/article3/:articleId") // Optional query param with default
-  def getArticleDefault(articleId: Int, param: String = "DEFAULT VALUE") = { 
+  def getArticleDefault(articleId: Int, param: String = "DEFAULT VALUE") = {
     s"Article $articleId $param"
   }
 
@@ -28,6 +28,11 @@ object VariableRoutes extends cask.MainRoutes{
   @cask.get("/article5/:articleId") // 0-or-more query param
   def getArticleOptionalSeq(articleId: Int, param: Seq[String] = Nil) = {
     s"Article $articleId $param"
+  }
+
+  @cask.get("/user2/:userName") // allow unknown query params
+  def getUserProfileAllowUnknown(userName: String, queryParams: cask.QueryParams) = {
+    s"User $userName " + queryParams.value
   }
 
   @cask.get("/path", subpath = true)

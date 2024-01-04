@@ -6,6 +6,8 @@ import cask.internal.Util
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.handlers.CookieImpl
 
+case class QueryParams(value: Map[String, collection.Seq[String]])
+
 case class Request(exchange: HttpServerExchange, remainingPathSegments: Seq[String])
 extends geny.ByteData with geny.Readable {
   import collection.JavaConverters._
