@@ -108,6 +108,7 @@ object ExampleTests extends TestSuite{
 
       val res3 = requests.get(s"$host/user2/lihaoyi?unknown1=123&unknown2=abc", check = false).text()
       assert(
+        res3 == "User lihaoyi Map(unknown1 -> ArrayBuffer(123), unknown2 -> ArrayBuffer(abc))" ||
         res3 == "User lihaoyi Map(unknown1 -> WrappedArray(123), unknown2 -> WrappedArray(abc))" ||
         res3 == "User lihaoyi Map(unknown1 -> ArraySeq(123), unknown2 -> ArraySeq(abc))"
       )
