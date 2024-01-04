@@ -137,10 +137,19 @@ and pass them all into `cask.Main`.
 
 $$$variableRoutes
 
-You can bind variables to endpoints by declaring them as parameters: these are
-either taken from a path-segment matcher of the same name (e.g. `postId` above),
-or from query-parameters of the same name (e.g. `param` above). You can make your route 
-take
+You can bind path segments to endpoint parameters by declaring them as parameters. these are
+either:
+
+* A parameter of the same name as the variable path segment of the same name as you 
+  (e.g. `postId` above),
+* A parameter of type `segments: cask.RemainingPathSegments`, if you want to allow 
+  the endpoint to handle arbitrary sub-paths of the given path
+
+## Query Params
+
+$$$queryParams
+
+You can bind query parameters to your endpoint method via parameters of the form:
 
 * `param: String` to match `?param=hello`
 * `param: Int` for `?param=123`. Other valid types include `Boolean`, `Byte`, `Short`, `Long`, 
@@ -153,8 +162,7 @@ take
   zero values
 * `params: cask.QueryParams` if you want your route to be able to handle arbitrary
   query params without needing to list them out as separate arguments
-* `segments: cask.RemainingPathSegments` if you want to allow the endpoint to handle
-  arbitrary sub-paths of the given path
+
 * `request: cask.Request` which provides lower level access to the things that the HTTP
   request provides
 
