@@ -40,5 +40,13 @@ object FormJsonPost extends cask.MainRoutes{
     "OK " + value1 + " " + value2 + " " + params.value + " " + segments.value
   }
 
+  @cask.postForm("/form-extra")
+  def formEndpointExtra(value1: cask.FormValue, 
+                        value2: Seq[Int],
+                        params: cask.QueryParams,
+                        segments: cask.RemainingPathSegments) = {
+    "OK " + value1 + " " + value2 + " " + params.value + " " + segments.value
+  }
+  
   initialize()
 }

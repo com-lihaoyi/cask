@@ -58,6 +58,23 @@ object ExampleTests extends TestSuite{
         s"$host/json-extra/omg/wtf/bbq?iam=cow&hearme=moo",
         data = """{"value1": true, "value2": [3]}"""
       )
+
+      val text6 = response6.text()
+      assert(
+        text6 == "\"OK true List(3) Map(hearme -> ArraySeq(moo), iam -> ArraySeq(cow)) List(omg, wtf, bbq)\"" ||
+        text6 == "\"OK true Vector(3) Map(hearme -> WrappedArray(moo), iam -> WrappedArray(cow)) List(omg, wtf, bbq)\""
+      )
+
+      val response7 = requests.post(
+        s"$host/form-extra/omg/wtf/bbq?iam=cow&hearme=moo",
+        data = Seq("value1" -> "hello", "value2" -> "1", "value2" -> "2")
+      )
+
+      val text7 = response7.text()
+      assert(
+        text7 == "OK FormValue(hello,null) List(1, 2) Map(hearme -> ArraySeq(moo), iam -> ArraySeq(cow)) List(omg, wtf, bbq)" ||
+        text7 == "OK FormValue(hello,null) List(1, 2) Map(hearme -> WrappedArray(moo), iam -> WrappedArray(cow)) List(omg, wtf, bbq)"
+      )
     }
   }
 }
