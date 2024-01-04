@@ -27,22 +27,69 @@ object ExampleTests extends TestSuite{
 
 
       assert(
-        requests.get(s"$host/post/123?param=xyz&param=abc").text() ==
-          "Post 123 ArraySeq(xyz, abc)" ||
-        requests.get(s"$host/post/123?param=xyz&param=abc").text() ==
-          "Post 123 ArrayBuffer(xyz, abc)"
+        requests.get(s"$host/post/123?param=xyz").text() ==
+          "Post 123 xyz"
       )
 
       requests.get(s"$host/post/123", check = false).text() ==>
-        """Missing argument: (param: Seq[String])
+        """Missing argument: (param: String)
           |
           |Arguments provided did not match expected signature:
           |
           |showPost
           |  postId  Int
+          |  param  String
+          |
+          |""".stripMargin
+
+      assert(
+        requests.get(s"$host/post2/123?param=xyz").text() ==
+          "Post 123 Some(xyz)"
+      )
+
+      assert(
+        requests.get(s"$host/post2/123").text() ==
+          "Post 123 None"
+      )
+
+      assert(
+        requests.get(s"$host/post3/123?param=xyz").text() ==
+          "Post 123 xyz"
+      )
+
+      assert(
+        requests.get(s"$host/post3/123").text() ==
+          "Post 123 DEFAULT VALUE"
+      )
+
+
+      assert(
+        requests.get(s"$host/post4/123?param=xyz&param=abc").text() ==
+          "Post 123 ArraySeq(xyz, abc)" ||
+        requests.get(s"$host/post4/123?param=xyz&param=abc").text() ==
+          "Post 123 ArrayBuffer(xyz, abc)"
+      )
+
+      requests.get(s"$host/post4/123", check = false).text() ==>
+        """Missing argument: (param: Seq[String])
+          |
+          |Arguments provided did not match expected signature:
+          |
+          |showPostSeq
+          |  postId  Int
           |  param  Seq[String]
           |
           |""".stripMargin
+
+      assert(
+        requests.get(s"$host/post5/123?param=xyz&param=abc").text() ==
+          "Post 123 ArraySeq(xyz, abc)" ||
+        requests.get(s"$host/post5/123?param=xyz&param=abc").text() ==
+          "Post 123 ArrayBuffer(xyz, abc)"
+      )
+      assert(
+        requests.get(s"$host/post5/123").text() == "Post 123 List()"
+      )
 
       requests.get(s"$host/path/one/two/three").text() ==>
         "Subpath List(one, two, three)"

@@ -139,10 +139,16 @@ $$$variableRoutes
 
 You can bind variables to endpoints by declaring them as parameters: these are
 either taken from a path-segment matcher of the same name (e.g. `postId` above),
-or from query-parameters of the same name (e.g. `param` above). You can make
-`param` take a `: String` to match `?param=hello`, an `: Int` for `?param=123` a
-`Seq[T]` (as above) for repeated params such as `?param=hello&param=world`, or
-`: Option[T]` for cases where the `?param=hello` is optional.
+or from query-parameters of the same name (e.g. `param` above). You can make `param` take
+
+* `param: String` to match `?param=hello`
+* `param: Int` for `?param=123`
+* `param: Option[T] = None` or `param: String = "DEFAULT VALUE"` for cases where the
+  `?param=hello` is optional.
+* `param: Seq[T]` for repeated params such as `?param=hello&param=world` with at 
+  least one value
+* `param: Seq[T] = Nil` for repeated params such as `?param=hello&param=world` allowing
+  zero values
 
 If you need to capture the entire sub-path of the request, you can set the flag
 `subpath=true` and ask for a `request: cask.Request` (the name of the param doesn't
