@@ -133,13 +133,17 @@ $$$minimalApplication2
 You can split up your routes into separate `cask.Routes` objects as makes sense
 and pass them all into `cask.Main`.
 
-## Variable Routes
+## Variable Routes & Query Params
 
 $$$variableRoutes
 
 You can bind variables to endpoints by declaring them as parameters: these are
 either taken from a path-segment matcher of the same name (e.g. `postId` above),
-or from query-parameters of the same name (e.g. `param` above). You can make your route 
+or from query-parameters of the same name (e.g. `param` below). 
+
+$$$queryParams
+
+You can make your route 
 take
 
 * `param: String` to match `?param=hello`

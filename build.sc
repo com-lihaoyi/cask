@@ -21,6 +21,7 @@ import $file.example.todoApi.build
 import $file.example.todoDb.build
 import $file.example.twirl.build
 import $file.example.variableRoutes.build
+import $file.example.queryParams.build
 import $file.example.websockets.build
 import $file.example.websockets2.build
 import $file.example.websockets3.build
@@ -172,6 +173,9 @@ object example extends Module{
   trait VariableRoutesModule extends millbuild.example.variableRoutes.build.AppModule with LocalModule
   object variableRoutes extends Cross[VariableRoutesModule](scalaVersions)
 
+  trait QueryParamsModule extends millbuild.example.variableRoutes.build.AppModule with LocalModule
+  object queryParams extends Cross[QueryParamsModule](scalaVersions)
+
   trait WebsocketsModule extends millbuild.example.websockets.build.AppModule with LocalModule
   object websockets extends Cross[WebsocketsModule](scalaVersions)
 
@@ -228,6 +232,7 @@ def uploadToGithub() = T.command{
     millbuild.example.todoDb.build.millSourcePath,
     millbuild.example.twirl.build.millSourcePath,
     millbuild.example.variableRoutes.build.millSourcePath,
+    millbuild.example.queryParams.build.millSourcePath,
     millbuild.example.websockets.build.millSourcePath,
     millbuild.example.websockets2.build.millSourcePath,
     millbuild.example.websockets3.build.millSourcePath,
