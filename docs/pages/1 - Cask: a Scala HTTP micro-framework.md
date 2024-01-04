@@ -139,16 +139,22 @@ $$$variableRoutes
 
 You can bind variables to endpoints by declaring them as parameters: these are
 either taken from a path-segment matcher of the same name (e.g. `postId` above),
-or from query-parameters of the same name (e.g. `param` above). You can make `param` take
+or from query-parameters of the same name (e.g. `param` above). You can make your route 
+take
 
 * `param: String` to match `?param=hello`
-* `param: Int` for `?param=123`
+* `param: Int` for `?param=123`. Other valid types include `Boolean`, `Byte`, `Short`, `Long`, 
+  `Float`, `Double`
 * `param: Option[T] = None` or `param: String = "DEFAULT VALUE"` for cases where the
   `?param=hello` is optional.
 * `param: Seq[T]` for repeated params such as `?param=hello&param=world` with at 
   least one value
 * `param: Seq[T] = Nil` for repeated params such as `?param=hello&param=world` allowing
   zero values
+* `queryParams: cask.QueryParams` if you want your route to be able to handle arbitrary
+  query params without needing to list them out as separate arguments
+* `request: cask.Request` which provides lower level access to the things that the HTTP
+  request provides
 
 If you need to capture the entire sub-path of the request, you can set the flag
 `subpath=true` and ask for a `request: cask.Request` (the name of the param doesn't

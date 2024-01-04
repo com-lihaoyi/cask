@@ -33,12 +33,13 @@ case class EntryPoint[T, C](name: String,
     for(k <- firstArgs.keys) {
       if (!paramLists.head.contains(k)) {
         val as = firstArgs(k)
-        if (as.reads.arity != 0 && as.default.isEmpty) missing.append(as)
+        if (as.reads.arity > 0 && as.default.isEmpty) missing.append(as)
       }
     }
 
-    if (missing.nonEmpty || unknown.nonEmpty) Result.Error.MismatchedArguments(missing.toSeq, unknown.toSeq)
-    else {
+    if (missing.nonEmpty || (!argSignatures.exists(_.exists(_.reads.unknownQueryParams)) && unknown.nonEmpty)) {
+      Result.Error.MismatchedArguments(missing.toSeq, unknown.toSeq)
+    } else {
       try invoke0(
         target,
         ctx,

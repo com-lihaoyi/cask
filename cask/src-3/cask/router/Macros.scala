@@ -264,12 +264,12 @@ object Macros {
                 Runtime.makeReadCall(
                   args,
                   ctx,
-                  (sig.default match {
+                  sig.default match {
                     case None => None
                     case Some(getter) =>
                       val value = getter.asInstanceOf[Cls => Any](clazz)
                       Some(value)
-                  }),
+                  },
                   sig
                 )
               }

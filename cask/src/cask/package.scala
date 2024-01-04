@@ -18,6 +18,8 @@ package object cask {
   val Cookie = model.Cookie
   type Request = model.Request
   val Request = model.Request
+  type QueryParams = model.QueryParams
+  val QueryParams = model.QueryParams
 
   // endpoints
   type websocket = endpoints.websocket
