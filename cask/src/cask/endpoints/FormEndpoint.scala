@@ -13,6 +13,9 @@ object FormReader{
   implicit def paramFormReader[T: QueryParamReader]: FormReader[T] = new FormReader[T]{
     def arity = implicitly[QueryParamReader[T]].arity
 
+    override def unknownQueryParams: Boolean = implicitly[QueryParamReader[T]].unknownQueryParams
+
+    override def remainingPathSegments: Boolean = implicitly[QueryParamReader[T]].remainingPathSegments
     def read(ctx: Request, label: String, input: Seq[FormEntry]) = {
       implicitly[QueryParamReader[T]].read(ctx, label, if (input == null) null else input.map(_.valueOrFileName))
     }
