@@ -52,6 +52,12 @@ object ExampleTests extends TestSuite{
         )
       )
       response5.text() ==> "my-best-image.txt"
+
+
+      val response6 = requests.post(
+        s"$host/json-extra/omg/wtf/bbq?iam=cow&hearme=moo",
+        data = """{"value1": true, "value2": [3]}"""
+      )
     }
   }
 }

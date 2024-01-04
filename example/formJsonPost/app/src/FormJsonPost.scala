@@ -31,5 +31,14 @@ object FormJsonPost extends cask.MainRoutes{
     image.fileName
   }
 
+
+  @cask.postJson("/json-extra")
+  def jsonEndpointExtra(value1: ujson.Value,
+                        value2: Seq[Int],
+                        params: cask.QueryParams,
+                        segments: cask.RemainingPathSegments) = {
+    "OK " + value1 + " " + value2 + " " + params.value + " " + segments.value
+  }
+
   initialize()
 }

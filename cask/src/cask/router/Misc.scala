@@ -20,5 +20,6 @@ case class ArgSig[I, -T, +V, -C](name: String,
 trait ArgReader[I, +T, -C]{
   def arity: Int
   def unknownQueryParams: Boolean = false
+  def remainingPathSegments: Boolean = false
   def read(ctx: C, label: String, input: I): T
 }

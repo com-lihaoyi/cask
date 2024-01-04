@@ -24,6 +24,8 @@ object JsReader{
   implicit def paramReader[T: ParamReader]: JsReader[T] = new JsReader[T] {
     override def arity = 0
 
+    override def unknownQueryParams: Boolean = implicitly[ParamReader[T]].unknownQueryParams
+    override def remainingPathSegments: Boolean = implicitly[ParamReader[T]].remainingPathSegments
     override def read(ctx: cask.model.Request, label: String, v: ujson.Value) = {
       implicitly[ParamReader[T]].read(ctx, label, Nil)
     }
