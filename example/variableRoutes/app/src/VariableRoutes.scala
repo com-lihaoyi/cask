@@ -1,6 +1,6 @@
 package app
 object VariableRoutes extends cask.MainRoutes{
-  @cask.get("/user/:userName") // variable path segment
+  @cask.get("/user/:userName") // variable path segment, e.g. HOST/user/lihaoyi
   def getUserProfile(userName: String) = {
     s"User $userName"
   }

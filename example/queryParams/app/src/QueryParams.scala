@@ -1,7 +1,7 @@
 package app
 object QueryParams extends cask.MainRoutes{
 
-  @cask.get("/article/:articleId") // Mandatory query param
+  @cask.get("/article/:articleId") // Mandatory query param, e.g. HOST/article/foo?param=bar
   def getArticle(articleId: Int, param: String) = { 
     s"Article $articleId $param"
   }
@@ -16,7 +16,7 @@ object QueryParams extends cask.MainRoutes{
     s"Article $articleId $param"
   }
 
-  @cask.get("/article4/:articleId") // 1-or-more query param
+  @cask.get("/article4/:articleId") // 1-or-more param, e.g. HOST/article/foo?param=bar&param=qux
   def getArticleSeq(articleId: Int, param: Seq[String]) = {
     s"Article $articleId $param"
   }
@@ -26,7 +26,7 @@ object QueryParams extends cask.MainRoutes{
     s"Article $articleId $param"
   }
 
-  @cask.get("/user2/:userName") // allow unknown query params
+  @cask.get("/user2/:userName") // allow unknown params, e.g. HOST/article/foo?foo=bar&qux=baz
   def getUserProfileAllowUnknown(userName: String, params: cask.QueryParams) = {
     s"User $userName " + params.value
   }
