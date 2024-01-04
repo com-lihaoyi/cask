@@ -28,29 +28,22 @@ object WebEndpoint{
     b.result()
   }
 }
-class get(val path: String,
-          override val subpath: Boolean = false) extends WebEndpoint{
+class get(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("get")
 }
-class post(val path: String,
-           override val subpath: Boolean = false) extends WebEndpoint{
+class post(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("post")
 }
-class put(val path: String,
-          override val subpath: Boolean = false) extends WebEndpoint{
+class put(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("put")
 }
-class patch(val path: String,
-            override val subpath: Boolean = false) extends WebEndpoint{
+class patch(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("patch")
 }
-class delete(val path: String,
-             override val subpath: Boolean = false) extends WebEndpoint{
+class delete(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("delete")
 }
-class route(val path: String,
-            val methods: Seq[String],
-            override val subpath: Boolean = false) extends WebEndpoint
+class route(val path: String, val methods: Seq[String], override val subpath: Boolean = false) extends WebEndpoint
 
 class options(val path: String,
               override val subpath: Boolean = false) extends WebEndpoint{
