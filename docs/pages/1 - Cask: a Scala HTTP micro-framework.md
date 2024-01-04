@@ -139,7 +139,8 @@ $$$variableRoutes
 
 You can bind variables to endpoints by declaring them as parameters: these are
 either taken from a path-segment matcher of the same name (e.g. `postId` above),
-or from query-parameters of the same name (e.g. `param` above). You can make your route take
+or from query-parameters of the same name (e.g. `param` above). You can make your route 
+take
 
 * `param: String` to match `?param=hello`
 * `param: Int` for `?param=123`. Other valid types include `Boolean`, `Byte`, `Short`, `Long`, 
