@@ -151,16 +151,12 @@ take
   least one value
 * `param: Seq[T] = Nil` for repeated params such as `?param=hello&param=world` allowing
   zero values
-* `queryParams: cask.QueryParams` if you want your route to be able to handle arbitrary
+* `params: cask.QueryParams` if you want your route to be able to handle arbitrary
   query params without needing to list them out as separate arguments
+* `segments: cask.RemainingPathSegments` if you want to allow the endpoint to handle
+  arbitrary sub-paths of the given path
 * `request: cask.Request` which provides lower level access to the things that the HTTP
   request provides
-
-If you need to capture the entire sub-path of the request, you can set the flag
-`subpath=true` and ask for a `request: cask.Request` (the name of the param doesn't
-matter). This will make the route match any sub-path of the prefix given to the
-`@cask` decorator, and give you the remainder to use in your endpoint logic
-as `request.remainingPathSegments`
 
 ## Multi-method Routes
 

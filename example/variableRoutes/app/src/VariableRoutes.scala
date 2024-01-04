@@ -31,18 +31,18 @@ object VariableRoutes extends cask.MainRoutes{
   }
 
   @cask.get("/user2/:userName") // allow unknown query params
-  def getUserProfileAllowUnknown(userName: String, queryParams: cask.QueryParams) = {
-    s"User $userName " + queryParams.value
+  def getUserProfileAllowUnknown(userName: String, params: cask.QueryParams) = {
+    s"User $userName " + params.value
   }
 
-  @cask.get("/path", subpath = true)
-  def getSubpath(request: cask.Request) = {
-    s"Subpath ${request.remainingPathSegments}"
+  @cask.get("/path")
+  def getSubpath(remainingPathSegments: cask.RemainingPathSegments) = {
+    s"Subpath ${remainingPathSegments.value}"
   }
 
-  @cask.post("/path", subpath = true)
-  def postArticleSubpath(request: cask.Request) = {
-    s"POST Subpath ${request.remainingPathSegments}"
+  @cask.post("/path")
+  def postArticleSubpath(remainingPathSegments: cask.RemainingPathSegments) = {
+    s"POST Subpath ${remainingPathSegments.value}"
   }
 
   initialize()

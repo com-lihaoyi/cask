@@ -112,8 +112,6 @@ object ExampleTests extends TestSuite{
         res3 == "User lihaoyi Map(unknown1 -> WrappedArray(123), unknown2 -> WrappedArray(abc))" ||
         res3 == "User lihaoyi Map(unknown1 -> ArraySeq(123), unknown2 -> ArraySeq(abc))"
       )
-
     }
-
   }
 }

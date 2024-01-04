@@ -20,6 +20,8 @@ package object cask {
   val Request = model.Request
   type QueryParams = model.QueryParams
   val QueryParams = model.QueryParams
+  type RemainingPathSegments = model.RemainingPathSegments
+  val RemainingPathSegments = model.RemainingPathSegments
 
   // endpoints
   type websocket = endpoints.websocket

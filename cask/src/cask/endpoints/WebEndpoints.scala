@@ -55,15 +55,8 @@ abstract class QueryParamReader[T]
   def read(ctx: cask.model.Request, label: String, v: Seq[String]): T
 }
 object QueryParamReader{
-  implicit object QueryParams extends QueryParamReader[cask.model.QueryParams]{
-    def arity: Int = 0
 
-    override def unknownQueryParams = true
-    def read(ctx: cask.model.Request, label: String, v: Seq[String]) = {
-      cask.model.QueryParams(ctx.queryParams)
-    }
 
-  }
   class SimpleParam[T](f: String => T) extends QueryParamReader[T]{
     def arity = 1
     def read(ctx: cask.model.Request, label: String, v: Seq[String]): T = f(v.head)
@@ -92,6 +85,8 @@ object QueryParamReader{
   implicit def paramReader[T: ParamReader]: QueryParamReader[T] = new QueryParamReader[T] {
     override def arity = 0
 
+    override def unknownQueryParams: Boolean = implicitly[ParamReader[T]].unknownQueryParams
+    override def remainingPathSegments: Boolean = implicitly[ParamReader[T]].remainingPathSegments
     override def read(ctx: cask.model.Request, label: String, v: Seq[String]) = {
       implicitly[ParamReader[T]].read(ctx, label, v)
     }

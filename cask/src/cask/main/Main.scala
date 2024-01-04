@@ -150,7 +150,11 @@ object Main{
       val segments = Util.splitPath(metadata.endpoint.path)
       val methods = metadata.endpoint.methods.map(_ -> (routes, metadata: EndpointMetadata[_]))
       val methodMap = methods.toMap[String, (Routes, EndpointMetadata[_])]
-      (segments, methodMap, metadata.endpoint.subpath)
+      val subpath =
+        metadata.endpoint.subpath ||
+        metadata.entryPoint.argSignatures.exists(_.exists(_.reads.remainingPathSegments))
+
+      (segments, methodMap, subpath)
     }
 
     val dispatchInputs = flattenedRoutes.groupBy(_._1).map { case (segments, values) =>

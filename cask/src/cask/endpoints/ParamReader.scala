@@ -25,4 +25,24 @@ object ParamReader{
   implicit object CookieParam extends NilParam[Cookie]((ctx, label) =>
     Cookie.fromUndertow(ctx.exchange.getRequestCookies().get(label))
   )
+
+  implicit object QueryParams extends ParamReader[cask.model.QueryParams] {
+    def arity: Int = 0
+
+    override def unknownQueryParams = true
+
+    def read(ctx: cask.model.Request, label: String, v: Unit) = {
+      cask.model.QueryParams(ctx.queryParams)
+    }
+  }
+
+  implicit object RemainingPathSegments extends ParamReader[cask.model.RemainingPathSegments] {
+    def arity: Int = 0
+
+    override def remainingPathSegments = true
+
+    def read(ctx: cask.model.Request, label: String, v: Unit) = {
+      cask.model.RemainingPathSegments(ctx.remainingPathSegments)
+    }
+  }
 }
