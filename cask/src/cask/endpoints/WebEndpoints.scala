@@ -45,8 +45,7 @@ class delete(val path: String, override val subpath: Boolean = false) extends We
 }
 class route(val path: String, val methods: Seq[String], override val subpath: Boolean = false) extends WebEndpoint
 
-class options(val path: String,
-              override val subpath: Boolean = false) extends WebEndpoint{
+class options(val path: String, override val subpath: Boolean = false) extends WebEndpoint{
   val methods = Seq("options")
 }
 
