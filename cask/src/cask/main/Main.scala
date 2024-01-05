@@ -99,7 +99,7 @@ object Main{
         (r: Any) => Main.writeResponse(exchange, r.asInstanceOf[Response.Raw])
       )
 
-      dispatchTrie.lookup(Util.splitPath(exchange.getRequestPath).toList, Map()) match {
+      dispatchTrie.lookup(Util.splitPath(java.net.URLDecoder.decode(exchange.getRequestURI, "UTF-8")).toList, Map()) match {
         case None => Main.writeResponse(exchange, handleNotFound())
         case Some((methodMap, routeBindings, remaining)) =>
           methodMap.get(effectiveMethod) match {
