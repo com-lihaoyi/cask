@@ -49,14 +49,12 @@ object DispatchTrie{
 
       val wildcards = continuations.filter(_._1(0) == ':')
 
-      def renderTerminals = terminals
-        .map{case (path, v, allowSubpath, group) => s"$group${renderPath(path)}"}
+      def render(values: collection.Seq[(collection.IndexedSeq[String], T, Boolean, V)]) = values
+        .map { case (path, v, allowSubpath, group) => s"$group${renderPath(path)}" }
         .mkString(", ")
 
-      def renderContinuations = continuations.toSeq
-          .flatMap(_._2)
-          .map{case (path, v, allowSubpath, group) => s"$group${renderPath(path)}"}
-          .mkString(", ")
+      def renderTerminals = render(terminals)
+      def renderContinuations = render(continuations.toSeq.flatMap(_._2))
 
       if (terminals.length > 1) {
         throw new Exception(
