@@ -73,11 +73,26 @@ object DispatchTrieTests extends TestSuite {
       }
 
 
-      test("wildcardAndWildcardFixed") {
+      test("wildcardAndSameWildcardFixed") {
         val x = DispatchTrie.construct(0,
           Seq(
             (Vector(":hello"), "GET", false),
             (Vector(":hello", "world"), "GET", false)
+          )
+        )(Seq(_))
+
+        x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello"), Nil))
+        x.lookup(List("hello"), Map()) ==> Some(("GET", Map("hello" -> "hello"), Nil))
+
+        x.lookup(List("world", "hello"), Map()) ==> None
+        x.lookup(List("hello", "world", "cow"), Map()) ==> None
+      }
+
+      test("wildcardAndDifferingWildcardFixed") {
+        val x = DispatchTrie.construct(0,
+          Seq(
+            (Vector(":hello"), "GET", false),
+            (Vector(":world", "world"), "GET", false)
           )
         )(Seq(_))
 
