@@ -5,7 +5,7 @@ import utest._
 object DispatchTrieTests extends TestSuite {
   val tests = Tests{
 
-    "hello" - {
+    test("hello") {
       val x = DispatchTrie.construct(0,
         Seq((Vector("hello"), "GET", false))
       )(Seq(_))
@@ -15,7 +15,7 @@ object DispatchTrieTests extends TestSuite {
       x.lookup(List("hello", "world"), Map()) ==> None
       x.lookup(List("world"), Map()) ==> None
     }
-    "nested" - {
+    test("nested") {
       val x = DispatchTrie.construct(0,
         Seq(
           (Vector("hello", "world"), "GET", false),
@@ -31,7 +31,7 @@ object DispatchTrieTests extends TestSuite {
       x.lookup(List("hello", "world", "moo"), Map()) ==> None
 
     }
-    "bindings" - {
+    test("bindings") {
       val x = DispatchTrie.construct(0,
         Seq((Vector(":hello", ":world"), "GET", false))
       )(Seq(_))
@@ -44,7 +44,7 @@ object DispatchTrieTests extends TestSuite {
 
     }
 
-    "path" - {
+    test("path") {
       val x = DispatchTrie.construct(0,
         Seq((Vector("hello"), "GET", true))
       )(Seq(_))
@@ -56,82 +56,72 @@ object DispatchTrieTests extends TestSuite {
       x.lookup(List(), Map()) == None
     }
 
-    "partialOverlap" - {
-      val x = DispatchTrie.construct(0,
-        Seq(
-          (Vector(":hello"), "GET", false),
-          (Vector("hello", ":world"), "GET", false)
-        )
-      )(Seq(_))
+    test("partialOverlap") {
+      test("wildcardAndFixedWildcard"){
+        val x = DispatchTrie.construct(0,
+          Seq(
+            (Vector(":hello"), "GET", false),
+            (Vector("hello", ":world"), "GET", false)
+          )
+        )(Seq(_))
 
-      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello", "world" -> "world"), Nil))
-      x.lookup(List("world", "hello"), Map()) ==> Some(("GET", Map("hello" -> "world", "world" -> "hello"), Nil))
+        x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello", "world" -> "world"), Nil))
+        x.lookup(List("world", "hello"), Map()) ==> Some(("GET", Map("hello" -> "world", "world" -> "hello"), Nil))
 
-      x.lookup(List("hello", "world", "cow"), Map()) ==> None
-      x.lookup(List("hello"), Map()) ==> None
+        x.lookup(List("hello", "world", "cow"), Map()) ==> None
+        x.lookup(List("hello"), Map()) ==> None
+      }
+
+
+      test("wildcardAndWildcardFixed") {
+        val x = DispatchTrie.construct(0,
+          Seq(
+            (Vector(":hello"), "GET", false),
+            (Vector(":hello", "world"), "GET", false)
+          )
+        )(Seq(_))
+
+        x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello"), Nil))
+        x.lookup(List("hello"), Map()) ==> Some(("GET", Map("hello" -> "hello"), Nil))
+
+        x.lookup(List("world", "hello"), Map()) ==> None
+        x.lookup(List("hello", "world", "cow"), Map()) ==> None
+      }
+
+      test("sameWildcardDifferingFixed"){
+        val x = DispatchTrie.construct(0,
+          Seq(
+            (Vector(":var", "foo"), ("GET", "fooImpl"), false),
+            (Vector(":var", "bar"), ("GET", "barImpl"), false)
+          )
+        )(t => Seq(t._1))
+
+        x.lookup(List("hello", "foo"), Map()) ==> Some((("GET", "fooImpl"), Map("var" -> "hello"), Nil))
+        x.lookup(List("world", "bar"), Map()) ==> Some((("GET", "barImpl"), Map("var" -> "world"), Nil))
+
+        x.lookup(List("hello", "world", "cow"), Map()) ==> None
+        x.lookup(List("hello"), Map()) ==> None
+      }
+
+      test("differingWildcardDifferingFixed") {
+        val x = DispatchTrie.construct(0,
+          Seq(
+            (Vector(":hello", "foo"), "GET", false),
+            (Vector(":world", "bar"), "GET", false)
+          )
+        )(Seq(_))
+
+        x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello", "world" -> "world"), Nil))
+        x.lookup(List("world", "hello"), Map()) ==> Some(("GET", Map("hello" -> "world", "world" -> "hello"), Nil))
+
+        x.lookup(List("hello", "world", "cow"), Map()) ==> None
+        x.lookup(List("hello"), Map()) ==> None
+      }
+
     }
 
-    "partialOverlap2" - {
-      val x = DispatchTrie.construct(0,
-        Seq(
-          (Vector(":var", "foo"), ("GET", "fooImpl"), false),
-          (Vector(":var", "bar"), ("GET", "barImpl"), false)
-        )
-      )(t => Seq(t._1))
 
-      x.lookup(List("hello", "foo"), Map()) ==> Some((("GET", "fooImpl"), Map("var" -> "hello"), Nil))
-      x.lookup(List("world", "bar"), Map()) ==> Some((("GET", "barImpl"), Map("var" -> "world"), Nil))
-
-      x.lookup(List("hello", "world", "cow"), Map()) ==> None
-      x.lookup(List("hello"), Map()) ==> None
-    }
-
-    "partialOverlap3" - {
-      val x = DispatchTrie.construct(0,
-        Seq(
-          (Vector(":hello", "foo"), "GET", false),
-          (Vector(":world", "bar"), "GET", false)
-        )
-      )(Seq(_))
-
-      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello", "world" -> "world"), Nil))
-      x.lookup(List("world", "hello"), Map()) ==> Some(("GET", Map("hello" -> "world", "world" -> "hello"), Nil))
-
-      x.lookup(List("hello", "world", "cow"), Map()) ==> None
-      x.lookup(List("hello"), Map()) ==> None
-    }
-
-    "partialOverlap4" - {
-      val x = DispatchTrie.construct(0,
-        Seq(
-          (Vector(":hello"), "GET", false),
-          (Vector(":hello", "world"), "GET", false)
-        )
-      )(Seq(_))
-
-      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello"), Nil))
-      x.lookup(List("hello"), Map()) ==> Some(("GET", Map("hello" -> "hello"), Nil))
-
-      x.lookup(List("world", "hello"), Map()) ==> None
-      x.lookup(List("hello", "world", "cow"), Map()) ==> None
-    }
-
-    "partialOverlap5" - {
-      val x = DispatchTrie.construct(0,
-        Seq(
-          (Vector(":hello"), "GET", false),
-          (Vector(":world", "world"), "GET", false)
-        )
-      )(Seq(_))
-
-      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("world" -> "hello"), Nil))
-      x.lookup(List("hello"), Map()) ==> Some(("GET", Map("world" -> "hello"), Nil))
-
-      x.lookup(List("world", "hello"), Map()) ==> None
-      x.lookup(List("hello", "world", "cow"), Map()) ==> None
-    }
-
-    "errors" - {
+    test("errors") {
       test("wildcardAndFixed") {
         DispatchTrie.construct(0,
           Seq(
