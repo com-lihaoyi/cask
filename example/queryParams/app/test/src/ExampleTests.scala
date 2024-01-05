@@ -23,8 +23,8 @@ object ExampleTests extends TestSuite{
 
       requests.get(s"$host/article/123?param=xyz").text() ==> "Article 123 xyz"
 
-      requests.get(s"$host/article/123?param=1+%2B+1+%3D+2%25%3F%26").text() ==>
-        "Article 123 1 + 1 = 2%?&"
+      requests.get(s"$host/article/123?param=1+%2B+1+%3D+2%25%3F%26%2F").text() ==>
+        "Article 123 1 + 1 = 2%?&/"
 
       requests.get(s"$host/article/123", check = false).text() ==>
         """Missing argument: (param: String)

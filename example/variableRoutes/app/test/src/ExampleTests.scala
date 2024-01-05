@@ -23,7 +23,7 @@ object ExampleTests extends TestSuite{
 
       requests.get(s"$host/user/lihaoyi").text() ==> "User lihaoyi"
       requests.get(s"$host/user/li+haoyi").text() ==> "User li haoyi"
-      requests.get(s"$host/user/1+%2B+1+%3D+2%25%3F%26").text() ==> "User 1 + 1 = 2%?&"
+      requests.get(s"$host/user/1+%2B+1+%3D+2%25%3F%26%2F").text() ==> "User 1 + 1 = 2%?&/"
 
       requests.get(s"$host/user", check = false).statusCode ==> 404
 
