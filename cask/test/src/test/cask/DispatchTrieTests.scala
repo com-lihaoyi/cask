@@ -7,10 +7,10 @@ object DispatchTrieTests extends TestSuite {
 
     test("hello") {
       val x = DispatchTrie.construct(0,
-        Seq((Vector("hello"), "GET", false))
+        Seq((Vector("hello"), ("GET", "fooImpl"), false))
       )(Seq(_))
 
-      x.lookup(List("hello"), Map()) ==> Some(("GET", Map(), Nil))
+      x.lookup(List("hello"), Map()) ==> Some((("GET", "fooImpl"), Map(), Nil))
 
       x.lookup(List("hello", "world"), Map()) ==> None
       x.lookup(List("world"), Map()) ==> None
@@ -18,13 +18,13 @@ object DispatchTrieTests extends TestSuite {
     test("nested") {
       val x = DispatchTrie.construct(0,
         Seq(
-          (Vector("hello", "world"), "GET", false),
-          (Vector("hello", "cow"), "POST", false)
+          (Vector("hello", "world"), ("GET", "fooImpl"), false),
+          (Vector("hello", "cow"), ("GET", "barImpl"), false)
         )
       )(Seq(_))
 
-      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map(), Nil))
-      x.lookup(List("hello", "cow"), Map()) ==> Some(("POST", Map(), Nil))
+      x.lookup(List("hello", "world"), Map()) ==> Some((("GET", "fooImpl"), Map(), Nil))
+      x.lookup(List("hello", "cow"), Map()) ==> Some((("GET", "barImpl"), Map(), Nil))
 
       x.lookup(List("hello"), Map()) ==> None
       x.lookup(List("hello", "moo"), Map()) ==> None
@@ -33,11 +33,11 @@ object DispatchTrieTests extends TestSuite {
     }
     test("bindings") {
       val x = DispatchTrie.construct(0,
-        Seq((Vector(":hello", ":world"), "GET", false))
+        Seq((Vector(":hello", ":world"), ("GET", "fooImpl"), false))
       )(Seq(_))
 
-      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello", "world" -> "world"), Nil))
-      x.lookup(List("world", "hello"), Map()) ==> Some(("GET", Map("hello" -> "world", "world" -> "hello"), Nil))
+      x.lookup(List("hello", "world"), Map()) ==> Some((("GET", "fooImpl"), Map("hello" -> "hello", "world" -> "world"), Nil))
+      x.lookup(List("world", "hello"), Map()) ==> Some((("GET", "fooImpl"), Map("hello" -> "world", "world" -> "hello"), Nil))
 
       x.lookup(List("hello", "world", "cow"), Map()) ==> None
       x.lookup(List("hello"), Map()) ==> None
@@ -46,12 +46,12 @@ object DispatchTrieTests extends TestSuite {
 
     test("path") {
       val x = DispatchTrie.construct(0,
-        Seq((Vector("hello"), "GET", true))
+        Seq((Vector("hello"), ("GET", "fooImpl"), true))
       )(Seq(_))
 
-      x.lookup(List("hello", "world"), Map()) ==>  Some(("GET", Map(), Seq("world")))
-      x.lookup(List("hello", "world", "cow"), Map()) ==>  Some(("GET", Map(), Seq("world", "cow")))
-      x.lookup(List("hello"), Map()) ==> Some(("GET", Map(), Seq()))
+      x.lookup(List("hello", "world"), Map()) ==>  Some((("GET", "fooImpl"), Map(), Seq("world")))
+      x.lookup(List("hello", "world", "cow"), Map()) ==>  Some((("GET", "fooImpl"), Map(), Seq("world", "cow")))
+      x.lookup(List("hello"), Map()) ==> Some((("GET", "fooImpl"), Map(), Seq()))
 
       x.lookup(List(), Map()) == None
     }
@@ -60,8 +60,8 @@ object DispatchTrieTests extends TestSuite {
       test("wildcardAndFixedWildcard"){
         val x = DispatchTrie.construct(0,
           Seq(
-            (Vector(":hello"), "GET", false),
-            (Vector("hello", ":world"), "GET", false)
+            (Vector(":hello"), ("GET", "fooImpl"), false),
+            (Vector("hello", ":world"), ("GET", "barImpl"), false)
           )
         )(Seq(_))
 
@@ -76,13 +76,13 @@ object DispatchTrieTests extends TestSuite {
       test("wildcardAndSameWildcardFixed") {
         val x = DispatchTrie.construct(0,
           Seq(
-            (Vector(":hello"), "GET", false),
-            (Vector(":hello", "world"), "GET", false)
+            (Vector(":hello"), ("GET", "fooImpl"), false),
+            (Vector(":hello", "world"), ("GET", "barImpl"), false)
           )
         )(Seq(_))
 
-        x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello"), Nil))
-        x.lookup(List("hello"), Map()) ==> Some(("GET", Map("hello" -> "hello"), Nil))
+        x.lookup(List("hello"), Map()) ==> Some((("GET", "fooImpl"), Map("hello" -> "hello"), Nil))
+        x.lookup(List("hello", "world"), Map()) ==> Some((("GET", "barImpl"), Map("hello" -> "hello"), Nil))
 
         x.lookup(List("world", "hello"), Map()) ==> None
         x.lookup(List("hello", "world", "cow"), Map()) ==> None
@@ -121,13 +121,13 @@ object DispatchTrieTests extends TestSuite {
       test("differingWildcardDifferingFixed") {
         val x = DispatchTrie.construct(0,
           Seq(
-            (Vector(":hello", "foo"), "GET", false),
-            (Vector(":world", "bar"), "GET", false)
+            (Vector(":hello", "foo"), ("GET", "fooImpl"), false),
+            (Vector(":world", "bar"), ("GET", "barImpl"), false)
           )
         )(Seq(_))
 
-        x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello", "world" -> "world"), Nil))
-        x.lookup(List("world", "hello"), Map()) ==> Some(("GET", Map("hello" -> "world", "world" -> "hello"), Nil))
+        x.lookup(List("hello", "foo"), Map()) ==> Some((("GET", "fooImpl"), Map("hello" -> "hello"), Nil))
+        x.lookup(List("world", "bar"), Map()) ==> Some((("GET", "barImpl"), Map("world" -> "world"), Nil))
 
         x.lookup(List("hello", "world", "cow"), Map()) ==> None
         x.lookup(List("hello"), Map()) ==> None
@@ -200,7 +200,7 @@ object DispatchTrieTests extends TestSuite {
 
         assert(
           ex.getMessage ==
-          "Routes overlap with wildcards: GET /hello/:world, GET /hello/:cow"
+          "More than one endpoint has the same path: GET /hello/:cow, GET /hello/:world"
         )
       }
       test("wildcardAndWildcardPrefix") {
@@ -222,7 +222,7 @@ object DispatchTrieTests extends TestSuite {
 
         assert(
           ex.getMessage ==
-          "Routes overlap with wildcards: GET /:world/hello, GET /:cow/hello"
+          "More than one endpoint has the same path: GET /:cow/hello, GET /:world/hello"
         )
       }
       test("fixedAndFixed") {

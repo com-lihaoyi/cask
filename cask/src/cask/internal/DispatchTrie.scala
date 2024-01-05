@@ -4,24 +4,28 @@ object DispatchTrie{
   def construct[T, V](index: Int,
                       inputs: collection.Seq[(collection.IndexedSeq[String], T, Boolean)])
                      (validationGroups: T => Seq[V]): DispatchTrie[T] = {
-    val continuations = mutable.Map.empty[String, mutable.Buffer[(collection.IndexedSeq[String], T, Boolean)]]
+    val continuations = mutable.Map.empty[String, (String, mutable.Buffer[(collection.IndexedSeq[String], T, Boolean)])]
     val terminals = mutable.Buffer.empty[(collection.IndexedSeq[String], T, Boolean)]
 
     for((path, endPoint, allowSubpath) <- inputs) {
       if (path.length < index) () // do nothing
       else if (path.length == index) terminals.append((path, endPoint, allowSubpath))
       else if (path.length > index){
-        val buf = continuations.getOrElseUpdate(path(index), mutable.Buffer.empty)
-        buf.append((path, endPoint, allowSubpath))
+        val segment = path(index)
+        val buf = continuations.getOrElseUpdate(
+          if (segment.startsWith(":")) ":" else segment,
+          (segment, mutable.Buffer.empty)
+        )
+        buf._2.append((path, endPoint, allowSubpath))
       }
     }
 
-    validateGroups(inputs, terminals, continuations)(validationGroups)
+    validateGroups(inputs, terminals, continuations.map{case (k, (k2, v)) => (k, v)})(validationGroups)
 
     DispatchTrie[T](
       current = terminals.headOption.map(x => x._2 -> x._3),
       children = continuations
-        .map{ case (k, vs) => (k, construct(index + 1, vs)(validationGroups))}
+        .map{ case (k, (k2, vs)) => (k, (k2, construct(index + 1, vs)(validationGroups)))}
         .toMap
     )
   }
@@ -51,6 +55,7 @@ object DispatchTrie{
 
       def render(values: collection.Seq[(collection.IndexedSeq[String], T, Boolean, V)]) = values
         .map { case (path, v, allowSubpath, group) => s"$group /" + path.mkString("/") }
+        .sorted
         .mkString(", ")
 
       def renderTerminals = render(terminals)
@@ -86,7 +91,7 @@ object DispatchTrie{
   * segments)
   */
 case class DispatchTrie[T](current: Option[(T, Boolean)],
-                           children: Map[String, DispatchTrie[T]]){
+                           children: Map[String, (String, DispatchTrie[T])]){
   final def lookup(remainingInput: List[String],
                    bindings: Map[String, String])
   : Option[(T, Map[String, String], Seq[String])] = {
@@ -97,11 +102,12 @@ case class DispatchTrie[T](current: Option[(T, Boolean)],
         current.map(x => (x._1, bindings, head :: rest))
       case head :: rest =>
         if (children.size == 1 && children.keys.head.startsWith(":")){
-          children.values.head.lookup(rest, bindings + (children.keys.head.drop(1) -> head))
+          val (k, (k2, v)) = children.head
+          v.lookup(rest, bindings + (k2.drop(1) -> head))
         }else{
           children.get(head) match{
             case None => None
-            case Some(continuation) => continuation.lookup(rest, bindings)
+            case Some((k2, continuation)) => continuation.lookup(rest, bindings)
           }
         }
 
@@ -110,6 +116,6 @@ case class DispatchTrie[T](current: Option[(T, Boolean)],
 
   def map[V](f: T => V): DispatchTrie[V] = DispatchTrie(
     current.map{case (t, v) => (f(t), v)},
-    children.map { case (k, v) => (k, v.map(f))}
+    children.map { case (k, (k2, v)) => (k, (k2, v.map(f)))}
   )
 }
