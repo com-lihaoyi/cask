@@ -57,6 +57,22 @@ object DispatchTrieTests extends TestSuite {
       )
     }
 
+    "partialOverlap" - {
+      val x = DispatchTrie.construct(0,
+        Seq(
+          (Vector(":hello"), 1, false),
+          (Vector("hello", ":world"), 1, false)
+        )
+      )(Seq(_))
+      assert(
+        x.lookup(List("hello", "world"), Map()) == Some((1, Map("hello" -> "hello", "world" -> "world"), Nil)),
+        x.lookup(List("world", "hello"), Map()) == Some((1, Map("hello" -> "world", "world" -> "hello"), Nil)),
+
+        x.lookup(List("hello", "world", "cow"), Map()) == None,
+        x.lookup(List("hello"), Map()) == None
+      )
+    }
+
     "errors" - {
       test - {
         DispatchTrie.construct(0,

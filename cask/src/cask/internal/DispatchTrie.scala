@@ -5,38 +5,18 @@ object DispatchTrie{
                       inputs: collection.Seq[(collection.IndexedSeq[String], T, Boolean)])
                      (validationGroups: T => Seq[V]): DispatchTrie[T] = {
     val continuations = mutable.Map.empty[String, mutable.Buffer[(collection.IndexedSeq[String], T, Boolean)]]
-
     val terminals = mutable.Buffer.empty[(collection.IndexedSeq[String], T, Boolean)]
 
     for((path, endPoint, allowSubpath) <- inputs) {
       if (path.length < index) () // do nothing
-      else if (path.length == index) {
-        terminals.append((path, endPoint, allowSubpath))
-      } else if (path.length > index){
+      else if (path.length == index) terminals.append((path, endPoint, allowSubpath))
+      else if (path.length > index){
         val buf = continuations.getOrElseUpdate(path(index), mutable.Buffer.empty)
         buf.append((path, endPoint, allowSubpath))
       }
     }
 
-    for(group <- inputs.flatMap(t => validationGroups(t._2)).distinct) {
-      val groupTerminals = terminals.flatMap{case (path, v, allowSubpath) =>
-        validationGroups(v)
-          .filter(_ == group)
-          .map{group => (path, v, allowSubpath, group)}
-      }
-
-      val groupContinuations = continuations
-        .map { case (k, vs) =>
-          k -> vs.flatMap { case (path, v, allowSubpath) =>
-            validationGroups(v)
-              .filter(_ == group)
-              .map { group => (path, v, allowSubpath, group) }
-          }
-        }
-        .filter(_._2.nonEmpty)
-
-      validateGroup(groupTerminals, groupContinuations)
-    }
+    validateGroups(inputs, terminals, continuations)(validationGroups)
 
     DispatchTrie[T](
       current = terminals.headOption.map(x => x._2 -> x._3),
@@ -46,35 +26,55 @@ object DispatchTrie{
     )
   }
 
-  def validateGroup[T, V](terminals: collection.Seq[(collection.Seq[String], T, Boolean, V)],
-                          continuations: mutable.Map[String, mutable.Buffer[(collection.IndexedSeq[String], T, Boolean, V)]]) = {
-    val wildcards = continuations.filter(_._1(0) == ':')
+  def validateGroups[T, V](inputs: collection.Seq[(collection.IndexedSeq[String], T, Boolean)],
+                           terminals0: collection.Seq[(collection.IndexedSeq[String], T, Boolean)],
+                           continuations0: collection.Map[String, collection.Seq[(collection.IndexedSeq[String], T, Boolean)]])
+                          (validationGroups: T => Seq[V]) = {
+    for (group <- inputs.flatMap(t => validationGroups(t._2)).distinct) {
+      val terminals = terminals0.flatMap { case (path, v, allowSubpath) =>
+        validationGroups(v)
+          .filter(_ == group)
+          .map { group => (path, v, allowSubpath, group) }
+      }
 
-    def renderTerminals = terminals
-      .map{case (path, v, allowSubpath, group) => s"$group${renderPath(path)}"}
-      .mkString(", ")
+      val continuations = continuations0
+        .map { case (k, vs) =>
+          k -> vs.flatMap { case (path, v, allowSubpath) =>
+            validationGroups(v)
+              .filter(_ == group)
+              .map { group => (path, v, allowSubpath, group) }
+          }
+        }
+        .filter(_._2.nonEmpty)
 
-    def renderContinuations = continuations.toSeq
-        .flatMap(_._2)
+      val wildcards = continuations.filter(_._1(0) == ':')
+
+      def renderTerminals = terminals
         .map{case (path, v, allowSubpath, group) => s"$group${renderPath(path)}"}
         .mkString(", ")
 
-    if (terminals.length > 1) {
-      throw new Exception(
-        s"More than one endpoint has the same path: $renderTerminals"
-      )
-    }
+      def renderContinuations = continuations.toSeq
+          .flatMap(_._2)
+          .map{case (path, v, allowSubpath, group) => s"$group${renderPath(path)}"}
+          .mkString(", ")
 
-    if (wildcards.size >= 1 && continuations.size > 1) {
-      throw new Exception(
-        s"Routes overlap with wildcards: $renderContinuations"
-      )
-    }
+      if (terminals.length > 1) {
+        throw new Exception(
+          s"More than one endpoint has the same path: $renderTerminals"
+        )
+      }
 
-    if (terminals.headOption.exists(_._3) && continuations.size == 1) {
-      throw new Exception(
-        s"Routes overlap with subpath capture: $renderTerminals, $renderContinuations"
-      )
+      if (wildcards.size >= 1 && continuations.size > 1) {
+        throw new Exception(
+          s"Routes overlap with wildcards: $renderContinuations"
+        )
+      }
+
+      if (terminals.headOption.exists(_._3) && continuations.size == 1) {
+        throw new Exception(
+          s"Routes overlap with subpath capture: $renderTerminals, $renderContinuations"
+        )
+      }
     }
   }
 
