@@ -7,180 +7,238 @@ object DispatchTrieTests extends TestSuite {
 
     "hello" - {
       val x = DispatchTrie.construct(0,
-        Seq((Vector("hello"), 1, false))
+        Seq((Vector("hello"), "GET", false))
       )(Seq(_))
 
-      assert(
-        x.lookup(List("hello"), Map()) == Some((1, Map(), Nil)),
-        x.lookup(List("hello", "world"), Map()) == None,
-        x.lookup(List("world"), Map()) == None
-      )
+      x.lookup(List("hello"), Map()) ==> Some(("GET", Map(), Nil))
+
+      x.lookup(List("hello", "world"), Map()) ==> None
+      x.lookup(List("world"), Map()) ==> None
     }
     "nested" - {
       val x = DispatchTrie.construct(0,
         Seq(
-          (Vector("hello", "world"), 1, false),
-          (Vector("hello", "cow"), 2, false)
+          (Vector("hello", "world"), "GET", false),
+          (Vector("hello", "cow"), "POST", false)
         )
       )(Seq(_))
-      assert(
-        x.lookup(List("hello", "world"), Map()) == Some((1, Map(), Nil)),
-        x.lookup(List("hello", "cow"), Map()) == Some((2, Map(), Nil)),
-        x.lookup(List("hello"), Map()) == None,
-        x.lookup(List("hello", "moo"), Map()) == None,
-        x.lookup(List("hello", "world", "moo"), Map()) == None
-      )
+
+      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map(), Nil))
+      x.lookup(List("hello", "cow"), Map()) ==> Some(("POST", Map(), Nil))
+
+      x.lookup(List("hello"), Map()) ==> None
+      x.lookup(List("hello", "moo"), Map()) ==> None
+      x.lookup(List("hello", "world", "moo"), Map()) ==> None
+
     }
     "bindings" - {
       val x = DispatchTrie.construct(0,
-        Seq((Vector(":hello", ":world"), 1, false))
+        Seq((Vector(":hello", ":world"), "GET", false))
       )(Seq(_))
-      assert(
-        x.lookup(List("hello", "world"), Map()) == Some((1, Map("hello" -> "hello", "world" -> "world"), Nil)),
-        x.lookup(List("world", "hello"), Map()) == Some((1, Map("hello" -> "world", "world" -> "hello"), Nil)),
 
-        x.lookup(List("hello", "world", "cow"), Map()) == None,
-        x.lookup(List("hello"), Map()) == None
-      )
+      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello", "world" -> "world"), Nil))
+      x.lookup(List("world", "hello"), Map()) ==> Some(("GET", Map("hello" -> "world", "world" -> "hello"), Nil))
+
+      x.lookup(List("hello", "world", "cow"), Map()) ==> None
+      x.lookup(List("hello"), Map()) ==> None
+
     }
 
     "path" - {
       val x = DispatchTrie.construct(0,
-        Seq((Vector("hello"), 1, true))
+        Seq((Vector("hello"), "GET", true))
       )(Seq(_))
 
-      assert(
-        x.lookup(List("hello", "world"), Map()) ==  Some((1,Map(), Seq("world"))),
-        x.lookup(List("hello", "world", "cow"), Map()) ==  Some((1,Map(), Seq("world", "cow"))),
-        x.lookup(List("hello"), Map()) == Some((1,Map(), Seq())),
-        x.lookup(List(), Map()) == None
-      )
+      x.lookup(List("hello", "world"), Map()) ==>  Some(("GET", Map(), Seq("world")))
+      x.lookup(List("hello", "world", "cow"), Map()) ==>  Some(("GET", Map(), Seq("world", "cow")))
+      x.lookup(List("hello"), Map()) ==> Some(("GET", Map(), Seq()))
+
+      x.lookup(List(), Map()) == None
     }
 
     "partialOverlap" - {
       val x = DispatchTrie.construct(0,
         Seq(
-          (Vector(":hello"), 1, false),
-          (Vector("hello", ":world"), 1, false)
+          (Vector(":hello"), "GET", false),
+          (Vector("hello", ":world"), "GET", false)
         )
       )(Seq(_))
-      assert(
-        x.lookup(List("hello", "world"), Map()) == Some((1, Map("hello" -> "hello", "world" -> "world"), Nil)),
-        x.lookup(List("world", "hello"), Map()) == Some((1, Map("hello" -> "world", "world" -> "hello"), Nil)),
 
-        x.lookup(List("hello", "world", "cow"), Map()) == None,
-        x.lookup(List("hello"), Map()) == None
-      )
+      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello", "world" -> "world"), Nil))
+      x.lookup(List("world", "hello"), Map()) ==> Some(("GET", Map("hello" -> "world", "world" -> "hello"), Nil))
+
+      x.lookup(List("hello", "world", "cow"), Map()) ==> None
+      x.lookup(List("hello"), Map()) ==> None
+    }
+
+    "partialOverlap2" - {
+      val x = DispatchTrie.construct(0,
+        Seq(
+          (Vector(":var", "foo"), ("GET", "fooImpl"), false),
+          (Vector(":var", "bar"), ("GET", "barImpl"), false)
+        )
+      )(t => Seq(t._1))
+
+      x.lookup(List("hello", "foo"), Map()) ==> Some((("GET", "fooImpl"), Map("var" -> "hello"), Nil))
+      x.lookup(List("world", "bar"), Map()) ==> Some((("GET", "barImpl"), Map("var" -> "world"), Nil))
+
+      x.lookup(List("hello", "world", "cow"), Map()) ==> None
+      x.lookup(List("hello"), Map()) ==> None
+    }
+
+    "partialOverlap3" - {
+      val x = DispatchTrie.construct(0,
+        Seq(
+          (Vector(":hello", "foo"), "GET", false),
+          (Vector(":world", "bar"), "GET", false)
+        )
+      )(Seq(_))
+
+      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello", "world" -> "world"), Nil))
+      x.lookup(List("world", "hello"), Map()) ==> Some(("GET", Map("hello" -> "world", "world" -> "hello"), Nil))
+
+      x.lookup(List("hello", "world", "cow"), Map()) ==> None
+      x.lookup(List("hello"), Map()) ==> None
+    }
+
+    "partialOverlap4" - {
+      val x = DispatchTrie.construct(0,
+        Seq(
+          (Vector(":hello"), "GET", false),
+          (Vector(":hello", "world"), "GET", false)
+        )
+      )(Seq(_))
+
+      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("hello" -> "hello"), Nil))
+      x.lookup(List("hello"), Map()) ==> Some(("GET", Map("hello" -> "hello"), Nil))
+
+      x.lookup(List("world", "hello"), Map()) ==> None
+      x.lookup(List("hello", "world", "cow"), Map()) ==> None
+    }
+
+    "partialOverlap5" - {
+      val x = DispatchTrie.construct(0,
+        Seq(
+          (Vector(":hello"), "GET", false),
+          (Vector(":world", "world"), "GET", false)
+        )
+      )(Seq(_))
+
+      x.lookup(List("hello", "world"), Map()) ==> Some(("GET", Map("world" -> "hello"), Nil))
+      x.lookup(List("hello"), Map()) ==> Some(("GET", Map("world" -> "hello"), Nil))
+
+      x.lookup(List("world", "hello"), Map()) ==> None
+      x.lookup(List("hello", "world", "cow"), Map()) ==> None
     }
 
     "errors" - {
-      test - {
+      test("wildcardAndFixed") {
         DispatchTrie.construct(0,
           Seq(
-            (Vector("hello", ":world"), 1, false),
-            (Vector("hello", "world"),  2, false)
+            (Vector("hello", ":world"), "GET", false),
+            (Vector("hello", "world"),  "POST", false)
           )
         )(Seq(_))
 
         val ex = intercept[Exception]{
           DispatchTrie.construct(0,
             Seq(
-              (Vector("hello", ":world"), 1, false),
-              (Vector("hello", "world"),  1, false)
+              (Vector("hello", ":world"), "GET", false),
+              (Vector("hello", "world"),  "GET", false)
             )
           )(Seq(_))
         }
 
         assert(
           ex.getMessage ==
-          "Routes overlap with wildcards: 1 /hello/:world, 1 /hello/world"
+          "Routes overlap with wildcards: GET /hello/:world, GET /hello/world"
         )
       }
-      test - {
+      test("subpathCapture") {
         DispatchTrie.construct(0,
           Seq(
-            (Vector("hello", ":world"), 1, false),
-            (Vector("hello", "world", "omg"), 2, false)
+            (Vector("hello"), "GET", true),
+            (Vector("hello", "cow", "omg"), "POST", false)
           )
         )(Seq(_))
 
         val ex = intercept[Exception]{
           DispatchTrie.construct(0,
             Seq(
-              (Vector("hello", ":world"), 1, false),
-              (Vector("hello", "world", "omg"), 1, false)
+              (Vector("hello"), "GET", true),
+              (Vector("hello", "cow", "omg"), "GET", false)
             )
           )(Seq(_))
         }
 
         assert(
           ex.getMessage ==
-          "Routes overlap with wildcards: 1 /hello/:world, 1 /hello/world/omg"
+          "Routes overlap with subpath capture: GET /hello, GET /hello/cow/omg"
         )
       }
-      test - {
+      test("wildcardAndWildcard") {
         DispatchTrie.construct(0,
           Seq(
-            (Vector("hello"), 1, true),
-            (Vector("hello", "cow", "omg"), 2, false)
+            (Vector("hello", ":world"), "GET", false),
+            (Vector("hello", ":cow"), "POST", false)
           )
         )(Seq(_))
 
         val ex = intercept[Exception]{
           DispatchTrie.construct(0,
             Seq(
-              (Vector("hello"), 1, true),
-              (Vector("hello", "cow", "omg"), 1, false)
+              (Vector("hello", ":world"), "GET", false),
+              (Vector("hello", ":cow"), "GET", false)
             )
           )(Seq(_))
         }
 
         assert(
           ex.getMessage ==
-          "Routes overlap with subpath capture: 1 /hello, 1 /hello/cow/omg"
+          "Routes overlap with wildcards: GET /hello/:world, GET /hello/:cow"
         )
       }
-      test - {
+      test("wildcardAndWildcardPrefix") {
         DispatchTrie.construct(0,
           Seq(
-            (Vector("hello", ":world"), 1, false),
-            (Vector("hello", ":cow"), 2, false)
+            (Vector(":world", "hello"), "GET", false),
+            (Vector(":cow", "hello"), "POST", false)
           )
         )(Seq(_))
 
         val ex = intercept[Exception]{
           DispatchTrie.construct(0,
             Seq(
-              (Vector("hello", ":world"), 1, false),
-              (Vector("hello", ":cow"), 1, false)
+              (Vector(":world", "hello"), "GET", false),
+              (Vector(":cow", "hello"), "GET", false)
             )
           )(Seq(_))
         }
 
         assert(
           ex.getMessage ==
-          "Routes overlap with wildcards: 1 /hello/:world, 1 /hello/:cow"
+          "Routes overlap with wildcards: GET /:world/hello, GET /:cow/hello"
         )
       }
-      test - {
+      test("fixedAndFixed") {
         DispatchTrie.construct(0,
           Seq(
-            (Vector("hello", "world"), 1, false),
-            (Vector("hello", "world"), 2, false)
+            (Vector("hello", "world"), "GET", false),
+            (Vector("hello", "world"), "POST", false)
           )
         )(Seq(_))
 
         val ex = intercept[Exception]{
           DispatchTrie.construct(0,
             Seq(
-              (Vector("hello", "world"), 1, false),
-              (Vector("hello", "world"), 1, false)
+              (Vector("hello", "world"), "GET", false),
+              (Vector("hello", "world"), "GET", false)
             )
           )(Seq(_))
         }
         assert(
           ex.getMessage ==
-          "More than one endpoint has the same path: 1 /hello/world, 1 /hello/world"
+          "More than one endpoint has the same path: GET /hello/world, GET /hello/world"
         )
       }
     }
