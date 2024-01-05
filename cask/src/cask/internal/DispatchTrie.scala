@@ -50,7 +50,7 @@ object DispatchTrie{
       val wildcards = continuations.filter(_._1(0) == ':')
 
       def render(values: collection.Seq[(collection.IndexedSeq[String], T, Boolean, V)]) = values
-        .map { case (path, v, allowSubpath, group) => s"$group${renderPath(path)}" }
+        .map { case (path, v, allowSubpath, group) => s"$group /" + path.mkString("/") }
         .mkString(", ")
 
       def renderTerminals = render(terminals)
@@ -75,8 +75,6 @@ object DispatchTrie{
       }
     }
   }
-
-  def renderPath(p: collection.Seq[String]) = " /" + p.mkString("/")
 }
 
 /**
