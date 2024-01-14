@@ -6,13 +6,13 @@ object VariableRoutes extends cask.MainRoutes{
   }
 
   @cask.get("/path") // GET allowing arbitrary sub-paths, e.g. HOST/path/foo/bar/baz
-  def getSubpath(remainingPathSegments: cask.RemainingPathSegments) = {
-    s"Subpath ${remainingPathSegments.value}"
+  def getSubpath(segments: cask.RemainingPathSegments) = {
+    s"Subpath ${segments.value}"
   }
 
   @cask.post("/path") // POST allowing arbitrary sub-paths, e.g. HOST/path/foo/bar/baz
-  def postArticleSubpath(remainingPathSegments: cask.RemainingPathSegments) = {
-    s"POST Subpath ${remainingPathSegments.value}"
+  def postArticleSubpath(segments: cask.RemainingPathSegments) = {
+    s"POST Subpath ${segments.value}"
   }
 
   initialize()

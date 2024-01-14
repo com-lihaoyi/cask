@@ -137,11 +137,12 @@ and pass them all into `cask.Main`.
 
 $$$variableRoutes
 
-You can bind path segments to endpoint parameters by declaring them as parameters. these are
+You can bind path segments to endpoint parameters by declaring them as parameters. These are
 either:
 
 * A parameter of the same name as the variable path segment of the same name as you 
-  (e.g. `postId` above),
+  (e.g. `:userName` above). This can be a `String,` or other primitive types like `Int`,
+  `Boolean`, `Byte`, `Short`, `Long`, `Float`, `Double`
 * A parameter of type `segments: cask.RemainingPathSegments`, if you want to allow 
   the endpoint to handle arbitrary sub-paths of the given path
 
@@ -424,7 +425,7 @@ $$$todoDb
 
 This example demonstrates how to use Cask to write a TodoMVC API server that
 persists it's state in a database rather than in memory. We use the
-[Quill](http://getquill.io/) database access library to write a `@transactional`
+[ScalaSql](https://github.com/com-lihaoyi/scalasql/) database access library to write a `@transactional`
 decorator that automatically opens one transaction per call to an endpoint,
 ensuring that database queries are properly committed on success or rolled-back
 on error. Note that because the default database connector propagates its
@@ -432,7 +433,7 @@ transaction context in a thread-local, `@transactional` does not need to pass
 the `ctx` object into each endpoint as an additional parameter list, and so we
 simply leave it out.
 
-While this example is specific to Quill, you can easily modify the
+While this example is specific to ScalaSql, you can easily modify the
 `@transactional` decorator to make it work with whatever database access library
 you happen to be using. For libraries which need an implicit transaction, it can
 be passed into each endpoint function as an additional parameter list as
@@ -451,7 +452,7 @@ The following code snippet is the complete code for a full-stack TodoMVC
 implementation: including HTML generation for the web UI via
 [Scalatags](https://github.com/lihaoyi/scalatags), Javascript for the
 interactivity, static file serving, and database integration via
-[Quill](https://github.com/getquill/quill). While slightly long, this example
+[ScalaSql](https://github.com/com-lihaoyi/scalasql/). While slightly long, this example
 should give you a tour of all the things you need to know to use Cask.
 
 Note that this is a "boring" server-side-rendered webapp with Ajax interactions,

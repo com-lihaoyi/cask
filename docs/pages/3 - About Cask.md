@@ -86,7 +86,7 @@ uses the [Mill](https://github.com/lihaoyi/mill) build tool, comes bundled with
 the [uPickle](https://github.com/lihaoyi/upickle) JSON library, and makes it
 trivial to pull in libraries like
 [Scalatags](https://github.com/lihaoyi/scalatags) to render HTML or
-[Quill](https://github.com/getquill/quill) for database access.
+[ScalaSql](https://github.com/com-lihaoyi/scalasql/) for database access.
 
 Each of these are stable, well-known, well-documented libraries you may already
 be familiar with, and Cask simply provides the HTTP/routing layer with the hooks
