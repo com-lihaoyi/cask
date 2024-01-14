@@ -81,7 +81,6 @@ jobs:
 
   generate_docs:
     if: github.repository == 'com-lihaoyi/cask'
-    needs: publish-sonatype
     runs-on: ubuntu-20.04
     env:
       LANG: "en_US.UTF-8"
