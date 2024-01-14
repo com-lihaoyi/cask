@@ -1,4 +1,4 @@
-Cask 0.9.1: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+Cask 0.9.2: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 ===========================================================================================================================================================================
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
@@ -43,6 +43,18 @@ Cask is profiled using the
 courtesy of EJ Technologies
 
 ## Changelog
+
+### 0.9.2
+
+- Properly decode URL parameters when passed as path segments or query params [#114](https://github.com/com-lihaoyi/cask/pull/114)
+
+- Preserve leading slash when resolving static paths [#111](https://github.com/com-lihaoyi/cask/pull/111)
+
+- Add `cask.QueryParams` type to allow route methods to take arbitrary query parameters,
+  add `cask.RemainingPathSegments` as replacement for `subpath = true`
+  [#108](https://github.com/com-lihaoyi/cask/pull/108)
+  [#109](https://github.com/com-lihaoyi/cask/pull/109)
+  [#110](https://github.com/com-lihaoyi/cask/pull/110)
 
 ### 0.9.1
 
