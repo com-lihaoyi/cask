@@ -1,14 +1,11 @@
 
 
-[![Build Status][travis-badge]][travis-link]
-[![Gitter Chat][gitter-badge]][gitter-link]
+[![Discord Chat][discord-badge]][discord-link]
 [![Patreon][patreon-badge]][patreon-link]
 
 
-[travis-badge]: https://travis-ci.org/lihaoyi/cask.svg
-[travis-link]: https://travis-ci.org/lihaoyi/cask
-[gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
-[gitter-link]: https://gitter.im/lihaoyi/cask?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+[discord-badge]: https://img.shields.io/badge/discord-join_chat-61AA8F.svg?logo=discord
+[discord-link]: https://discord.gg/scala
 [patreon-badge]: https://img.shields.io/badge/patreon-sponsor-ff69b4.svg
 [patreon-link]: https://www.patreon.com/lihaoyi
 
