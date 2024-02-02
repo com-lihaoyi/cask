@@ -3,12 +3,18 @@ import $ivy.{`org.pegdown:pegdown:1.6.0`, `com.lihaoyi::scalatags:0.9.4`}
 import $file.pageStyles, pageStyles._
 import $file.pages, pages._
 import scalatags.Text.all._
-import $file.^.ci.version
 import collection.JavaConverters._
 import org.pegdown.{PegDownProcessor, ToHtmlSerializer, LinkRenderer, Extensions}
 import org.pegdown.ast.{VerbatimNode, ExpImageNode, HeaderNode, TextNode, SimpleNode, TableNode}
 
-val (releaseTag, label) = version.publishVersion
+val releaseTag = os
+  .proc(
+    "git",
+    "describe",
+    "--tags",
+    os.proc("git", "rev-list", "--tags", "--max-count=1").call().out.trim()
+  )
+  .call().out.trim()
 
 val postsFolder = os.pwd/'pages
 
