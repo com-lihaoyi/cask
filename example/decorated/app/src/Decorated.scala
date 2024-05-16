@@ -1,6 +1,6 @@
 package app
-object Decorated extends cask.MainRoutes{
-  class User{
+object Decorated extends cask.MainRoutes {
+  class User {
     override def toString = "[haoyi]"
   }
   class loggedIn extends cask.RawDecorator {
@@ -14,6 +14,21 @@ object Decorated extends cask.MainRoutes{
     }
   }
 
+  class withCustomHeader extends cask.RawDecorator {
+    def wrapFunction(request: cask.Request, delegate: Delegate) = {
+      request.headers.get("x-custom-header").map(_.head) match {
+        case Some(header) => delegate(Map("customHeader" -> header))
+        case None =>
+          cask.router.Result.Success(
+            cask.model.Response(
+              s"Request is missing required header: 'X-CUSTOM-HEADER'",
+              400
+            )
+          )
+      }
+    }
+  }
+
   @withExtra()
   @cask.get("/hello/:world")
   def hello(world: String)(extra: Int) = {
@@ -24,6 +39,12 @@ object Decorated extends cask.MainRoutes{
   @cask.get("/internal/:world")
   def internal(world: String)(user: User) = {
     world + user
+  }
+
+  @withCustomHeader()
+  @cask.get("/echo")
+  def echoHeader(request: cask.Request)(customHeader: String) = {
+    customHeader
   }
 
   @withExtra()
