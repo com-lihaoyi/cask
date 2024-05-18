@@ -359,17 +359,6 @@ object FormJsonPost extends cask.MainRoutes{
     )
   }
 
-  @cask.postJsonCached(&quot;/json-obj-cached&quot;)
-  def jsonEndpointObjCached(value1: ujson.Value, value2: Seq[Int], request: cask.Request) = {
-    ujson.Obj(
-      &quot;value1&quot; -&gt; value1,
-      &quot;value2&quot; -&gt; value2,
-      // `postJsonCached` buffers up the body of the request in memory before parsing,
-      // giving you access to the request body data if you want to use it yourself
-      &quot;body&quot; -&gt; request.text()
-    )
-  }
-
   @cask.postForm(&quot;/form&quot;)
   def formEndpoint(value1: cask.FormValue, value2: Seq[Int]) = {
     &quot;OK &quot; + value1 + &quot; &quot; + value2
@@ -395,6 +384,17 @@ object FormJsonPost extends cask.MainRoutes{
                         params: cask.QueryParams,
                         segments: cask.RemainingPathSegments) = {
     &quot;OK &quot; + value1 + &quot; &quot; + value2 + &quot; &quot; + params.value + &quot; &quot; + segments.value
+  }
+
+  @cask.postJsonCached(&quot;/json-obj-cached&quot;)
+  def jsonEndpointObjCached(value1: ujson.Value, value2: Seq[Int], request: cask.Request) = {
+    ujson.Obj(
+      &quot;value1&quot; -&gt; value1,
+      &quot;value2&quot; -&gt; value2,
+      // `postJsonCached` buffers up the body of the request in memory before parsing,
+      // giving you access to the request body data if you want to use it yourself
+      &quot;body&quot; -&gt; request.text()
+    )
   }
 
   @cask.postForm(&quot;/form-extra&quot;)
