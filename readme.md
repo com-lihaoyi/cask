@@ -1,4 +1,4 @@
-Cask 0.9.2: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+Cask 0.9.3: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 ===========================================================================================================================================================================
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
@@ -43,6 +43,11 @@ Cask is profiled using the
 courtesy of EJ Technologies
 
 ## Changelog
+
+### 0.9.3
+
+- Introduce `@postJsonCached` to allow reference to the original body payload in `@postJson`
+  [#123](https://github.com/com-lihaoyi/cask/pull/123)
 
 ### 0.9.2
 
