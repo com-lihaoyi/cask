@@ -565,8 +565,8 @@ object Twirl extends cask.MainRoutes{
 &lt;/html&gt;
 </code></pre><h2 id="extending-endpoints-with-decorators" class="Styles-hoverBox">Extending Endpoints with Decorators<a href="#extending-endpoints-with-decorators" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
-object Decorated extends cask.MainRoutes{
-  class User{
+object Decorated extends cask.MainRoutes {
+  class User {
     override def toString = &quot;[haoyi]&quot;
   }
   class loggedIn extends cask.RawDecorator {
@@ -580,6 +580,21 @@ object Decorated extends cask.MainRoutes{
     }
   }
 
+  class withCustomHeader extends cask.RawDecorator {
+    def wrapFunction(request: cask.Request, delegate: Delegate) = {
+      request.headers.get(&quot;x-custom-header&quot;).map(_.head) match {
+        case Some(header) =&gt; delegate(Map(&quot;customHeader&quot; -&gt; header))
+        case None =&gt;
+          cask.router.Result.Success(
+            cask.model.Response(
+              s&quot;Request is missing required header: &#39;X-CUSTOM-HEADER&#39;&quot;,
+              400
+            )
+          )
+      }
+    }
+  }
+
   @withExtra()
   @cask.get(&quot;/hello/:world&quot;)
   def hello(world: String)(extra: Int) = {
@@ -590,6 +605,12 @@ object Decorated extends cask.MainRoutes{
   @cask.get(&quot;/internal/:world&quot;)
   def internal(world: String)(user: User) = {
     world + user
+  }
+
+  @withCustomHeader()
+  @cask.get(&quot;/echo&quot;)
+  def echoHeader(request: cask.Request)(customHeader: String) = {
+    customHeader
   }
 
   @withExtra()
