@@ -37,6 +37,7 @@ package object cask {
   type staticFiles = endpoints.staticFiles
   type staticResources = endpoints.staticResources
   type postJson = endpoints.postJson
+  type postJsonCached = endpoints.postJsonCached
   type getJson = endpoints.getJson
   type postForm = endpoints.postForm
   type options = endpoints.options
