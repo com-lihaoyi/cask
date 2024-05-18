@@ -30,6 +30,19 @@ object ExampleTests extends TestSuite{
       )
       ujson.read(response2.text()) ==> ujson.Obj("value1" -> true, "value2" -> ujson.Arr(3))
 
+
+      val response2Cached = requests.post(
+        s"$host/json-obj-cached",
+        data = """{"value1": true, "value2": [3]}"""
+      )
+      ujson.read(response2Cached.text()) ==>
+        ujson.Obj(
+          "value1" -> true,
+          "value2" -> ujson.Arr(3),
+          "body" -> """{"value1": true, "value2": [3]}"""
+        )
+
+
       val response3 = requests.post(
         s"$host/form",
         data = Seq("value1" -> "hello", "value2" -> "1", "value2" -> "2")

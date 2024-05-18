@@ -10,5 +10,6 @@ trait AppModule extends CrossScalaModule{
       ivy"com.lihaoyi::utest::0.8.1",
       ivy"com.lihaoyi::requests::0.8.0",
     )
+    def forkArgs = Seq("--add-opens=java.base/java.net=ALL-UNNAMED")
   }
 }
