@@ -18,7 +18,7 @@ object FormJsonPost extends cask.MainRoutes{
     ujson.Obj(
       "value1" -> value1,
       "value2" -> value2,
-      // `cacheBody = true` buffers up the body of the request in memory before parsing,
+      // `postJsonCached` buffers up the body of the request in memory before parsing,
       // giving you access to the request body data if you want to use it yourself
       "body" -> request.text()
     )
