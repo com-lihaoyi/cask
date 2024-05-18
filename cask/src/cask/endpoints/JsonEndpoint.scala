@@ -47,21 +47,10 @@ class postJson(val path: String, override val subpath: Boolean = false)
   val methods = Seq("post")
   type InputParser[T] = JsReader[T]
 
-  def wrapFunction(ctx: Request,
-                   delegate: Delegate): Result[Response.Raw] = {
+  def wrapFunction(ctx: Request, delegate: Delegate): Result[Response.Raw] = {
     val obj = for{
-      str <-
-        try {
-          val boas = new ByteArrayOutputStream()
-          Util.transferTo(ctx.exchange.getInputStream, boas)
-          Right(new String(boas.toByteArray))
-        }
-        catch{case e: Throwable => Left(cask.model.Response(
-          "Unable to deserialize input JSON text: " + e + "\n" + Util.stackTraceString(e),
-          statusCode = 400
-        ))}
       json <-
-        try Right(ujson.read(str))
+        try Right(ujson.read(ctx.exchange.getInputStream))
         catch{case e: Throwable => Left(cask.model.Response(
           "Input text is invalid JSON: " + e + "\n" + Util.stackTraceString(e),
           statusCode = 400
