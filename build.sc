@@ -31,10 +31,10 @@ import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.0`
 import $ivy.`com.github.lolgab::mill-mima::0.0.23`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 
-val scala213 = "2.13.10"
-val scala212 = "2.12.17"
-val scala3 = "3.2.2"
-val scalaJS = "1.13.0"
+val scala213 = "2.13.14"
+val scala212 = "2.12.19"
+val scala3 = "3.3.3"
+val scalaJS = "1.16.0"
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
 val scalaVersions = List(scala212, scala213, scala3) ++ communityBuildDottyVersion
