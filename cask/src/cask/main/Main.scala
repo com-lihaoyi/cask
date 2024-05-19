@@ -3,22 +3,24 @@ package cask.main
 import cask.endpoints.{WebsocketResult, WsHandler}
 import cask.model._
 import cask.internal.{DispatchTrie, Util}
-import cask.main
-import cask.router.{Decorator, EndpointMetadata, EntryPoint, RawDecorator, Result}
+import cask.model.Response.Raw
+import cask.router.{Decorator, EndpointMetadata, EntryPoint, Result}
 import cask.util.Logger
 import io.undertow.Undertow
 import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.server.handlers.BlockingHandler
 import io.undertow.util.HttpString
 
+import scala.annotation.nowarn
 import scala.concurrent.ExecutionContext
+import scala.util.control.NonFatal
 
 /**
   * A combination of [[cask.Main]] and [[cask.Routes]], ideal for small
   * one-file web applications.
   */
 class MainRoutes extends Main with Routes{
-  def allRoutes = Seq(this)
+  def allRoutes: Seq[Routes] = Seq(this)
 }
 
 /**
@@ -36,7 +38,7 @@ abstract class Main{
   def verbose = false
   def debugMode: Boolean = true
 
-  def createExecutionContext = castor.Context.Simple.executionContext
+  def createExecutionContext: ExecutionContext = castor.Context.Simple.executionContext
   def createActorContext = new castor.Context.Simple(executionContext, log.exception)
 
   val executionContext = createExecutionContext
@@ -44,23 +46,23 @@ abstract class Main{
 
   implicit def log: cask.util.Logger = new cask.util.Logger.Console()
 
-  def dispatchTrie = Main.prepareDispatchTrie(allRoutes)
+  def dispatchTrie: DispatchTrie[Map[String, (Routes, EndpointMetadata[_])]] = Main.prepareDispatchTrie(allRoutes)
 
   def defaultHandler = new BlockingHandler(
     new Main.DefaultHandler(dispatchTrie, mainDecorators, debugMode, handleNotFound, handleMethodNotAllowed, handleEndpointError)
   )
 
-  def handleNotFound() = Main.defaultHandleNotFound()
+  def handleNotFound(): Raw = Main.defaultHandleNotFound()
 
-  def handleMethodNotAllowed() = Main.defaultHandleMethodNotAllowed()
+  def handleMethodNotAllowed(): Raw = Main.defaultHandleMethodNotAllowed()
 
   def handleEndpointError(routes: Routes,
                           metadata: EndpointMetadata[_],
-                          e: cask.router.Result.Error) = {
+                          e: cask.router.Result.Error): Response[String] = {
     Main.defaultHandleError(routes, metadata, e, debugMode)
   }
 
-  def main(args: Array[String]): Unit = {
+  def main(@nowarn args: Array[String]): Unit = {
     if (!verbose) Main.silenceJboss()
     val server = Undertow.builder
       .addHttpListener(port, host)
@@ -74,7 +76,7 @@ abstract class Main{
 object Main{
   class DefaultHandler(dispatchTrie: DispatchTrie[Map[String, (Routes, EndpointMetadata[_])]],
                        mainDecorators: Seq[Decorator[_, _, _]],
-                       debugMode: Boolean,
+                       @nowarn debugMode: Boolean,
                        handleNotFound: () => Response.Raw,
                        handleMethodNotAllowed: () => Response.Raw,
                        handleError: (Routes, EndpointMetadata[_], Result.Error) => Response.Raw)
@@ -129,8 +131,9 @@ object Main{
               }
           }
       }
-    }catch{case e: Throwable =>
-      e.printStackTrace()
+    } catch {
+      case NonFatal(e) =>
+        log.exception(e)
     }
   }
 
@@ -164,15 +167,15 @@ object Main{
     }
 
     val dispatchInputs = flattenedRoutes.groupBy(_._1).map { case (segments, values) =>
-      val methodMap = values.map(_._2).flatten
-      val hasSubpath = values.map(_._3).contains(true)
-      (segments, methodMap, hasSubpath)
+      val methodMap = values.flatMap(_._2)
+      val hasSubPath = values.exists(_._3)
+      (segments, methodMap, hasSubPath)
     }.toSeq
 
     DispatchTrie.construct(0, dispatchInputs)(_.map(_._1)).map(_.toMap)
   }
 
-  def writeResponse(exchange: HttpServerExchange, response: Response.Raw) = {
+  def writeResponse(exchange: HttpServerExchange, response: Response.Raw): Unit = {
     response.data.headers.foreach{case (k, v) =>
       exchange.getResponseHeaders.put(new HttpString(k), v)
     }
@@ -187,10 +190,10 @@ object Main{
       def write(b: Int): Unit = output.write(b)
       override def write(b: Array[Byte]): Unit = output.write(b)
       override def write(b: Array[Byte], off: Int, len: Int): Unit = output.write(b, off, len)
-      override def close() = {
+      override def close(): Unit = {
         if (!exchange.isComplete) output.close()
       }
-      override def flush() = {
+      override def flush(): Unit = {
         if (!exchange.isComplete) output.flush()
       }
     })
@@ -200,7 +203,7 @@ object Main{
                          metadata: EndpointMetadata[_],
                          e: Result.Error,
                          debugMode: Boolean)
-                        (implicit log: Logger) = {
+                        (implicit log: Logger): Response[String] = {
     e match {
       case e: Result.Error.Exception => log.exception(e.t)
       case _ => // do nothing

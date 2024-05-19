@@ -168,7 +168,7 @@ object example extends Module{
   object todoDb extends Cross[TodoDbModule](scala213) // uses quill, can't enable for Dotty yet
 
   trait TwirlModule extends millbuild.example.twirl.build.AppModule with LocalModule
-  object twirl extends Cross[TwirlModule](scalaVersions)
+//  object twirl extends Cross[TwirlModule](scalaVersions)
 
   trait VariableRoutesModule extends millbuild.example.variableRoutes.build.AppModule with LocalModule
   object variableRoutes extends Cross[VariableRoutesModule](scalaVersions)
@@ -230,7 +230,7 @@ def uploadToGithub() = T.command{
     millbuild.example.todo.build.millSourcePath,
     millbuild.example.todoApi.build.millSourcePath,
     millbuild.example.todoDb.build.millSourcePath,
-    millbuild.example.twirl.build.millSourcePath,
+//    millbuild.example.twirl.build.millSourcePath,
     millbuild.example.variableRoutes.build.millSourcePath,
     millbuild.example.queryParams.build.millSourcePath,
     millbuild.example.websockets.build.millSourcePath,
