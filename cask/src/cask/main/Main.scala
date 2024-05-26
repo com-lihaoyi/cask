@@ -2,8 +2,8 @@ package cask.main
 
 import cask.endpoints.{WebsocketResult, WsHandler}
 import cask.model._
-import cask.internal.{DispatchTrie, Util, VirtualThreadBlockingHandler, VirtualThreadSupport}
-import cask.model.Response.Raw
+import cask.internal.{DispatchTrie, Util, ThreadBlockingHandler}
+import Response.Raw
 import cask.router.{Decorator, EndpointMetadata, EntryPoint, Result}
 import cask.util.Logger
 import io.undertow.Undertow
@@ -11,6 +11,7 @@ import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.server.handlers.BlockingHandler
 import io.undertow.util.HttpString
 
+import java.util.concurrent.Executor
 import scala.annotation.nowarn
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
@@ -34,19 +35,6 @@ class MainRoutes extends Main with Routes {
  * `Virtual Threads` if the runtime supports it and the property `cask.virtualThread.enabled` is set to `true`.
  */
 abstract class Main {
-  /**
-   * Ture and only true when the virtual thread supported by the runtime, and
-   * property `cask.virtualThread.enabled` is set to `true`.
-   * */
-  private lazy val useVirtualThreadHandlerExecutor: Boolean = {
-    val enableVT = System.getProperty("cask.virtualThread.enabled", "false")
-    enableVT match {
-      case "true" if VirtualThreadSupport.isVirtualThreadSupported => true
-      case _ => false
-    }
-
-  }
-
   def mainDecorators: Seq[Decorator[_, _, _]] = Nil
 
   def allRoutes: Seq[Routes]
@@ -70,11 +58,15 @@ abstract class Main {
 
   def dispatchTrie: DispatchTrie[Map[String, (Routes, EndpointMetadata[_])]] = Main.prepareDispatchTrie(allRoutes)
 
+  protected def handlerExecutor(): Executor = {
+    null
+  }
+
   def defaultHandler: HttpHandler = {
     val mainHandler = new Main.DefaultHandler(dispatchTrie, mainDecorators, debugMode, handleNotFound, handleMethodNotAllowed, handleEndpointError)
-    if (useVirtualThreadHandlerExecutor) {
-      //switch to virtual thread if possible
-      new VirtualThreadBlockingHandler(mainHandler)
+    val executor = handlerExecutor()
+    if (handlerExecutor ne null) {
+      new ThreadBlockingHandler(executor, mainHandler)
     } else new BlockingHandler(mainHandler)
   }
 
