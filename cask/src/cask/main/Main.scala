@@ -2,7 +2,7 @@ package cask.main
 
 import cask.endpoints.{WebsocketResult, WsHandler}
 import cask.model._
-import cask.internal.{DispatchTrie, Util, ThreadBlockingHandler}
+import cask.internal.{DispatchTrie, ThreadBlockingHandler, Util}
 import Response.Raw
 import cask.router.{Decorator, EndpointMetadata, EntryPoint, Result}
 import cask.util.Logger
@@ -62,9 +62,16 @@ abstract class Main {
     null
   }
 
+  private def screenExecutor(executor: Executor): Executor = {
+    if (executor eq null) executor
+    else if (System.getProperty("cask.virtualThread.enabled", "true").toBoolean) {
+      Util.createVirtualThreadExecutor(executor).getOrElse(executor)
+    } else executor
+  }
+
   def defaultHandler: HttpHandler = {
     val mainHandler = new Main.DefaultHandler(dispatchTrie, mainDecorators, debugMode, handleNotFound, handleMethodNotAllowed, handleEndpointError)
-    val executor = handlerExecutor()
+    val executor = screenExecutor(handlerExecutor())
     if (handlerExecutor ne null) {
       new ThreadBlockingHandler(executor, mainHandler)
     } else new BlockingHandler(mainHandler)
