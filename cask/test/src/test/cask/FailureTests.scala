@@ -11,7 +11,7 @@ object FailureTests extends TestSuite {
   }
 
   val tests = Tests{
-    "mismatchedDecorators" - {
+    test("mismatchedDecorators") {
       val m = utest.compileError("""
         object Decorated extends cask.MainRoutes{
           @myDecorator
@@ -23,7 +23,7 @@ object FailureTests extends TestSuite {
       assert(m.contains("required: cask.router.Decorator[_, cask.endpoints.WebsocketResult, _]"))
     }
 
-    "noEndpoint" - {
+    test("noEndpoint") {
       utest.compileError("""
         object Decorated extends cask.MainRoutes{
           @cask.get("/hello/:world")
@@ -35,7 +35,7 @@ object FailureTests extends TestSuite {
         "Last annotation applied to a function must be an instance of Endpoint, not test.cask.FailureTests.myDecorator"
       }
 
-    "tooManyEndpoint" - {
+    test("tooManyEndpoint") {
       utest.compileError("""
         object Decorated extends cask.MainRoutes{
           @cask.get("/hello/:world")
