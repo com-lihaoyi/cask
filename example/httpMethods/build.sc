@@ -7,8 +7,8 @@ trait AppModule extends CrossScalaModule{
   object test extends ScalaTests with TestModule.Utest{
 
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.8.1",
-      ivy"com.lihaoyi::requests::0.8.0",
+      ivy"com.lihaoyi::utest::0.8.3",
+      ivy"com.lihaoyi::requests::0.8.3",
     )
     def forkArgs = Seq("--add-opens=java.base/java.net=ALL-UNNAMED")
   }

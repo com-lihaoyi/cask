@@ -28,13 +28,13 @@ import $file.example.websockets3.build
 import $file.example.websockets4.build
 import $file.ci.upload
 import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.0`
-import $ivy.`com.github.lolgab::mill-mima::0.0.23`
+import $ivy.`com.github.lolgab::mill-mima::0.1.0`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 
-val scala213 = "2.13.10"
-val scala212 = "2.12.17"
-val scala3 = "3.2.2"
-val scalaJS = "1.13.0"
+val scala213 = "2.13.14"
+val scala212 = "2.12.19"
+val scala3 = "3.3.3"
+val scalaJS = "1.16.0"
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
 val scalaVersions = List(scala212, scala213, scala3) ++ communityBuildDottyVersion
@@ -59,20 +59,20 @@ trait CaskModule extends CrossScalaModule with PublishModule{
 trait CaskMainModule extends CaskModule {
   def ivyDeps = T{
     Agg(
-      ivy"io.undertow:undertow-core:2.3.10.Final",
-      ivy"com.lihaoyi::upickle:3.0.0"
+      ivy"io.undertow:undertow-core:2.3.13.Final",
+      ivy"com.lihaoyi::upickle:3.3.1"
     ) ++
     Agg.when(!isScala3)(ivy"org.scala-lang:scala-reflect:$crossScalaVersion")
   }
 
-  def compileIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.6")
+  def compileIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.12")
   def scalacOptions = Agg.when(!isScala3)("-P:acyclic:force").toSeq
-  def scalacPluginIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.6")
+  def scalacPluginIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.12")
 
   object test extends ScalaTests with TestModule.Utest{
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.8.1",
-      ivy"com.lihaoyi::requests::0.8.0"
+      ivy"com.lihaoyi::utest::0.8.3",
+      ivy"com.lihaoyi::requests::0.8.2"
     )
   }
   def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
@@ -82,9 +82,9 @@ object cask extends Cross[CaskMainModule](scalaVersions) {
   object util extends Module {
     trait UtilModule extends CaskModule with PlatformScalaModule{
       def ivyDeps = Agg(
-        ivy"com.lihaoyi::sourcecode:0.3.0",
-        ivy"com.lihaoyi::pprint:0.8.1",
-        ivy"com.lihaoyi::geny:1.0.0"
+        ivy"com.lihaoyi::sourcecode:0.4.1",
+        ivy"com.lihaoyi::pprint:0.9.0",
+        ivy"com.lihaoyi::geny:1.1.0"
       )
     }
 
@@ -92,7 +92,7 @@ object cask extends Cross[CaskMainModule](scalaVersions) {
     trait UtilJvmModule extends UtilModule {
       def ivyDeps = super.ivyDeps() ++ Agg(
         ivy"com.lihaoyi::castor::0.3.0",
-        ivy"org.java-websocket:Java-WebSocket:1.5.3"
+        ivy"org.java-websocket:Java-WebSocket:1.5.6"
       )
     }
 
@@ -101,7 +101,7 @@ object cask extends Cross[CaskMainModule](scalaVersions) {
       def scalaJSVersion = scalaJS
       def ivyDeps = super.ivyDeps() ++ Agg(
         ivy"com.lihaoyi::castor::0.3.0",
-        ivy"org.scala-js::scalajs-dom::2.4.0"
+        ivy"org.scala-js::scalajs-dom::2.8.0"
       )
     }
   }
@@ -168,7 +168,7 @@ object example extends Module{
   object todoDb extends Cross[TodoDbModule](scala213) // uses quill, can't enable for Dotty yet
 
   trait TwirlModule extends millbuild.example.twirl.build.AppModule with LocalModule
-  object twirl extends Cross[TwirlModule](scalaVersions)
+//  object twirl extends Cross[TwirlModule](scalaVersions)
 
   trait VariableRoutesModule extends millbuild.example.variableRoutes.build.AppModule with LocalModule
   object variableRoutes extends Cross[VariableRoutesModule](scalaVersions)
@@ -230,7 +230,7 @@ def uploadToGithub() = T.command{
     millbuild.example.todo.build.millSourcePath,
     millbuild.example.todoApi.build.millSourcePath,
     millbuild.example.todoDb.build.millSourcePath,
-    millbuild.example.twirl.build.millSourcePath,
+//    millbuild.example.twirl.build.millSourcePath,
     millbuild.example.variableRoutes.build.millSourcePath,
     millbuild.example.queryParams.build.millSourcePath,
     millbuild.example.websockets.build.millSourcePath,
