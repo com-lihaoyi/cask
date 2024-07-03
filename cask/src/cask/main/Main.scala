@@ -50,14 +50,15 @@ abstract class Main{
     new Main.DefaultHandler(dispatchTrie, mainDecorators, debugMode, handleNotFound, handleMethodNotAllowed, handleEndpointError)
   )
 
-  def handleNotFound() = Main.defaultHandleNotFound()
+  def handleNotFound(req: Request): Response.Raw = Main.defaultHandleNotFound(req)
 
-  def handleMethodNotAllowed() = Main.defaultHandleMethodNotAllowed()
+  def handleMethodNotAllowed(req: Request): Response.Raw = Main.defaultHandleMethodNotAllowed(req)
 
   def handleEndpointError(routes: Routes,
                           metadata: EndpointMetadata[_],
-                          e: cask.router.Result.Error) = {
-    Main.defaultHandleError(routes, metadata, e, debugMode)
+                          e: cask.router.Result.Error,
+                          req: Request): Response.Raw = {
+    Main.defaultHandleError(routes, metadata, e, debugMode, req)
   }
 
   def main(args: Array[String]): Unit = {
@@ -75,9 +76,9 @@ object Main{
   class DefaultHandler(dispatchTrie: DispatchTrie[Map[String, (Routes, EndpointMetadata[_])]],
                        mainDecorators: Seq[Decorator[_, _, _]],
                        debugMode: Boolean,
-                       handleNotFound: () => Response.Raw,
-                       handleMethodNotAllowed: () => Response.Raw,
-                       handleError: (Routes, EndpointMetadata[_], Result.Error) => Response.Raw)
+                       handleNotFound: Request => Response.Raw,
+                       handleMethodNotAllowed: Request => Response.Raw,
+                       handleError: (Routes, EndpointMetadata[_], Result.Error, Request) => Response.Raw)
                       (implicit log: Logger) extends HttpHandler() {
     def handleRequest(exchange: HttpServerExchange): Unit = try {
       //        println("Handling Request: " + exchange.getRequestPath)
@@ -106,13 +107,14 @@ object Main{
         .toList
 
       dispatchTrie.lookup(decodedSegments, Map()) match {
-        case None => Main.writeResponse(exchange, handleNotFound())
+        case None => Main.writeResponse(exchange, handleNotFound(Request(exchange, decodedSegments)))
         case Some((methodMap, routeBindings, remaining)) =>
           methodMap.get(effectiveMethod) match {
-            case None => Main.writeResponse(exchange, handleMethodNotAllowed())
+            case None => Main.writeResponse(exchange, handleMethodNotAllowed(Request(exchange, remaining)))
             case Some((routes, metadata)) =>
+              val req = Request(exchange, remaining)
               Decorator.invoke(
-                Request(exchange, remaining),
+                req,
                 metadata.endpoint,
                 metadata.entryPoint.asInstanceOf[EntryPoint[Routes, _]],
                 routes,
@@ -124,7 +126,7 @@ object Main{
                 case e: Result.Error =>
                   Main.writeResponse(
                     exchange,
-                    handleError(routes, metadata, e)
+                    handleError(routes, metadata, e, req)
                   )
               }
           }
@@ -134,14 +136,14 @@ object Main{
     }
   }
 
-  def defaultHandleNotFound(): Response.Raw = {
+  def defaultHandleNotFound(req: Request): Response.Raw = {
     Response(
       s"Error 404: ${Status.codesToStatus(404).reason}",
       statusCode = 404
     )
   }
 
-  def defaultHandleMethodNotAllowed(): Response.Raw = {
+  def defaultHandleMethodNotAllowed(req: Request): Response.Raw = {
     Response(
       s"Error 405: ${Status.codesToStatus(405).reason}",
       statusCode = 405
@@ -199,7 +201,8 @@ object Main{
   def defaultHandleError(routes: Routes,
                          metadata: EndpointMetadata[_],
                          e: Result.Error,
-                         debugMode: Boolean)
+                         debugMode: Boolean,
+                         req: Request)
                         (implicit log: Logger) = {
     e match {
       case e: Result.Error.Exception => log.exception(e.t)
