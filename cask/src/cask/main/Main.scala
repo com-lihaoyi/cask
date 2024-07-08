@@ -106,7 +106,7 @@ object Main{
         .map(java.net.URLDecoder.decode(_, "UTF-8"))
         .toList
 
-      dispatchTrie.lookup(decodedSegments, Map()) match {
+      dispatchTrie.lookup(decodedSegments, Vector()) match {
         case None => Main.writeResponse(exchange, handleNotFound(Request(exchange, decodedSegments)))
         case Some((methodMap, routeBindings, remaining)) =>
           methodMap.get(effectiveMethod) match {
