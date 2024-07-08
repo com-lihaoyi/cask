@@ -265,7 +265,7 @@ object VariableRoutes extends cask.MainRoutes{
 object QueryParams extends cask.MainRoutes{
 
   @cask.get(&quot;/article/:articleId&quot;) // Mandatory query param, e.g. HOST/article/foo?param=bar
-  def getArticle(articleId: Int, param: String) = { 
+  def getArticle(articleId: Int, param: String) = {
     s&quot;Article $articleId $param&quot;
   }
 
@@ -292,6 +292,21 @@ object QueryParams extends cask.MainRoutes{
   @cask.get(&quot;/user2/:userName&quot;) // allow unknown params, e.g. HOST/article/foo?foo=bar&amp;qux=baz
   def getUserProfileAllowUnknown(userName: String, params: cask.QueryParams) = {
     s&quot;User $userName &quot; + params.value
+  }
+
+  @cask.get(&quot;/statics/foo&quot;)
+  def getStatic() = {
+    &quot;static route takes precedence&quot;
+  }
+
+  @cask.get(&quot;/statics/:foo&quot;)
+  def getDynamics(foo: String) = {
+    s&quot;dynamic route $foo&quot;
+  }
+
+  @cask.get(&quot;/statics/bar&quot;)
+  def getStatic2() = {
+    &quot;another static route&quot;
   }
 
   initialize()
