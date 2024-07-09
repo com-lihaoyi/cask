@@ -13,3 +13,4 @@ project/.sbtserver
 tags
 nohup.out
 out
+.bsp/
