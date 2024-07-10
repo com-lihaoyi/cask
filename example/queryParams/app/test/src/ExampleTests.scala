@@ -90,6 +90,16 @@ object ExampleTests extends TestSuite{
         res3 == "User lihaoyi Map(unknown1 -> WrappedArray(123), unknown2 -> WrappedArray(abc))" ||
         res3 == "User lihaoyi Map(unknown1 -> ArraySeq(123), unknown2 -> ArraySeq(abc))"
       )
+
+      assert(
+        requests.get(s"$host/statics/foo").text() == "static route takes precedence"
+      )
+      assert(
+        requests.get(s"$host/statics/hello").text() == "dynamic route hello"
+      )
+      assert(
+        requests.get(s"$host/statics/bar").text() == "another static route"
+      )
     }
   }
 }

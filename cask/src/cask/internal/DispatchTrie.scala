@@ -38,17 +38,25 @@ object DispatchTrie{
       validateGroup(groupTerminals, groupContinuations)
     }
 
+    val dynamicChildren = continuations.filter(_._1.startsWith(":"))
+      .flatMap(_._2).toIndexedSeq
+
     DispatchTrie[T](
-      current = terminals.headOption.map(x => x._2 -> x._3),
-      children = continuations
+      current = terminals.headOption
+        .map{ case (path, value, capturesSubpath) =>
+          val argNames = path.filter(_.startsWith(":")).map(_.drop(1)).toVector
+          (value, capturesSubpath, argNames)
+        },
+      staticChildren = continuations
+        .filter(!_._1.startsWith(":"))
         .map{ case (k, vs) => (k, construct(index + 1, vs)(validationGroups))}
-        .toMap
+        .toMap,
+      dynamicChildren = if (dynamicChildren.isEmpty) None else Some(construct(index + 1, dynamicChildren)(validationGroups))
     )
   }
 
   def validateGroup[T, V](terminals: collection.Seq[(collection.Seq[String], T, Boolean, V)],
                           continuations: mutable.Map[String, mutable.Buffer[(collection.IndexedSeq[String], T, Boolean, V)]]) = {
-    val wildcards = continuations.filter(_._1(0) == ':')
 
     def renderTerminals = terminals
       .map{case (path, v, allowSubpath, group) => s"$group${renderPath(path)}"}
@@ -62,12 +70,6 @@ object DispatchTrie{
     if (terminals.length > 1) {
       throw new Exception(
         s"More than one endpoint has the same path: $renderTerminals"
-      )
-    }
-
-    if (wildcards.size >= 1 && continuations.size > 1) {
-      throw new Exception(
-        s"Routes overlap with wildcards: $renderContinuations"
       )
     }
 
@@ -88,32 +90,37 @@ object DispatchTrie{
   * segments starting with `:`) and any remaining un-used path segments
   * (only when `current._2 == true`, indicating this route allows trailing
   * segments)
+  * current = (value, captures subpaths, argument names)
   */
-case class DispatchTrie[T](current: Option[(T, Boolean)],
-                           children: Map[String, DispatchTrie[T]]){
-  final def lookup(remainingInput: List[String],
-                   bindings: Map[String, String])
-  : Option[(T, Map[String, String], Seq[String])] = {
-    remainingInput match{
-      case Nil =>
-        current.map(x => (x._1, bindings, Nil))
-      case head :: rest if current.exists(_._2) =>
-        current.map(x => (x._1, bindings, head :: rest))
-      case head :: rest =>
-        if (children.size == 1 && children.keys.head.startsWith(":")){
-          children.values.head.lookup(rest, bindings + (children.keys.head.drop(1) -> head))
-        }else{
-          children.get(head) match{
-            case None => None
-            case Some(continuation) => continuation.lookup(rest, bindings)
-          }
-        }
+case class DispatchTrie[T](
+  current: Option[(T, Boolean, Vector[String])],
+  staticChildren: Map[String, DispatchTrie[T]],
+  dynamicChildren: Option[DispatchTrie[T]]
+) {
 
+  final def lookup(remainingInput: List[String],
+                   bindings: Vector[String])
+  : Option[(T, Map[String, String], Seq[String])] = {
+    remainingInput match {
+      case Nil =>
+        current.map(x => (x._1, x._3.zip(bindings).toMap, Nil))
+      case head :: rest if current.exists(_._2) =>
+        current.map(x => (x._1, x._3.zip(bindings).toMap, head :: rest))
+      case head :: rest =>
+        staticChildren.get(head) match {
+          case Some(continuation) => continuation.lookup(rest, bindings)
+          case None =>
+            dynamicChildren match {
+              case Some(continuation) => continuation.lookup(rest, bindings :+ head)
+              case None => None
+            }
+        }
     }
   }
 
   def map[V](f: T => V): DispatchTrie[V] = DispatchTrie(
-    current.map{case (t, v) => (f(t), v)},
-    children.map { case (k, v) => (k, v.map(f))}
+    current.map{case (t, v, a) => (f(t), v, a)},
+    staticChildren.map { case (k, v) => (k, v.map(f))},
+    dynamicChildren.map { case v => v.map(f)},
   )
 }
