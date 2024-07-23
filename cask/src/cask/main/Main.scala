@@ -29,7 +29,7 @@ class MainRoutes extends Main with Routes{
   * application-wide properties.
   */
 abstract class Main{
-  def mainDecorators: Seq[Decorator[_, _, _]] = Nil
+  def mainDecorators: Seq[Decorator[_, _, _, _]] = Nil
   def allRoutes: Seq[Routes]
   def port: Int = 8080
   def host: String = "localhost"
@@ -74,7 +74,7 @@ abstract class Main{
 
 object Main{
   class DefaultHandler(dispatchTrie: DispatchTrie[Map[String, (Routes, EndpointMetadata[_])]],
-                       mainDecorators: Seq[Decorator[_, _, _]],
+                       mainDecorators: Seq[Decorator[_, _, _, _]],
                        debugMode: Boolean,
                        handleNotFound: Request => Response.Raw,
                        handleMethodNotAllowed: Request => Response.Raw,

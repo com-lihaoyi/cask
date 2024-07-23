@@ -15,15 +15,15 @@ object RoutesEndpointsMetadata{
 
     val routeParts = for{
       m <- c.weakTypeOf[T].members
-      annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[Decorator[_, _, _]])
+      annotations = m.annotations.filter(_.tree.tpe <:< c.weakTypeOf[Decorator[_, _, _, _]])
       if annotations.nonEmpty
     } yield {
-      if(!(annotations.last.tree.tpe <:< weakTypeOf[Endpoint[_, _, _]])) c.abort(
+      if(!(annotations.last.tree.tpe <:< weakTypeOf[Endpoint[_, _, _, _]])) c.abort(
         annotations.head.tree.pos,
         s"Last annotation applied to a function must be an instance of Endpoint, " +
           s"not ${annotations.last.tree.tpe}"
       )
-      val allEndpoints = annotations.filter(_.tree.tpe <:< weakTypeOf[Endpoint[_, _, _]])
+      val allEndpoints = annotations.filter(_.tree.tpe <:< weakTypeOf[Endpoint[_, _, _, _]])
       if(allEndpoints.length > 1) c.abort(
         annotations.last.tree.pos,
         s"You can only apply one Endpoint annotation to a function, not " +

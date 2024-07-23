@@ -9,15 +9,15 @@ object Macros {
     * This replicates EndpointMetadata.seqify, but in a macro where error
     * positions can be controlled.
     */
-  def checkDecorators(using Quotes)(decorators: List[Expr[Decorator[_, _, _]]]): Boolean = {
+  def checkDecorators(using Quotes)(decorators: List[Expr[Decorator[_, _, _, _]]]): Boolean = {
     import quotes.reflect._
 
     var hasErrors = false
 
-    def check(prevOuter: TypeRepr, decorators: List[Expr[Decorator[_, _, _]]]): Unit =
+    def check(prevOuter: TypeRepr, decorators: List[Expr[Decorator[_, _, _, _]]]): Unit =
       decorators match {
         case Nil =>
-        case '{ $d: Decorator[outer, inner, _] } :: tail =>
+        case '{ $d: Decorator[outer, inner, _, _] } :: tail =>
           if (TypeRepr.of[inner] <:< prevOuter) {
             check(TypeRepr.of[outer], tail)
           } else {
@@ -56,7 +56,7 @@ object Macros {
 
   /** Summon the reader for a parameter. */
   def summonReader(using Quotes)(
-    decorator: Expr[Decorator[_,_,_]],
+    decorator: Expr[Decorator[_,_,_,_]],
     param: quotes.reflect.Symbol
   ): Expr[ArgReader[_, _, _]] = {
     import quotes.reflect._
@@ -143,13 +143,13 @@ object Macros {
     */
   def convertToResponse(using Quotes)(
     method: quotes.reflect.Symbol,
-    endpoint: Expr[Endpoint[_, _, _]],
+    endpoint: Expr[Endpoint[_, _, _, _]],
     result: Expr[Any]
   ): Expr[Any] = {
     import quotes.reflect._
 
     val innerReturnedTpt = endpoint.asTerm.tpe.asType match {
-      case '[Endpoint[_, innerReturned, _]] => TypeRepr.of[innerReturned]
+      case '[Endpoint[_, innerReturned, _, _]] => TypeRepr.of[innerReturned]
       case _ => ???
     }
 
@@ -186,8 +186,8 @@ object Macros {
 
   def extractMethod[Cls: Type](using q: Quotes)(
     method: quotes.reflect.Symbol,
-    decorators: List[Expr[Decorator[_, _, _]]], // these must also include the endpoint
-    endpoint: Expr[Endpoint[_, _, _]]
+    decorators: List[Expr[Decorator[_, _, _, _]]], // these must also include the endpoint
+    endpoint: Expr[Endpoint[_, _, _, _]]
   ): Expr[EntryPoint[Cls, cask.Request]] = {
     import quotes.reflect._
 
@@ -198,7 +198,7 @@ object Macros {
 
       // sometimes we have more params than annotated decorators, for example if
       // there are global decorators
-      val decorator: Option[Expr[Decorator[_, _, _]]] = decorators.lift(idx)
+      val decorator: Option[Expr[Decorator[_, _, _, _]]] = decorators.lift(idx)
 
       val exprs1 = for (param <- params) yield {
         val paramTree = param.tree.asInstanceOf[ValDef]
@@ -231,7 +231,7 @@ object Macros {
           case Some(deco) => summonReader(deco, param)
           case None =>
             decoTpe match
-              case '[t] => '{ NoOpParser.instanceAny[t] }
+              case '[t] => '{ NoOpParser.instanceAnyRequest[t] } // TODO
         }
 
         '{
