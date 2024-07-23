@@ -188,7 +188,7 @@ object Macros {
     method: quotes.reflect.Symbol,
     decorators: List[Expr[Decorator[_, _, _, _]]], // these must also include the endpoint
     endpoint: Expr[Endpoint[_, _, _, _]]
-  ): Expr[EntryPoint[Cls, cask.Request]] = {
+  ): Expr[EntryPoint[Cls, Any]] = {
     import quotes.reflect._
 
     val defaults = getDefaultParams(method)
@@ -235,12 +235,12 @@ object Macros {
         }
 
         '{
-          ArgSig[Any, Cls, Any, cask.Request](
+          ArgSig[Any, Cls, Any, Any](
             ${Expr(param.name)},
             ${Expr(paramTpeName)},
             doc = None, // TODO
             default = ${defaultGetter}
-          )(using ${reader}.asInstanceOf[ArgReader[Any, Any, cask.Request]])
+          )(using ${reader}.asInstanceOf[ArgReader[Any, Any, Any]])
         }
       }
       Expr.ofList(exprs1)
@@ -248,18 +248,18 @@ object Macros {
     val sigExprs = Expr.ofList(exprs0)
 
     '{
-      EntryPoint[Cls, cask.Request](
+      EntryPoint[Cls, Any](
         name = ${Expr(method.name)},
         argSignatures = $sigExprs,
         doc = None, // TODO
         invoke0 = (
           clazz: Cls,
-          ctx: cask.Request,
+          ctxs: Seq[Any],
           argss: Seq[Map[String, Any]],
-          sigss: Seq[Seq[ArgSig[Any, _, _, cask.Request]]]
+          sigss: Seq[Seq[ArgSig[Any, _, _, Any]]]
         ) => {
           val parsedArgss: Seq[Seq[Either[Seq[cask.router.Result.ParamError], Any]]] =
-            sigss.zip(argss).map{ case (sigs, args) =>
+            (sigss, argss, ctxs).zipped.map { case (sigs, args, ctx) =>
               sigs.map{ case sig =>
                 Runtime.makeReadCall(
                   args,

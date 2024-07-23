@@ -40,23 +40,25 @@ object Decorator{
                 routes: T,
                 routeBindings: Map[String, String],
                 remainingDecorators: List[Decorator[_, _, _, _]],
+                inputContexts: List[Any],
                 bindings: List[Map[String, Any]]): Result[Any] = try {
     remainingDecorators match {
       case head :: rest =>
         head.asInstanceOf[Decorator[Any, Any, Any, Any]].wrapFunction(
           ctx,
-          (_, args) => invoke(ctx, endpoint, entryPoint, routes, routeBindings, rest, args :: bindings)
+          (ictx, args) => invoke(ctx, endpoint, entryPoint, routes, routeBindings, rest, ictx :: inputContexts, args :: bindings)
             .asInstanceOf[Result[Nothing]]
         )
 
       case Nil =>
         endpoint.wrapFunction(ctx, { (ictx: Any, endpointBindings: Map[String, Any]) =>
+
           val mergedEndpointBindings = endpointBindings ++ routeBindings.mapValues(endpoint.wrapPathSegment)
           val finalBindings = mergedEndpointBindings :: bindings
 
           entryPoint
             .asInstanceOf[EntryPoint[T, Any]]
-            .invoke(routes, ictx, finalBindings)
+            .invoke(routes, ictx :: inputContexts, finalBindings)
             .asInstanceOf[Result[Nothing]]
         })
     }

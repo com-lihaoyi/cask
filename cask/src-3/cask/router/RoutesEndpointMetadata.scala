@@ -50,7 +50,7 @@ object RoutesEndpointsMetadata{
       val entrypointExpr = Macros.extractMethod[T](m, decorators, endpointExpr)
 
       '{
-        val entrypoint: EntryPoint[T, cask.Request] = ${entrypointExpr}
+        val entrypoint: EntryPoint[T, Any] = ${entrypointExpr}
 
         EndpointMetadata[T](
           // the Scala 2 version and non-macro code expects decorators to be reversed

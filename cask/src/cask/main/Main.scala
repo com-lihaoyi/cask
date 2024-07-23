@@ -120,6 +120,7 @@ object Main{
                 routes,
                 routeBindings,
                 (mainDecorators ++ routes.decorators ++ metadata.decorators).toList,
+                Nil,
                 Nil
               ) match {
                 case Result.Success(res) => runner(res)
