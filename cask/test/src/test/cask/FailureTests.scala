@@ -6,7 +6,7 @@ import utest._
 object FailureTests extends TestSuite {
   class myDecorator extends cask.RawDecorator {
     def wrapFunction(ctx: Request, delegate: Delegate) = {
-      delegate(Map("extra" -> 31337))
+      delegate(ctx, Map("extra" -> 31337))
     }
   }
 

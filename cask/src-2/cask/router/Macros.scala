@@ -64,7 +64,7 @@ class Macros[C <: blackbox.Context](val c: C) {
     val ctxSymbol = q"${c.fresh[TermName](TermName("ctx"))}"
     val argData = for(argListIndex <- method.paramLists.indices) yield{
       val annotDeserializeType = annotDeserializeTypes.lift(argListIndex).getOrElse(tq"scala.Any")
-      val argReader = argReaders.lift(argListIndex).getOrElse(q"cask.router.NoOpParser.instanceAny")
+      val argReader = argReaders.lift(argListIndex).getOrElse(q"cask.router.NoOpParser.instanceAnyRequest")
       val flattenedArgLists = method.paramss(argListIndex)
       def hasDefault(i: Int) = {
         // defaults are numbered globally on a class-level, this means that we

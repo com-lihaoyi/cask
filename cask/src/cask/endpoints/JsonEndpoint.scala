@@ -66,7 +66,7 @@ abstract class postJsonBase(val path: String, override val subpath: Boolean = fa
     } yield obj.toMap
     obj match{
       case Left(r) => Result.Success(r.map(Response.Data.WritableData(_)))
-      case Right(params) => delegate(params)
+      case Right(params) => delegate(ctx, params)
     }
   }
   def wrapPathSegment(s: String): ujson.Value = ujson.Str(s)
@@ -78,7 +78,7 @@ class getJson(val path: String, override val subpath: Boolean = false)
   type InputParser[T] = QueryParamReader[T]
 
   def wrapFunction(ctx: Request, delegate: Delegate): Result[Response.Raw] = {
-    delegate(WebEndpoint.buildMapFromQueryParams(ctx))
+    delegate(ctx, WebEndpoint.buildMapFromQueryParams(ctx))
   }
   def wrapPathSegment(s: String) = Seq(s)
 }

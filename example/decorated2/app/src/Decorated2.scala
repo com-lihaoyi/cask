@@ -5,12 +5,12 @@ object Decorated2 extends cask.MainRoutes{
   }
   class loggedIn extends cask.RawDecorator {
     def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
-      delegate(Map("user" -> new User()))
+      delegate(ctx, Map("user" -> new User()))
     }
   }
   class withExtra extends cask.RawDecorator {
     def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
-      delegate(Map("extra" -> 31337))
+      delegate(ctx, Map("extra" -> 31337))
     }
   }
 
