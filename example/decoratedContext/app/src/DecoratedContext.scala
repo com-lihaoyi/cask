@@ -27,7 +27,8 @@ object DecoratedContext extends cask.MainRoutes{
     def wrapFunction(req: cask.Request, delegate: Delegate) = {
       // Create a custom context out of the request. Custom contexts are useful
       // to group an expensive operation that may be used by multiple
-      // parameter readers.
+      // parameter readers or that carry state. This example focuses on carrying
+      // state.
       val ctx = Context(Session(collection.mutable.Map.empty)) // this would typically be populated from a signed cookie
 
       delegate(ctx, Map("user" -> 1337)).map{ response =>
