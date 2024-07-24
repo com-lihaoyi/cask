@@ -7,6 +7,7 @@ import $file.example.compress3.build
 import $file.example.cookies.build
 import $file.example.decorated.build
 import $file.example.decorated2.build
+import $file.example.decoratedContext.build
 import $file.example.endpoints.build
 import $file.example.formJsonPost.build
 import $file.example.httpMethods.build
@@ -130,6 +131,9 @@ object example extends Module{
 
   trait Decorated2Module extends millbuild.example.decorated2.build.AppModule with LocalModule
   object decorated2 extends Cross[Decorated2Module](scalaVersions)
+
+  trait DecoratedContextModule extends millbuild.example.decoratedContext.build.AppModule with LocalModule
+  object decoratedContext extends Cross[DecoratedContextModule](scalaVersions)
 
   trait EndpointsModule extends millbuild.example.endpoints.build.AppModule with LocalModule
   object endpoints extends Cross[EndpointsModule](scalaVersions)

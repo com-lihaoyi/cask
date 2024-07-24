@@ -11,7 +11,7 @@ trait WebEndpoint extends HttpEndpoint[Response.Raw, Seq[String]]{
   type InputParser[T] = QueryParamReader[T]
   def wrapFunction(ctx: Request,
                        delegate: Delegate): Result[Response.Raw] = {
-    delegate(WebEndpoint.buildMapFromQueryParams(ctx))
+    delegate(ctx, WebEndpoint.buildMapFromQueryParams(ctx))
   }
   def wrapPathSegment(s: String) = Seq(s)
 }

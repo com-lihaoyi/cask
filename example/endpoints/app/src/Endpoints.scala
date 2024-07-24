@@ -3,7 +3,7 @@ package app
 class custom(val path: String, val methods: Seq[String])
   extends cask.HttpEndpoint[Int, Seq[String]]{
   def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
-    delegate(Map()).map{num =>
+    delegate(ctx, Map()).map{num =>
       cask.Response("Echo " + num, statusCode = num)
     }
   }
