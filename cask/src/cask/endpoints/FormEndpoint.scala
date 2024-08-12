@@ -55,7 +55,10 @@ class postForm(val path: String, override val subpath: Boolean = false)
   def wrapFunction(ctx: Request,
                        delegate: Delegate): Result[Response.Raw] = {
     try {
-      val formData = FormParserFactory.builder().build().createParser(ctx.exchange).parseBlocking()
+      val formData = FormParserFactory
+        .builder().withDefaultCharset("utf-8").build()
+        .createParser(ctx.exchange)
+        .parseBlocking()
       delegate(
         formData
           .iterator()
