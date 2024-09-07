@@ -25,7 +25,8 @@ object MinimalApplication extends cask.MainRoutes{
 Cask is a simple Scala web framework inspired by Python's
 [Flask](http://flask.pocoo.org/docs/1.0/) project. It aims to bring simplicity,
 flexibility and ease-of-use to Scala webservers, avoiding cryptic DSLs or
-complicated asynchrony.
+complicated asynchrony. Cask makes it easy to set up a website, backend server, 
+or REST API using Scala
 
 - [Documentation](https://com-lihaoyi.github.io/cask/)
 
