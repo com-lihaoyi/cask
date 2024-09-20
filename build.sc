@@ -60,7 +60,7 @@ trait CaskMainModule extends CaskModule {
   def ivyDeps = T{
     Agg(
       ivy"io.undertow:undertow-core:2.3.10.Final",
-      ivy"com.lihaoyi::upickle:3.0.0"
+      ivy"com.lihaoyi::upickle:4.0.1"
     ) ++
     Agg.when(!isScala3)(ivy"org.scala-lang:scala-reflect:$crossScalaVersion")
   }
@@ -71,8 +71,8 @@ trait CaskMainModule extends CaskModule {
 
   object test extends ScalaTests with TestModule.Utest{
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.8.1",
-      ivy"com.lihaoyi::requests::0.8.0"
+      ivy"com.lihaoyi::utest::0.8.4",
+      ivy"com.lihaoyi::requests::0.9.0"
     )
   }
   def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
@@ -82,9 +82,9 @@ object cask extends Cross[CaskMainModule](scalaVersions) {
   object util extends Module {
     trait UtilModule extends CaskModule with PlatformScalaModule{
       def ivyDeps = Agg(
-        ivy"com.lihaoyi::sourcecode:0.3.0",
-        ivy"com.lihaoyi::pprint:0.8.1",
-        ivy"com.lihaoyi::geny:1.0.0"
+        ivy"com.lihaoyi::sourcecode:0.4.2",
+        ivy"com.lihaoyi::pprint:0.9.0",
+        ivy"com.lihaoyi::geny:1.1.1"
       )
     }
 
