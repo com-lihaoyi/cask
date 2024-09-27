@@ -5,19 +5,19 @@ object Decorated extends cask.MainRoutes {
   }
   class loggedIn extends cask.RawDecorator {
     def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
-      delegate(Map("user" -> new User()))
+      delegate(ctx, Map("user" -> new User()))
     }
   }
   class withExtra extends cask.RawDecorator {
     def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
-      delegate(Map("extra" -> 31337))
+      delegate(ctx, Map("extra" -> 31337))
     }
   }
 
   class withCustomHeader extends cask.RawDecorator {
     def wrapFunction(request: cask.Request, delegate: Delegate) = {
       request.headers.get("x-custom-header").map(_.head) match {
-        case Some(header) => delegate(Map("customHeader" -> header))
+        case Some(header) => delegate(request, Map("customHeader" -> header))
         case None =>
           cask.router.Result.Success(
             cask.model.Response(
