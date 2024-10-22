@@ -6,7 +6,7 @@ object StaticFiles extends cask.MainRoutes{
   }
 
   @cask.staticFiles("/static/file")
-  def staticFileRoutes() = "app/resources/cask"
+  def staticFileRoutes() = "resources/cask"
 
   @cask.staticResources("/static/resource")
   def staticResourceRoutes() = "cask"
