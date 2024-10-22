@@ -1,3 +1,4 @@
+package build.example.websockets4
 import mill._, scalalib._
 
 trait AppModule extends CrossScalaModule{

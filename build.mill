@@ -1,0 +1,167 @@
+package build
+
+import mill._, scalalib._, scalajslib._, publish._
+import mill.scalalib.api.ZincWorkerUtil
+
+import $packages._
+import $file.ci.upload
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.0`
+import $ivy.`com.github.lolgab::mill-mima::0.0.23`
+import de.tobiasroeser.mill.vcs.version.VcsVersion
+
+val scala213 = "2.13.10"
+val scala212 = "2.12.17"
+val scala3 = "3.2.2"
+val scalaJS = "1.13.0"
+val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
+
+val scalaVersions = List(scala212, scala213, scala3) ++ communityBuildDottyVersion
+
+trait CaskModule extends CrossScalaModule with PublishModule{
+  def isScala3 = ZincWorkerUtil.isScala3(crossScalaVersion)
+
+  def publishVersion = VcsVersion.vcsState().format()
+
+  def pomSettings = PomSettings(
+    description = artifactName(),
+    organization = "com.lihaoyi",
+    url = "https://github.com/com-lihaoyi/cask",
+    licenses = Seq(License.MIT),
+    versionControl = VersionControl.github("com-lihaoyi", "cask"),
+    developers = Seq(
+      Developer("lihaoyi", "Li Haoyi","https://github.com/lihaoyi")
+    )
+  )
+}
+
+trait CaskMainModule extends CaskModule {
+  def ivyDeps = T{
+    Agg(
+      ivy"io.undertow:undertow-core:2.3.10.Final",
+      ivy"com.lihaoyi::upickle:3.0.0"
+    ) ++
+    Agg.when(!isScala3)(ivy"org.scala-lang:scala-reflect:$crossScalaVersion")
+  }
+
+  def compileIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.6")
+  def scalacOptions = Agg.when(!isScala3)("-P:acyclic:force").toSeq
+  def scalacPluginIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.6")
+
+  object test extends ScalaTests with TestModule.Utest{
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest::0.8.1",
+      ivy"com.lihaoyi::requests::0.8.0"
+    )
+  }
+  def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
+}
+
+object cask extends Cross[CaskMainModule](scalaVersions) {
+  object util extends Module {
+    trait UtilModule extends CaskModule with PlatformScalaModule{
+      def ivyDeps = Agg(
+        ivy"com.lihaoyi::sourcecode:0.3.0",
+        ivy"com.lihaoyi::pprint:0.8.1",
+        ivy"com.lihaoyi::geny:1.0.0"
+      )
+    }
+
+    object jvm extends Cross[UtilJvmModule](scalaVersions)
+    trait UtilJvmModule extends UtilModule {
+      def ivyDeps = super.ivyDeps() ++ Agg(
+        ivy"com.lihaoyi::castor::0.3.0",
+        ivy"org.java-websocket:Java-WebSocket:1.5.3"
+      )
+    }
+
+    object js extends Cross[UtilJsModule](scala213)
+    trait UtilJsModule extends UtilModule with ScalaJSModule {
+      def scalaJSVersion = scalaJS
+      def ivyDeps = super.ivyDeps() ++ Agg(
+        ivy"com.lihaoyi::castor::0.3.0",
+        ivy"org.scala-js::scalajs-dom::2.4.0"
+      )
+    }
+  }
+}
+
+trait LocalModule extends CrossScalaModule{
+  override def millSourcePath = super.millSourcePath / "app"
+  def moduleDeps = Seq(cask(crossScalaVersion))
+}
+
+
+
+def uploadToGithub() = T.command{
+  val vcsState = VcsVersion.vcsState()
+
+  val authKey = T.env.apply("AMMONITE_BOT_AUTH_TOKEN")
+  val releaseTag = vcsState.lastTag.getOrElse("")
+  val label = vcsState.format()
+  if (releaseTag == label){
+    requests.post(
+      "https://api.github.com/repos/com-lihaoyi/cask/releases",
+      data = ujson.write(
+        ujson.Obj(
+          "tag_name" -> releaseTag,
+          "name" -> releaseTag
+        )
+      ),
+      headers = Seq("Authorization" -> s"token $authKey")
+    )
+  }
+
+  val examples = Seq(
+    build.example.compress.millSourcePath,
+    build.example.compress2.millSourcePath,
+    build.example.compress3.millSourcePath,
+    build.example.cookies.millSourcePath,
+    build.example.decorated.millSourcePath,
+    build.example.decorated2.millSourcePath,
+    build.example.endpoints.millSourcePath,
+    build.example.formJsonPost.millSourcePath,
+    build.example.httpMethods.millSourcePath,
+    build.example.minimalApplication.millSourcePath,
+    build.example.minimalApplication2.millSourcePath,
+    build.example.redirectAbort.millSourcePath,
+    build.example.scalatags.millSourcePath,
+    build.example.staticFiles.millSourcePath,
+    build.example.staticFiles2.millSourcePath,
+    build.example.todo.millSourcePath,
+    build.example.todoApi.millSourcePath,
+    build.example.todoDb.millSourcePath,
+    build.example.twirl.millSourcePath,
+    build.example.variableRoutes.millSourcePath,
+    build.example.queryParams.millSourcePath,
+    build.example.websockets.millSourcePath,
+    build.example.websockets2.millSourcePath,
+    build.example.websockets3.millSourcePath,
+    build.example.websockets4.millSourcePath,
+  )
+
+  for(example <- examples){
+    val f = T.ctx().dest
+    val last = example.last + "-" + label
+    os.copy(example, f / last)
+    os.write.over(
+      f / last / "mill",
+      os.read(os.pwd / "mill")
+    )
+    os.proc("chmod", "+x", f/last/"mill").call(f/last)
+    os.write.over(
+      f / last / "build.sc",
+      os.read(f / last / "build.sc")
+        .replaceFirst(
+          "trait AppModule extends CrossScalaModule\\s*\\{",
+          s"object app extends ScalaModule \\{\n  def scalaVersion = \"${scala213}\"")
+        .replaceFirst(
+          "def ivyDeps = Agg\\[Dep\\]\\(",
+          "def ivyDeps = Agg(\n    ivy\"com.lihaoyi::cask:" + releaseTag + "\","
+        )
+    )
+
+    os.remove.all(f / "out.zip")
+    os.proc("zip", "-r", f / "out.zip", last).call(f)
+    upload.apply(f / "out.zip", releaseTag, last + ".zip", authKey)
+  }
+}

@@ -1,10 +1,16 @@
+package build.example.todo
 import mill._, scalalib._
 
+object app extends Cross[AppModule](build.scala213)
 trait AppModule extends CrossScalaModule{
+
+  def moduleDeps = Seq(build.cask(crossScalaVersion))
 
   def ivyDeps = Agg[Dep](
     ivy"org.xerial:sqlite-jdbc:3.42.0.0",
     ivy"com.lihaoyi::scalasql:0.1.0",
+    ivy"com.lihaoyi::scalatags:0.12.0",
+    ivy"org.slf4j:slf4j-simple:1.7.30",
   )
 
   object test extends ScalaTests with TestModule.Utest{
