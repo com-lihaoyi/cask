@@ -6,7 +6,7 @@ object StaticFiles2 extends cask.MainRoutes{
   }
 
   @cask.staticFiles("/static/file", headers = Seq("Cache-Control" -> "max-age=31536000"))
-  def staticFileRoutes() = "app/resources/cask"
+  def staticFileRoutes() = "resources/cask"
 
   @cask.decorators.compress
   @cask.staticResources("/static/resource")

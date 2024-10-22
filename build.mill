@@ -141,8 +141,8 @@ def zippedExamples = T {
         .replaceAll("def moduleDeps =.*", "")
         .replaceAll("app =>", "")
         .replaceFirst(
-          "object app extends.*\ntrait AppModule extends CrossScalaModule\\s*\\{",
-          s"object app extends ScalaModule \\{\n  def scalaVersion = \"${scala213}\"")
+          "object app extends.*\ntrait AppModule extends CrossScalaModule(.*)\\{",
+          s"object app extends ScalaModule $$1\\{\n  def scalaVersion = \"${scala213}\"")
         .replaceFirst(
           "def ivyDeps = Agg\\[Dep\\]\\(",
           "def ivyDeps = Agg(\n    ivy\"com.lihaoyi::cask:" + releaseTag + "\","
@@ -155,6 +155,7 @@ def zippedExamples = T {
 }
 
 def testExamples() = T.command{
+
   for(example <- zippedExamples()){
     println("Testing " + example.path.last)
     val base = T.dest / example.path.baseName

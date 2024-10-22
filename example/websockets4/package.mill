@@ -1,6 +1,7 @@
 package build.example.websockets4
 import mill._, scalalib._
 
+object app extends Cross[AppModule](build.scalaVersions)
 trait AppModule extends CrossScalaModule{
 
   def ivyDeps = Agg[Dep](
