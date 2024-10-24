@@ -1,6 +1,10 @@
+package build.example.cookies
 import mill._, scalalib._
 
+object app extends Cross[AppModule](build.scalaVersions)
 trait AppModule extends CrossScalaModule{
+
+  def moduleDeps = Seq(build.cask(crossScalaVersion))
 
   def ivyDeps = Agg[Dep](
   )

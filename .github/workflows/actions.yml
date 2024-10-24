@@ -27,7 +27,26 @@ jobs:
       - name: Run tests
         run: |
           set -eux
-          ./mill -i --disable-ticker __.testLocal
+          ./mill -ikj1 --disable-ticker __.testLocal
+
+  test-examples:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '11' ]
+    name: Tests for Java ${{ matrix.Java }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Run tests
+        run: |
+          set -eux
+          ./mill __.publishLocal
+          ./mill -ikj1 --disable-ticker testExamples
 
   publish-sonatype:
     if: github.repository == 'com-lihaoyi/cask' && contains(github.ref, 'refs/tags/')

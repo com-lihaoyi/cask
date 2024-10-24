@@ -1,0 +1,28 @@
+package build.example.staticFiles
+import mill._, scalalib._
+
+object app extends Cross[AppModule](build.scalaVersions)
+trait AppModule extends CrossScalaModule{ app =>
+
+  def moduleDeps = Seq(build.cask(crossScalaVersion))
+
+  def forkWorkingDir = app.millSourcePath
+  def ivyDeps = Agg[Dep](
+  )
+  object test extends ScalaTests with TestModule.Utest{
+
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest::0.8.1",
+      ivy"com.lihaoyi::requests::0.8.0",
+    )
+
+    def forkWorkingDir = app.millSourcePath
+
+    def testSandboxWorkingDir = false
+
+    // redirect this to the forked `test` to make sure static file serving works
+    def testLocal(args: String*) = T.command{
+      test(args:_*)
+    }
+  }
+}

@@ -1,6 +1,10 @@
+package build.example.redirectAbort
 import mill._, scalalib._
 
+object app extends Cross[AppModule](build.scalaVersions)
 trait AppModule extends CrossScalaModule{
+
+  def moduleDeps = Seq(build.cask(crossScalaVersion))
 
   def ivyDeps = Agg[Dep](
   )
@@ -9,7 +13,6 @@ trait AppModule extends CrossScalaModule{
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.8.1",
       ivy"com.lihaoyi::requests::0.8.0",
-      ivy"org.asynchttpclient:async-http-client:2.12.3"
     )
   }
 }

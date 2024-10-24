@@ -1,4 +1,4 @@
-#!/usr/bin/env amm
+package build.ci
 
 import $ivy.`com.lihaoyi::os-lib:0.8.1`
 

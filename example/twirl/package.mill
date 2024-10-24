@@ -1,7 +1,10 @@
+package build.example.twirl
 import mill._, scalalib._
 import $ivy.`com.lihaoyi::mill-contrib-twirllib:`
-
+object app extends Cross[AppModule](build.scalaVersions)
 trait AppModule extends CrossScalaModule with mill.twirllib.TwirlModule{
+
+  def moduleDeps = Seq(build.cask(crossScalaVersion))
 
   def twirlScalaVersion = "2.13.10"
   def twirlVersion = "1.5.1"
