@@ -11,10 +11,11 @@ object Ws{
   case class ChannelClosed() extends Event
   object Close{
     // Taken from io.undertow.websockets.core.CloseMessage.*
+    // See also https://datatracker.ietf.org/doc/html/rfc6455#section-7.4
     val NormalClosure = 1000
     val GoingAway = 1001
-    val WrongCode = 1002
-    val ProtocolError = 1003
+    val ProtocolError = 1002
+    val WrongCode = 1003
     val MsgContainsInvalidData = 1007
     val MsgViolatesPolicy = 1008
     val MsgTooBig = 1009
