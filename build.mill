@@ -144,6 +144,7 @@ def zippedExamples = T {
         .replaceFirst(
           "object app extends.*\ntrait AppModule extends CrossScalaModule(.*)\\{",
           s"object app extends ScalaModule $$1\\{\n  def scalaVersion = \"${scala213}\"")
+        .replaceAll("build.scala3", s"\"${scala3}\"")
         .replaceFirst(
           "def ivyDeps = Agg\\[Dep\\]\\(",
           "def ivyDeps = Agg(\n    ivy\"com.lihaoyi::cask:" + releaseTag + "\","
