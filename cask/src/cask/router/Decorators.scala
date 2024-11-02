@@ -121,7 +121,7 @@ trait Endpoint[OuterReturned, InnerReturned, Input, InputContext]
   * Annotates a Cask endpoint that returns a HTTP [[Response]]; similar to a
   * [[RawDecorator]] but with additional metadata and capabilities.
   */
-trait HttpEndpoint[InnerReturned, Input] extends Endpoint[Response.Raw, InnerReturned, Input, cask.Request]
+trait HttpEndpoint[InnerReturned, Input] extends Endpoint[Response.Raw, InnerReturned, Input, Request]
 
 
 class NoOpParser[Input, T, InputContext] extends ArgReader[Input, T, InputContext] {
