@@ -586,19 +586,19 @@ object Decorated extends cask.MainRoutes {
   }
   class loggedIn extends cask.RawDecorator {
     def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
-      delegate(Map(&quot;user&quot; -&gt; new User()))
+      delegate(ctx, Map(&quot;user&quot; -&gt; new User()))
     }
   }
   class withExtra extends cask.RawDecorator {
     def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
-      delegate(Map(&quot;extra&quot; -&gt; 31337))
+      delegate(ctx, Map(&quot;extra&quot; -&gt; 31337))
     }
   }
 
   class withCustomHeader extends cask.RawDecorator {
     def wrapFunction(request: cask.Request, delegate: Delegate) = {
       request.headers.get(&quot;x-custom-header&quot;).map(_.head) match {
-        case Some(header) =&gt; delegate(Map(&quot;customHeader&quot; -&gt; header))
+        case Some(header) =&gt; delegate(request, Map(&quot;customHeader&quot; -&gt; header))
         case None =&gt;
           cask.router.Result.Success(
             cask.model.Response(
@@ -679,12 +679,12 @@ object Decorated2 extends cask.MainRoutes{
   }
   class loggedIn extends cask.RawDecorator {
     def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
-      delegate(Map(&quot;user&quot; -&gt; new User()))
+      delegate(ctx, Map(&quot;user&quot; -&gt; new User()))
     }
   }
   class withExtra extends cask.RawDecorator {
     def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
-      delegate(Map(&quot;extra&quot; -&gt; 31337))
+      delegate(ctx, Map(&quot;extra&quot; -&gt; 31337))
     }
   }
 
@@ -720,7 +720,7 @@ object Decorated2 extends cask.MainRoutes{
 class custom(val path: String, val methods: Seq[String])
   extends cask.HttpEndpoint[Int, Seq[String]]{
   def wrapFunction(ctx: cask.Request, delegate: Delegate) = {
-    delegate(Map()).map{num =&gt;
+    delegate(ctx, Map()).map{num =&gt;
       cask.Response(&quot;Echo &quot; + num, statusCode = num)
     }
   }
@@ -970,7 +970,7 @@ object TodoMvcDb extends cask.MainRoutes{
   class transactional extends cask.RawDecorator{
     def wrapFunction(pctx: cask.Request, delegate: Delegate) = {
       sqliteClient.transaction { txn =&gt;
-        val res = delegate(Map(&quot;txn&quot; -&gt; txn))
+        val res = delegate(pctx, Map(&quot;txn&quot; -&gt; txn))
         if (res.isInstanceOf[cask.router.Result.Error]) txn.rollback()
         res
       }
@@ -1064,7 +1064,7 @@ object TodoServer extends cask.MainRoutes{
   class transactional extends cask.RawDecorator{
     def wrapFunction(pctx: cask.Request, delegate: Delegate) = {
       sqliteClient.transaction { txn =&gt;
-        val res = delegate(Map(&quot;txn&quot; -&gt; txn))
+        val res = delegate(pctx, Map(&quot;txn&quot; -&gt; txn))
         if (res.isInstanceOf[cask.router.Result.Error]) txn.rollback()
         res
       }
