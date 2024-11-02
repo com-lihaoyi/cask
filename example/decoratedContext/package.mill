@@ -1,10 +1,11 @@
 package build.example.decoratedContext
 import mill._, scalalib._
 
-object app extends Cross[AppModule](build.scala3)
-trait AppModule extends CrossScalaModule{
+object app extends ScalaModule{
 
-  def moduleDeps = Seq(build.cask(crossScalaVersion))
+  def scalaVersion = build.scala3
+
+  def moduleDeps = Seq(build.cask(build.scala3))
 
   def ivyDeps = Agg[Dep](
   )
