@@ -23,7 +23,7 @@ object Macros {
           } else {
             hasErrors = true
             report.error(
-              s"required: cask.router.Decorator[_, ${prevOuter.show}, _]",
+              s"required: cask.router.Decorator[_, ${prevOuter.show}, _, _]",
               d
             )
           }

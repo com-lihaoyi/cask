@@ -20,7 +20,7 @@ object FailureTests extends TestSuite {
           initialize()
         }
       """).msg
-      assert(m.contains("required: cask.router.Decorator[_, cask.endpoints.WebsocketResult, _]"))
+      assert(m.contains("required: cask.router.Decorator[_, cask.endpoints.WebsocketResult, _, _]"))
     }
 
     "noEndpoint" - {

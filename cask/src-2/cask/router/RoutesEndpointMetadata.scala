@@ -49,7 +49,6 @@ object RoutesEndpointsMetadata{
         m.asInstanceOf[MethodSymbol],
         weakTypeOf[T],
         q"${annotObjectSyms.last}.convertToResultType",
-        tq"cask.Request",
         annotObjectSyms.reverse.map(annotObjectSym => q"$annotObjectSym.getParamParser"),
         annotObjectSyms.reverse.map(annotObjectSym => tq"$annotObjectSym.InputTypeAlias")
       )

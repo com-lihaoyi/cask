@@ -15,7 +15,7 @@ object TodoMvcDb extends cask.MainRoutes{
   class transactional extends cask.RawDecorator{
     def wrapFunction(pctx: cask.Request, delegate: Delegate) = {
       sqliteClient.transaction { txn =>
-        val res = delegate(ctx, Map("txn" -> txn))
+        val res = delegate(pctx, Map("txn" -> txn))
         if (res.isInstanceOf[cask.router.Result.Error]) txn.rollback()
         res
       }
