@@ -105,6 +105,7 @@ def zippedExamples = T {
     build.example.cookies.millSourcePath,
     build.example.decorated.millSourcePath,
     build.example.decorated2.millSourcePath,
+    build.example.decoratedContext.millSourcePath,
     build.example.endpoints.millSourcePath,
     build.example.formJsonPost.millSourcePath,
     build.example.httpMethods.millSourcePath,

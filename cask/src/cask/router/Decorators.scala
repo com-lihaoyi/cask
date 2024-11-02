@@ -2,7 +2,6 @@ package cask.router
 
 import cask.internal.Conversion
 import cask.model.{Request, Response}
-import java.awt.im.InputContext
 
 /**
   * A [[Decorator]] allows you to annotate a function to wrap it, via
