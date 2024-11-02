@@ -163,7 +163,9 @@ object Macros {
       case iss: ImplicitSearchSuccess =>
         iss.tree.asExpr
       case isf: ImplicitSearchFailure =>
-        report.error(s"can't convert ${rtp.typeSymbol.fullName} to a response", method.pos.get)
+        def prettyPos(pos: Position) =
+          s"${pos.sourceFile}:${pos.startLine + 1}:${pos.startColumn + 1}"
+        report.error(s"error in route definition `def ${method.name}` (at ${prettyPos(method.pos.get)}): the method's return type ${rtp.show} cannot be converted to the expected response type ${innerReturnedTpt.show}", method.pos.get)
         '{???}
     }
 
