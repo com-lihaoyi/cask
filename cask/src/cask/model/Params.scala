@@ -9,7 +9,7 @@ import io.undertow.server.handlers.CookieImpl
 case class QueryParams(value: Map[String, collection.Seq[String]])
 case class RemainingPathSegments(value: Seq[String])
 
-case class Request(exchange: HttpServerExchange, remainingPathSegments: Seq[String])
+case class Request(exchange: HttpServerExchange, remainingPathSegments: Seq[String], boundPathSegments: Map[String, String])
 extends geny.ByteData with geny.Readable {
   import collection.JavaConverters._
   lazy val cookies: Map[String, Cookie] = {

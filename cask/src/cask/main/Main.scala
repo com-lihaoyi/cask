@@ -107,18 +107,17 @@ object Main{
         .toList
 
       dispatchTrie.lookup(decodedSegments, Vector()) match {
-        case None => Main.writeResponse(exchange, handleNotFound(Request(exchange, decodedSegments)))
+        case None => Main.writeResponse(exchange, handleNotFound(Request(exchange, decodedSegments, Map())))
         case Some((methodMap, routeBindings, remaining)) =>
           methodMap.get(effectiveMethod) match {
-            case None => Main.writeResponse(exchange, handleMethodNotAllowed(Request(exchange, remaining)))
+            case None => Main.writeResponse(exchange, handleMethodNotAllowed(Request(exchange, remaining, routeBindings)))
             case Some((routes, metadata)) =>
-              val req = Request(exchange, remaining)
+              val req = Request(exchange, remaining, routeBindings)
               Decorator.invoke(
                 req,
                 metadata.endpoint,
                 metadata.entryPoint.asInstanceOf[EntryPoint[Routes, _]],
                 routes,
-                routeBindings,
                 (mainDecorators ++ routes.decorators ++ metadata.decorators).toList,
                 Nil,
                 Nil
