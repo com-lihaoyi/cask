@@ -13,7 +13,7 @@ trait AppModule extends CrossScalaModule{ app =>
 
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.8.4",
-      ivy"com.lihaoyi::requests::0.8.0",
+      ivy"com.lihaoyi::requests::0.9.0",
     )
 
     def forkWorkingDir = app.millSourcePath

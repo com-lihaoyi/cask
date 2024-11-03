@@ -50,7 +50,7 @@ trait CaskMainModule extends CaskModule {
   object test extends ScalaTests with TestModule.Utest{
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest::0.8.4",
-      ivy"com.lihaoyi::requests::0.8.0"
+      ivy"com.lihaoyi::requests::0.9.0"
     )
   }
   def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
