@@ -20,7 +20,9 @@ class compress extends cask.RawDecorator{
             wrap.flush()
             wrap.close()
           }
-          override def headers = v.data.headers
+          // Since we don't know the length of the gzipped data ahead of time,
+          // we drop the content length header.
+          override def headers = v.data.headers.filter(_._1 != "Content-Length")
         } -> Seq("Content-Encoding" -> "gzip")
       }else if (acceptEncodings.exists(_.toLowerCase == "deflate")){
         new Response.Data {
@@ -29,7 +31,9 @@ class compress extends cask.RawDecorator{
             v.data.write(wrap)
             wrap.flush()
           }
-          override def headers = v.data.headers
+          // Since we don't know the length of the compressed data ahead of
+          // time, we drop the content length header.
+          override def headers = v.data.headers.filter(_._1 != "Content-Length")
         } -> Seq("Content-Encoding" -> "deflate")
       }else v.data -> Nil
       Response(
