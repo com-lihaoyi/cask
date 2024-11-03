@@ -132,7 +132,7 @@ object MinimalApplication extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/minimalApplication-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/minimalApplication-0.10.1.zip">example project</a></li>
 </ul>
 <p><a href="https://github.com/lihaoyi/cask">Cask</a> is a simple Scala web framework inspired by Python's <a href="http://flask.pocoo.org/docs/1.0/">Flask</a> project. It aims to bring simplicity, flexibility and ease-of-use to Scala webservers, avoiding cryptic DSLs or complicated asynchrony.</p><h2 id="getting-started" class="Styles-hoverBox">Getting Started<a href="#getting-started" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <p>The easiest way to begin using Cask is by downloading the example project above.</p>
@@ -193,7 +193,7 @@ object MinimalApplication extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/minimalApplication-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/minimalApplication-0.10.1.zip">example project</a></li>
 </ul>
 <p>The rough outline of how the minimal example works should be easy to understand:</p>
 <ul>
@@ -229,7 +229,7 @@ object MinimalRoutesMain extends cask.Main{
 }
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/minimalApplication2-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/minimalApplication2-0.10.1.zip">example project</a></li>
 </ul>
 <p>You can split up your routes into separate <code>cask.Routes</code> objects as makes sense and pass them all into <code>cask.Main</code>.</p><h2 id="variable-routes" class="Styles-hoverBox">Variable Routes<a href="#variable-routes" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
@@ -254,7 +254,7 @@ object VariableRoutes extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/variableRoutes-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/variableRoutes-0.10.1.zip">example project</a></li>
 </ul>
 <p>You can bind path segments to endpoint parameters by declaring them as parameters. These are either:</p>
 <ul>
@@ -314,7 +314,7 @@ object QueryParams extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/queryParams-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/queryParams-0.10.1.zip">example project</a></li>
 </ul>
 <p>You can bind query parameters to your endpoint method via parameters of the form:</p>
 <ul>
@@ -356,7 +356,7 @@ object HttpMethods extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/httpMethods-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/httpMethods-0.10.1.zip">example project</a></li>
 </ul>
 <p>Sometimes, you may want to handle multiple kinds of HTTP requests in the same endpoint function, e.g. with code that can accept both GETs and POSTs and decide what to do in each case. You can use the <code>@cask.route</code> annotation to do so</p><h2 id="receiving-form-encoded-or-json-data" class="Styles-hoverBox">Receiving Form-encoded or JSON data<a href="#receiving-form-encoded-or-json-data" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
@@ -425,7 +425,7 @@ object FormJsonPost extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/formJsonPost-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/formJsonPost-0.10.1.zip">example project</a></li>
 </ul>
 <p>If you need to handle a JSON-encoded POST request, you can use the <code>@cask.postJson</code> decorator. This assumes the posted request body is a JSON dict, and uses its keys to populate the endpoint's parameters, either as raw <code>ujson.Value</code>s or deserialized into <code>Seq[Int]</code>s or other things. Deserialization is handled using the <a href="https://github.com/lihaoyi/upickle">uPickle</a> JSON library, though you could write your own version of <code>postJson</code> to work with any other JSON library of your choice.</p>
 <p>Similarly, you can mark endpoints as <code>@cask.postForm</code>, in which case the endpoints params will be taken from the form-encoded POST body either raw (as <code>cask.FormValue</code>s) or deserialized into simple data structures. Use <code>cask.FormFile</code> if you want the given form value to be a file upload.</p>
@@ -459,7 +459,7 @@ object Cookies extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/cookies-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/cookies-0.10.1.zip">example project</a></li>
 </ul>
 <p>Cookies are most easily read by declaring a <code>: cask.Cookie</code> parameter; the parameter name is used to fetch the cookie you are interested in. Cookies can be stored by setting the <code>cookie</code> attribute in the response, and deleted simply by setting <code>expires = java.time.Instant.EPOCH</code> (i.e. to have expired a long time ago)</p><h2 id="serving-static-files" class="Styles-hoverBox">Serving Static Files<a href="#serving-static-files" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
@@ -483,7 +483,7 @@ object StaticFiles extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/staticFiles-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/staticFiles-0.10.1.zip">example project</a></li>
 </ul>
 <p>You can ask Cask to serve static files by defining a <code>@cask.staticFiles</code> endpoint. This will match any subpath of the value returned by the endpoint (e.g. above <code>/static/file.txt</code>, <code>/static/folder/file.txt</code>, etc.) and return the file contents from the corresponding file on disk (and 404 otherwise).</p>
 <p>Similarly, <code>@cask.staticResources</code> attempts to serve a request based on the JVM resource path, returning the data if a resource is present and a 404 otherwise.</p>
@@ -510,7 +510,7 @@ object StaticFiles2 extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/staticFiles2-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/staticFiles2-0.10.1.zip">example project</a></li>
 </ul><h2 id="redirects-or-aborts" class="Styles-hoverBox">Redirects or Aborts<a href="#redirects-or-aborts" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
 object RedirectAbort extends cask.MainRoutes{
@@ -529,7 +529,7 @@ object RedirectAbort extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/redirectAbort-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/redirectAbort-0.10.1.zip">example project</a></li>
 </ul>
 <p>Cask provides some convenient helpers <code>cask.Redirect</code> and <code>cask.Abort</code> which you can return; these are simple wrappers around <code>cask.Request</code>, and simply set up the relevant headers or status code for you.</p><h2 id="html-rendering" class="Styles-hoverBox">HTML Rendering<a href="#html-rendering" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <p>Cask doesn't come bundled with HTML templating functionality, but it makes it really easy to use community-standard libraries like <a href="https://github.com/lihaoyi/scalatags">Scalatags</a> to render your HTML. Simply adding the relevant <code>ivy&quot;com.lihaoyi::scalatags:0.9.1&quot;</code> dependency to your <code>build.sc</code> file is enough to render Scalatags templates:</p>
@@ -553,7 +553,7 @@ object Scalatags extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/scalatags-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/scalatags-0.10.1.zip">example project</a></li>
 </ul>
 <p>If you prefer to use the <a href="https://www.playframework.com/documentation/2.6.x/ScalaTemplates">Twirl</a> templating engine, you can use that too:</p>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
@@ -568,7 +568,7 @@ object Twirl extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/twirl-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/twirl-0.10.1.zip">example project</a></li>
 </ul>
 <p>With the following <code>app/views/hello.scala.html</code>:</p>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="html">@(titleTxt: String)
@@ -652,7 +652,7 @@ object Decorated extends cask.MainRoutes {
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/decorated-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/decorated-0.10.1.zip">example project</a></li>
 </ul>
 <p>You can write extra decorator annotations that stack on top of the existing <code>@cask.get</code>/<code>@cask.post</code> to provide additional arguments or validation. This is done by implementing the <code>cask.Decorator</code> interface and it's <code>getRawParams</code> function. <code>getRawParams</code>:</p>
 <ul>
@@ -712,7 +712,7 @@ object Decorated2 extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/decorated2-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/decorated2-0.10.1.zip">example project</a></li>
 </ul>
 <p>This is convenient for cases where you want a set of decorators to apply broadly across your web application, and do not want to repeat them over and over at every single endpoint.</p><h2 id="custom-endpoints" class="Styles-hoverBox">Custom Endpoints<a href="#custom-endpoints" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
@@ -743,7 +743,7 @@ object Endpoints extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/endpoints-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/endpoints-0.10.1.zip">example project</a></li>
 </ul>
 <p>When you need more flexibility than decorators allow, you can define your own custom <code>cask.Endpoint</code>s to replace the default set that Cask provides. This allows you to</p>
 <ul>
@@ -771,7 +771,7 @@ object Compress extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/compress-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/compress-0.10.1.zip">example project</a></li>
 </ul>
 <p>Cask provides a useful <code>@cask.decorators.compress</code> decorator that gzips or deflates a response body if possible. This is useful if you don't have a proxy like Nginx or similar in front of your server to perform the compression for you.</p>
 <p>Like all decorators, <code>@cask.decorators.compress</code> can be defined on a level of a set of <code>cask.Routes</code>:</p>
@@ -795,7 +795,7 @@ object Compress2Main extends cask.Main{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/compress2-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/compress2-0.10.1.zip">example project</a></li>
 </ul>
 <p>Or globally, in your <code>cask.Main</code>:</p>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
@@ -817,7 +817,7 @@ object Compress3Main extends cask.Main{
 }
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/compress3-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/compress3-0.10.1.zip">example project</a></li>
 </ul><h2 id="websockets" class="Styles-hoverBox">Websockets<a href="#websockets" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
 
@@ -839,7 +839,7 @@ object Websockets extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/websockets-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/websockets-0.10.1.zip">example project</a></li>
 </ul>
 <p>Cask's Websocket endpoints are very similar to Cask's HTTP endpoints. Annotated with <code>@cask.websocket</code> instead of <code>@cask.get</code> or <code>@cask.post</code>, the primary difference is that instead of only returning a <code>cask.Response</code>, you now have an option of returning a <code>cask.WsHandler</code>.</p>
 <p>The <code>cask.WsHandler</code> allows you to pro-actively start sending websocket messages once a connection has been made, via the <code>channel: WsChannelActor</code> it exposes, and lets you react to messages via the <code>cask.WsActor</code> you create. You can use these two APIs to perform full bi-directional, asynchronous communications, as websockets are intended to be used for. Note that all messages received on a each individual Websocket connection by your <code>cask.WsActor</code> are handled in a single-threaded fashion by default: this means you can work with local mutable state in your <code>@cask.websocket</code> endpoint without worrying about race conditions or multithreading. If you want further parallelism, you can explicitly spin off <code>scala.concurrent.Future</code>s or other <code>cask.BatchActor</code>s to perform that parallel processing.</p>
@@ -877,7 +877,7 @@ object Websockets2 extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/websockets2-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/websockets2-0.10.1.zip">example project</a></li>
 </ul>
 <p>It leaves it up to you to manage open channels, react to incoming messages, or pro-actively send them out, mostly using the underlying Undertow webserver interface. While Cask does not model streams, backpressure, iteratees, or provide any higher level API, it should not be difficult to take the Cask API and build whatever higher-level abstractions you prefer to use.</p>
 <p>If you are separating your <code>cask.Routes</code> from your <code>cask.Main</code>, you need to inject in a <code>cask.Logger</code> to handle errors reported when handling websocket requests:</p>
@@ -906,7 +906,7 @@ object Websockets3Main extends cask.Main{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/websockets3-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/websockets3-0.10.1.zip">example project</a></li>
 </ul><h2 id="todomvc-api-server" class="Styles-hoverBox">TodoMVC Api Server<a href="#todomvc-api-server" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
 object TodoMvcApi extends cask.MainRoutes{
@@ -949,7 +949,7 @@ object TodoMvcApi extends cask.MainRoutes{
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/todoApi-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/todoApi-0.10.1.zip">example project</a></li>
 </ul>
 <p>This is a simple self-contained example of using Cask to write an in-memory API server for the common <a href="http://todomvc.com/">TodoMVC example app</a>.</p>
 <p>This minimal example intentionally does not contain javascript, HTML, styles, etc.. Those can be managed via the normal mechanism for <a href="#serving-static-files">Serving Static Files</a>.</p><h2 id="todomvc-database-integration" class="Styles-hoverBox">TodoMVC Database Integration<a href="#todomvc-database-integration" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
@@ -1038,7 +1038,7 @@ INSERT INTO todo (checked, text) VALUES
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/todoDb-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/todoDb-0.10.1.zip">example project</a></li>
 </ul>
 <p>This example demonstrates how to use Cask to write a TodoMVC API server that persists it's state in a database rather than in memory. We use the <a href="https://github.com/com-lihaoyi/scalasql/">ScalaSql</a> database access library to write a <code>@transactional</code> decorator that automatically opens one transaction per call to an endpoint, ensuring that database queries are properly committed on success or rolled-back on error. Note that because the default database connector propagates its transaction context in a thread-local, <code>@transactional</code> does not need to pass the <code>ctx</code> object into each endpoint as an additional parameter list, and so we simply leave it out.</p>
 <p>While this example is specific to ScalaSql, you can easily modify the <code>@transactional</code> decorator to make it work with whatever database access library you happen to be using. For libraries which need an implicit transaction, it can be passed into each endpoint function as an additional parameter list as described in <a href="#extending-endpoints-with-decorators">Extending Endpoints with Decorators</a>. work with whatever database access library you happen to be using. For libraries which need an implicit transaction, it can be passed into each endpoint function as an additional parameter list as described in <a href="#extending-endpoints-with-decorators">Extending Endpoints with Decorators</a>.</p><h2 id="todomvc-full-stack-web" class="Styles-hoverBox">TodoMVC Full Stack Web<a href="#todomvc-full-stack-web" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
@@ -1221,5 +1221,5 @@ INSERT INTO todo (checked, text) VALUES
 
 </code></pre>
 <ul>
-  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.0/todo-0.10.0.zip">example project</a></li>
+  <li><a href="https://github.com/lihaoyi/cask/releases/download/0.10.1/todo-0.10.1.zip">example project</a></li>
 </ul><hr /><p><b>About the Author:</b><i> Haoyi is a software engineer, an early contributor to <a href="http://www.scala-js.org/">Scala.js</a>, and the author of many open-source Scala tools such as Cask, the <a href="lihaoyi.com/Ammonite">Ammonite REPL</a> and <a href="https://github.com/lihaoyi/fastparse">FastParse</a>. </i></p><p><i>If you've enjoy using Cask, or enjoyed using Haoyi's other open source libraries, please chip in (or get your Company to chip in!) via <a href="https://www.patreon.com/lihaoyi">Patreon</a> so he can continue his open-source work</i></p><hr /><div style="display: flex; flex-direction: row; justify-content: space-between;"><div></div><a href="page/main-customization.html">Main Customization <i class="fa fa-arrow-right" aria-hidden="true"></i></a></div></div></body></html>
