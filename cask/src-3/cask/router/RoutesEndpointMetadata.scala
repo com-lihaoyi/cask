@@ -20,18 +20,18 @@ object RoutesEndpointsMetadata{
 
     val routeParts: List[Expr[EndpointMetadata[T]]] = for {
       m <- TypeRepr.of[T].typeSymbol.memberMethods
-      annotations = m.annotations.filter(_.tpe <:< TypeRepr.of[Decorator[_, _, _]])
+      annotations = m.annotations.filter(_.tpe <:< TypeRepr.of[Decorator[_, _, _, _]])
       if (annotations.nonEmpty)
     } yield {
 
-      if(!(annotations.head.tpe <:< TypeRepr.of[Endpoint[_, _, _]])) {
+      if(!(annotations.head.tpe <:< TypeRepr.of[Endpoint[_, _, _, _]])) {
         report.error(s"Last annotation applied to a function must be an instance of Endpoint, " +
           s"not ${annotations.head.tpe.show}",
           annotations.head.pos
         )
         return '{???} // in this case, we can't continue expansion of this macro
       }
-      val allEndpoints = annotations.filter(_.tpe <:< TypeRepr.of[Endpoint[_, _, _]])
+      val allEndpoints = annotations.filter(_.tpe <:< TypeRepr.of[Endpoint[_, _, _, _]])
       if(allEndpoints.length > 1) {
         report.error(
           s"You can only apply one Endpoint annotation to a function, not " +
@@ -41,16 +41,16 @@ object RoutesEndpointsMetadata{
         return '{???}
       }
 
-      val decorators = annotations.map(_.asExprOf[Decorator[_, _, _]])
+      val decorators = annotations.map(_.asExprOf[Decorator[_, _, _, _]])
 
       if (!Macros.checkDecorators(decorators))
         return '{???} // there was a type mismatch in the decorator chain
 
-      val endpointExpr = decorators.head.asExprOf[Endpoint[_, _, _]]
+      val endpointExpr = decorators.head.asExprOf[Endpoint[_, _, _, _]]
       val entrypointExpr = Macros.extractMethod[T](m, decorators, endpointExpr)
 
       '{
-        val entrypoint: EntryPoint[T, cask.Request] = ${entrypointExpr}
+        val entrypoint: EntryPoint[T, Any] = ${entrypointExpr}
 
         EndpointMetadata[T](
           // the Scala 2 version and non-macro code expects decorators to be reversed

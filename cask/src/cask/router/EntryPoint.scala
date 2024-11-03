@@ -16,14 +16,14 @@ import scala.collection.mutable
 case class EntryPoint[T, C](name: String,
                             argSignatures: Seq[Seq[ArgSig[_, T, _, C]]],
                             doc: Option[String],
-                            invoke0: (T, C, Seq[Map[String, Any]], Seq[Seq[ArgSig[Any, _, _, C]]]) => Result[Any]){
+                            invoke0: (T, Seq[C], Seq[Map[String, Any]], Seq[Seq[ArgSig[Any, _, _, C]]]) => Result[Any]){
 
   val firstArgs = argSignatures.head
     .map(x => x.name -> x)
     .toMap[String, ArgSig[_, T, _, C]]
 
   def invoke(target: T,
-             ctx: C,
+             ctxs: Seq[C],
              paramLists: Seq[Map[String, Any]]): Result[Any] = {
 
     val missing = mutable.Buffer.empty[ArgSig[_, T, _, C]]
@@ -42,7 +42,7 @@ case class EntryPoint[T, C](name: String,
     } else {
       try invoke0(
         target,
-        ctx,
+        ctxs,
         paramLists,
         argSignatures.asInstanceOf[Seq[Seq[ArgSig[Any, _, _, C]]]]
       )

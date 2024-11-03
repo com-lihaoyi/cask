@@ -19,7 +19,7 @@ class staticFiles(val path: String, headers: Seq[(String, String)] = Nil) extend
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true
   def wrapFunction(ctx: Request, delegate: Delegate) = {
-    delegate(Map()).map{t =>
+    delegate(ctx, Map()).map{t =>
       val (path, contentTypeOpt) = StaticUtil.makePathAndContentType(t, ctx)
       cask.model.StaticFile(path, headers ++ contentTypeOpt.map("Content-Type" -> _))
     }
@@ -36,7 +36,7 @@ class staticResources(val path: String,
   type InputParser[T] = QueryParamReader[T]
   override def subpath = true
   def wrapFunction(ctx: Request, delegate: Delegate) = {
-    delegate(Map()).map { t =>
+    delegate(ctx, Map()).map { t =>
       val (path, contentTypeOpt) = StaticUtil.makePathAndContentType(t, ctx)
       cask.model.StaticResource(path, resourceRoot, headers ++ contentTypeOpt.map("Content-Type" -> _))
     }

@@ -43,7 +43,6 @@ class Macros[C <: blackbox.Context](val c: C) {
   def extractMethod(method: MethodSymbol,
                     curCls: c.universe.Type,
                     convertToResultType: c.Tree,
-                    ctx: c.Tree,
                     argReaders: Seq[c.Tree],
                     annotDeserializeTypes: Seq[c.Tree]): c.universe.Tree = {
     val baseArgSym = TermName(c.freshName())
@@ -64,7 +63,7 @@ class Macros[C <: blackbox.Context](val c: C) {
     val ctxSymbol = q"${c.fresh[TermName](TermName("ctx"))}"
     val argData = for(argListIndex <- method.paramLists.indices) yield{
       val annotDeserializeType = annotDeserializeTypes.lift(argListIndex).getOrElse(tq"scala.Any")
-      val argReader = argReaders.lift(argListIndex).getOrElse(q"cask.router.NoOpParser.instanceAny")
+      val argReader = argReaders.lift(argListIndex).getOrElse(q"cask.router.NoOpParser.instanceAnyRequest")
       val flattenedArgLists = method.paramss(argListIndex)
       def hasDefault(i: Int) = {
         // defaults are numbered globally on a class-level, this means that we
@@ -108,18 +107,18 @@ class Macros[C <: blackbox.Context](val c: C) {
 
         val argSig =
           q"""
-          cask.router.ArgSig[$annotDeserializeType, $curCls, $docUnwrappedType, $ctx](
+          cask.router.ArgSig[$annotDeserializeType, $curCls, $docUnwrappedType, Any](
             ${arg.name.toString},
             ${docUnwrappedType.toString},
             $docTree,
             $defaultOpt
-          )($argReader[$docUnwrappedType])
+          )($argReader[$docUnwrappedType].asInstanceOf[cask.router.ArgReader[$annotDeserializeType, $docUnwrappedType, Any]])
         """
 
         val reader = q"""
           cask.router.Runtime.makeReadCall(
             $argValuesSymbol($argListIndex),
-            $ctxSymbol,
+            $ctxSymbol($argListIndex),
             $default,
             $argSigsSymbol($argListIndex)($i)
           )
@@ -151,7 +150,7 @@ class Macros[C <: blackbox.Context](val c: C) {
     for(argNameCast <- argNameCasts) methodCall = q"$methodCall(..$argNameCast)"
 
     val res = q"""
-    cask.router.EntryPoint[$curCls, $ctx](
+    cask.router.EntryPoint[$curCls, Any](
       ${method.name.toString},
       ${argSigs.toList},
       ${methodDoc match{
@@ -160,9 +159,9 @@ class Macros[C <: blackbox.Context](val c: C) {
       }},
       (
         $baseArgSym: $curCls,
-        $ctxSymbol: $ctx,
+        $ctxSymbol: Seq[_],
         $argValuesSymbol: Seq[Map[String, Any]],
-        $argSigsSymbol: scala.Seq[scala.Seq[cask.router.ArgSig[Any, _, _, $ctx]]]
+        $argSigsSymbol: scala.Seq[scala.Seq[cask.router.ArgSig[Any, _, _, Any]]]
       ) =>
         cask.router.Runtime.validate(Seq(..${readArgs.flatten.toList})).map{
           case Seq(..${argNames.flatten.toList}) => $convertToResultType($methodCall)

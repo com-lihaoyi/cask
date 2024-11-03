@@ -105,6 +105,7 @@ def zippedExamples = T {
     build.example.cookies.millSourcePath,
     build.example.decorated.millSourcePath,
     build.example.decorated2.millSourcePath,
+    build.example.decoratedContext.millSourcePath,
     build.example.endpoints.millSourcePath,
     build.example.formJsonPost.millSourcePath,
     build.example.httpMethods.millSourcePath,
@@ -143,6 +144,7 @@ def zippedExamples = T {
         .replaceFirst(
           "object app extends.*\ntrait AppModule extends CrossScalaModule(.*)\\{",
           s"object app extends ScalaModule $$1\\{\n  def scalaVersion = \"${scala213}\"")
+        .replaceAll("build.scala3", s"\"${scala3}\"")
         .replaceFirst(
           "def ivyDeps = Agg\\[Dep\\]\\(",
           "def ivyDeps = Agg(\n    ivy\"com.lihaoyi::cask:" + releaseTag + "\","

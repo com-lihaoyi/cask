@@ -6,7 +6,7 @@ import utest._
 object FailureTests extends TestSuite {
   class myDecorator extends cask.RawDecorator {
     def wrapFunction(ctx: Request, delegate: Delegate) = {
-      delegate(Map("extra" -> 31337))
+      delegate(ctx, Map("extra" -> 31337))
     }
   }
 
@@ -20,7 +20,7 @@ object FailureTests extends TestSuite {
           initialize()
         }
       """).msg
-      assert(m.contains("required: cask.router.Decorator[_, cask.endpoints.WebsocketResult, _]"))
+      assert(m.contains("required: cask.router.Decorator[_, cask.endpoints.WebsocketResult, _, _]"))
     }
 
     "noEndpoint" - {

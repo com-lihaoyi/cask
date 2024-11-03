@@ -1,0 +1,19 @@
+package build.example.decoratedContext
+import mill._, scalalib._
+
+object app extends ScalaModule{
+
+  def scalaVersion = build.scala3
+
+  def moduleDeps = Seq(build.cask(build.scala3))
+
+  def ivyDeps = Agg[Dep](
+  )
+  object test extends ScalaTests with TestModule.Utest{
+
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest::0.8.1",
+      ivy"com.lihaoyi::requests::0.8.0",
+    )
+  }
+}

@@ -14,10 +14,10 @@ import cask.model.{Request, Response}
   * to `wrapFunction`, which takes a `Map` representing any additional argument
   * lists (if any).
   */
-trait Decorator[OuterReturned, InnerReturned, Input] extends scala.annotation.Annotation {
+trait Decorator[OuterReturned, InnerReturned, Input, InputContext] extends scala.annotation.Annotation {
   final type InputTypeAlias = Input
-  type InputParser[T] <: ArgReader[Input, T, Request]
-  final type Delegate = Map[String, Input] => Result[InnerReturned]
+  type InputParser[T] <: ArgReader[Input, T, InputContext]
+  final type Delegate = (InputContext, Map[String, Input]) => Result[InnerReturned]
   def wrapFunction(ctx: Request, delegate: Delegate): Result[OuterReturned]
   def getParamParser[T](implicit p: InputParser[T]) = p
 }
@@ -34,28 +34,30 @@ object Decorator{
    * used as the first argument list.
    */
   def invoke[T](ctx: Request,
-                endpoint: Endpoint[_, _, _],
+                endpoint: Endpoint[_, _, _, _],
                 entryPoint: EntryPoint[T, _],
                 routes: T,
                 routeBindings: Map[String, String],
-                remainingDecorators: List[Decorator[_, _, _]],
+                remainingDecorators: List[Decorator[_, _, _, _]],
+                inputContexts: List[Any],
                 bindings: List[Map[String, Any]]): Result[Any] = try {
     remainingDecorators match {
       case head :: rest =>
-        head.asInstanceOf[Decorator[Any, Any, Any]].wrapFunction(
+        head.asInstanceOf[Decorator[Any, Any, Any, Any]].wrapFunction(
           ctx,
-          args => invoke(ctx, endpoint, entryPoint, routes, routeBindings, rest, args :: bindings)
+          (ictx, args) => invoke(ctx, endpoint, entryPoint, routes, routeBindings, rest, ictx :: inputContexts, args :: bindings)
             .asInstanceOf[Result[Nothing]]
         )
 
       case Nil =>
-        endpoint.wrapFunction(ctx, { (endpointBindings: Map[String, Any]) =>
+        endpoint.wrapFunction(ctx, { (ictx: Any, endpointBindings: Map[String, Any]) =>
+
           val mergedEndpointBindings = endpointBindings ++ routeBindings.mapValues(endpoint.wrapPathSegment)
           val finalBindings = mergedEndpointBindings :: bindings
 
           entryPoint
-            .asInstanceOf[EntryPoint[T, cask.model.Request]]
-            .invoke(routes, ctx, finalBindings)
+            .asInstanceOf[EntryPoint[T, Any]]
+            .invoke(routes, ictx :: inputContexts, finalBindings)
             .asInstanceOf[Result[Nothing]]
         })
     }
@@ -69,8 +71,8 @@ object Decorator{
   * A [[RawDecorator]] is a decorator that operates on the raw request and
   * response stream, before and after the primary [[Endpoint]] does it's job.
   */
-trait RawDecorator extends Decorator[Response.Raw, Response.Raw, Any]{
-  type InputParser[T] = NoOpParser[Any, T]
+trait RawDecorator extends Decorator[Response.Raw, Response.Raw, Any, Request]{
+  type InputParser[T] = NoOpParser[Any, T, Request]
 }
 
 
@@ -78,8 +80,8 @@ trait RawDecorator extends Decorator[Response.Raw, Response.Raw, Any]{
   * An [[HttpEndpoint]] that may return something else than a HTTP response, e.g.
   * a websocket endpoint which may instead return a websocket event handler
   */
-trait Endpoint[OuterReturned, InnerReturned, Input]
-  extends Decorator[OuterReturned, InnerReturned, Input]{
+trait Endpoint[OuterReturned, InnerReturned, Input, InputContext]
+  extends Decorator[OuterReturned, InnerReturned, Input, InputContext]{
 
   /**
     * What is the path that this particular endpoint matches?
@@ -119,15 +121,16 @@ trait Endpoint[OuterReturned, InnerReturned, Input]
   * Annotates a Cask endpoint that returns a HTTP [[Response]]; similar to a
   * [[RawDecorator]] but with additional metadata and capabilities.
   */
-trait HttpEndpoint[InnerReturned, Input] extends Endpoint[Response.Raw, InnerReturned, Input]
+trait HttpEndpoint[InnerReturned, Input] extends Endpoint[Response.Raw, InnerReturned, Input, Request]
 
 
-class NoOpParser[Input, T] extends ArgReader[Input, T, Request] {
+class NoOpParser[Input, T, InputContext] extends ArgReader[Input, T, InputContext] {
   def arity = 1
 
-  def read(ctx: Request, label: String, input: Input) = input.asInstanceOf[T]
+  def read(ctx: InputContext, label: String, input: Input) = input.asInstanceOf[T]
 }
 object NoOpParser{
-  implicit def instance[Input, T]: NoOpParser[Input, T] = new NoOpParser[Input, T]
-  implicit def instanceAny[T]: NoOpParser[Any, T] = new NoOpParser[Any, T]
+  implicit def instance[Input, T, InputContext]: NoOpParser[Input, T, InputContext] = new NoOpParser[Input, T, InputContext]
+  implicit def instanceAny[T, InputContext]: NoOpParser[Any, T, InputContext] = new NoOpParser[Any, T, InputContext]
+  implicit def instanceAnyRequest[T]: NoOpParser[Any, T, Request] = new NoOpParser[Any, T, Request]
 }
