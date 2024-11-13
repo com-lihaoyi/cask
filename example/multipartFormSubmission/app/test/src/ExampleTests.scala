@@ -16,23 +16,19 @@ object ExampleTests extends TestSuite{
     res
   }
 
-  val tests = Tests{
-    test("MultipartFormSubmission") - withServer(MultipartFormSubmission){ host =>
-      val classPath = System.getProperty("java.class.path", ".");
-      val elements = classPath.split(System.getProperty("path.separator"));
-      elements.filter(e => e.endsWith("/app/resources")).headOption.map(resourcePath => {
-        val withFile = requests.post(s"$host/post", data = requests.MultiPart(
-          requests.MultiItem("somefile", new java.io.File(s"$resourcePath/example.txt"), "example.txt"),
-        ))
-        withFile.text() ==> s"filename: example.txt"
-        withFile.statusCode ==> 200
+  val tests = Tests {
+    test("MultipartFormSubmission") - withServer(MultipartFormSubmission) { host =>
+      val withFile = requests.post(s"$host/post", data = requests.MultiPart(
+        requests.MultiItem("somefile", Array[Byte](1,2,3,4,5) , "example.txt"),
+      ))
+      withFile.text() ==> s"filename: example.txt"
+      withFile.statusCode ==> 200
 
-        val withoutFile = requests.post(s"$host/post", data = requests.MultiPart(
-          requests.MultiItem("somefile", Array[Byte]()),
-        ))
-        withoutFile.text() ==> s"filename: null"
-        withoutFile.statusCode ==> 200
-      }).isDefined ==> true
+      val withoutFile = requests.post(s"$host/post", data = requests.MultiPart(
+        requests.MultiItem("somefile", Array[Byte]()),
+      ))
+      withoutFile.text() ==> s"filename: null"
+      withoutFile.statusCode ==> 200
     }
   }
 }
