@@ -6,8 +6,8 @@ trait AppModule extends CrossScalaModule with mill.twirllib.TwirlModule{
 
   def moduleDeps = Seq(build.cask(crossScalaVersion))
 
-  def twirlScalaVersion = "2.13.10"
-  def twirlVersion = "1.5.1"
+  def twirlScalaVersion = "2.13.15"
+  def twirlVersion = "1.6.8"
 
   def generatedSources = T{ Seq(compileTwirl().classes) }
   def ivyDeps = Agg[Dep](
