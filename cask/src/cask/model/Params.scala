@@ -1,10 +1,12 @@
 package cask.model
 
 import java.io.{ByteArrayOutputStream, InputStream}
-
 import cask.internal.Util
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.handlers.CookieImpl
+import io.undertow.util.HttpString
+import scala.util.Try
+import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
 case class QueryParams(value: Map[String, collection.Seq[String]])
 case class RemainingPathSegments(value: Seq[String])
@@ -98,9 +100,13 @@ sealed trait FormEntry{
   }
 }
 object FormEntry{
-  def fromUndertow(from: io.undertow.server.handlers.form.FormData.FormValue) = {
-    if (!from.isFile) FormValue(from.getValue, from.getHeaders)
-    else FormFile(from.getFileName, from.getPath, from.getHeaders)
+  def fromUndertow(from: io.undertow.server.handlers.form.FormData.FormValue): FormEntry = {
+    val isOctetStream = Option(from.getHeaders)
+      .flatMap(headers => Option(headers.get(HttpString.tryFromString("Content-Type"))))
+      .exists(h => h.asScala.exists(v => v == "application/octet-stream"))
+    // browsers will set empty file fields to content type: octet-stream
+    if (isOctetStream || from.isFileItem) FormFile(from.getFileName, Try(from.getFileItem.getFile).toOption, from.getHeaders)
+    else FormValue(from.getValue, from.getHeaders)
   }
 
 }
@@ -110,7 +116,9 @@ case class FormValue(value: String,
 }
 
 case class FormFile(fileName: String,
-                    filePath: java.nio.file.Path,
+                    filePath: Option[java.nio.file.Path],
                     headers: io.undertow.util.HeaderMap) extends FormEntry{
   def valueOrFileName = fileName
 }
+
+case class EmptyFormEntry()

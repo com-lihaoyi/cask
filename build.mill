@@ -125,6 +125,7 @@ def zippedExamples = T {
     build.example.websockets2.millSourcePath,
     build.example.websockets3.millSourcePath,
     build.example.websockets4.millSourcePath,
+    build.example.multipartFormSubmission.millSourcePath,
   )
 
   for (example <- examples) yield {
