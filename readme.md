@@ -1,4 +1,4 @@
-Cask 0.9.4: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+Cask 0.9.5: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 ===========================================================================================================================================================================
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
@@ -44,6 +44,12 @@ Cask is profiled using the
 courtesy of EJ Technologies
 
 ## Changelog
+
+### 0.9.5
+
+- Fix path traversal issue when serving static files [#157](https://github.com/com-lihaoyi/cask/pull/157)
+- Fix form submissions with empty file fields throwing exceptions [#150](https://github.com/com-lihaoyi/cask/pull/150)
+- Add CI testing for Java 17 and 21 [#156](https://github.com/com-lihaoyi/cask/pull/156)
 
 ### 0.9.4
 
