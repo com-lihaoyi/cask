@@ -5,7 +5,7 @@ import cask.model.Request
 object StaticUtil{
   def makePathAndContentType(t: String, ctx: Request) = {
     val leadingSlash = if (t.startsWith("/")) "/" else ""
-    val path = leadingSlash + (cask.internal.Util.splitPath(t) ++ ctx.remainingPathSegments)
+    val path = leadingSlash + (cask.internal.Util.splitPath(t) ++ ctx.remainingPathSegments.flatMap(cask.internal.Util.splitPath))
       .filter(s => s != "." && s != "..")
       .mkString("/")
     val contentType = java.nio.file.Files.probeContentType(java.nio.file.Paths.get(path))
