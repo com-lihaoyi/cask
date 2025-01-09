@@ -27,7 +27,7 @@ jobs:
       - name: Run tests
         run: |
           set -eux
-          ./mill -ikj1 --disable-ticker __.testLocal
+          ./mill -ik --disable-ticker __.testLocal
 
   test-examples:
     runs-on: ubuntu-latest
@@ -46,7 +46,7 @@ jobs:
         run: |
           set -eux
           ./mill __.publishLocal
-          ./mill -ikj1 --disable-ticker testExamples
+          ./mill -ik --disable-ticker testExamples
 
   publish-sonatype:
     if: github.repository == 'com-lihaoyi/cask' && contains(github.ref, 'refs/tags/')

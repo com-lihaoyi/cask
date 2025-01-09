@@ -8,13 +8,14 @@ object ExampleTests extends TestSuite{
 
 
   def withServer[T](example: cask.main.Main)(f: String => T): T = {
+    val port = cask.util.SocketUtils.getFreeTcpPort
     val server = io.undertow.Undertow.builder
-      .addHttpListener(8081, "localhost")
+      .addHttpListener(port, "localhost")
       .setHandler(example.defaultHandler)
       .build
     server.start()
     val res =
-      try f("http://localhost:8081")
+      try f(s"ws://localhost:$port")
       finally server.stop()
     res
   }
@@ -23,7 +24,7 @@ object ExampleTests extends TestSuite{
     test("Websockets") - withServer(Websockets3Main){ host =>
       @volatile var out = List.empty[String]
       // 4. open websocket
-      val ws = cask.WsClient.connect("ws://localhost:8081/connect/haoyi"){
+      val ws = cask.WsClient.connect(s"$host/connect/haoyi"){
         case cask.Ws.Text(s) => out = s :: out
       }
 
@@ -36,7 +37,7 @@ object ExampleTests extends TestSuite{
         out ==> List("haoyi world", "haoyi hello")
 
         val ex = intercept[Exception](
-          cask.WsClient.connect("ws://localhost:8081/connect/nobody") {
+          cask.WsClient.connect(s"$host/connect/nobody") {
             case _ => /*do nothing*/
           }
         )
