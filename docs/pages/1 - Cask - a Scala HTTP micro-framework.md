@@ -459,3 +459,31 @@ can build upon to create your own Cask web application architected however you
 would like.
 
 $$$todo
+
+## Testing
+For testing, it is recommended to use the `cask.util.SocketUtils.getFreeTcpPort` utility.  
+This prevents ports clashing when multiple tests execute in parallel.
+
+```scala
+object ExampleTests extends TestSuite{
+  def withServer[T](example: cask.main.Main)(f: String => T): T = {
+    val port = cask.util.SocketUtils.getFreeTcpPort
+    val server = Undertow.builder
+            .addHttpListener(port, "localhost")
+            .setHandler(example.defaultHandler)
+            .build
+    server.start()
+    val res =
+      try f(s"http://localhost:$port")
+      finally server.stop()
+    res
+  }
+
+  val tests = Tests{
+    test("/hello returns 'Hello World!'") - withServer(MyServer){ host =>
+      val expected = "Hello World!"
+      requests.get(s"$host/hello").text() ==> expected
+    }
+  }
+}
+```
