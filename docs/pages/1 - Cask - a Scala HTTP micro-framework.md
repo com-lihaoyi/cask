@@ -459,3 +459,48 @@ can build upon to create your own Cask web application architected however you
 would like.
 
 $$$todo
+
+## Running Cask with Virtual Threads
+
+
+$$minimalApplicationWithLoom
+
+Cask can support using Virtual Threads to handle the request out of the box, you can enable it with the next steps:
+
+1. Running cask with Java 21 or later
+2. add `--add-opens java.base/java.lang=ALL-UNNAMED` to your JVM options, which is needed to name the virtual threads.
+3. add `-Dcask.virtual-threads.enabled=true` to your JVM options, which is needed to enable the virtual threads.
+4. tweak the underlying carrier threads with `-Djdk.virtualThreadScheduler.parallelism`, `jdk.virtualThreadScheduler.maxPoolSize` and `jdk.unparker.maxPoolSize`.
+
+**Advanced Features**:
+1. You can change the default scheduler of the carrier threads with `cask.internal.Util.createVirtualThreadExecutor` method, but keep in mind, that's not officially supported by JDK for now.
+2. You can supply your own `Executor` by override the `handlerExecutor()` method in your `cask.Main` object, which will be called only once when the server starts.
+3. You can use `jdk.internal.misc.Blocker`'s `begin` and `end` methods to help the `ForkJoinPool` when needed.
+
+**NOTE**: 
+1. If your code is CPU-bound, you should not use virtual threads, because it will not improve the performance, but will increase the overhead.
+2. A common deadlock can happen when both a virtual thread and a platform thread try to load the same class, but there is no carrier thread available to execute the virtual thread, which will lead to a deadlock, make sure `jdk.unparker.maxPoolSize` is large enough to avoid it.
+3. Virtual thread does some kind of `rescheduling` which may lead to higher latency when the task is actually cpu bound.
+4. OOM is a common issue when you have many virtual threads, you should limit the max in-flight requests to avoid it.
+5. There are some known issues which can leads to a deadlock, you should be careful when using it in production, at least after long time stress test. 
+6. [JEP 491: Synchronize Virtual Threads without Pinning](https://openjdk.org/jeps/491) will be shipped in Java 24.
+7. Some info from early adaptor [faire](https://craft.faire.com/java-virtual-threads-increasing-search-performance-while-avoiding-deadlocks-f12fa296d521)
+
+**Some benchmark results**:
+
+| Test Case | Thread Type | Requests/sec | Avg Latency | Max Latency | Transfer/sec |
+|-----------|-------------|--------------|-------------|-------------|--------------|
+| staticFilesWithLoom | Platform | 81,766.27 | 1.23ms | 28.64ms | 11.38MB |
+| staticFilesWithLoom | Virtual | 75,488.32 | 4.41ms | 157.91ms | 10.51MB |
+| todoDbWithLoom | Platform | 81,929.40 | 1.22ms | 11.67ms | 13.13MB |
+| todoDbWithLoom | Virtual | 76,072.80 | 3.97ms | 160.29ms | 12.19MB |
+| minimalApplicationWithLoom | Platform | 38.36 | 1.05s | 1.99s | 5.73KB |
+| minimalApplicationWithLoom | Virtual | 935.74 | 106.11ms | 126.59ms | 139.81KB |
+
+[data source](https://github.com/com-lihaoyi/cask/pull/159)
+
+*Minimal Application (minimalApplicationWithLoom)*
+  - Virtual threads show significantly better performance:
+    - ~24x higher throughput (935.74 vs 38.36 requests/sec)
+    - Much better latency (106.11ms vs 1.05s)
+    - Platform threads experienced 1,076 timeout errors while virtual threads had none
