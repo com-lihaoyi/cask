@@ -479,7 +479,7 @@ Cask can support using Virtual Threads to handle the request out of the box, you
 
 **NOTE**: 
 1. If your code is CPU-bound, you should not use virtual threads, because it will not improve the performance, but will increase the overhead.
-2. A common deadlock can happen when both a virtual thread and a platform thread try to load the same class, but there is no carrier thread available to execute the virtual thread, which will lead to a deadlock, make sure `jdk.unparker.maxPoolSize` is large enough to avoid it.
+2. A common deadlock can happen when both a virtual thread and a platform thread try to load the same class, but there is no carrier thread available to execute the virtual thread, which will lead to a deadlock, make sure `jdk.virtualThreadScheduler.maxPoolSize` is large enough to avoid it.
 3. Virtual thread does some kind of `rescheduling` which may lead to higher latency when the task is actually cpu bound.
 4. OOM is a common issue when you have many virtual threads, you should limit the max in-flight requests to avoid it.
 5. There are some known issues which can leads to a deadlock, you should be careful when using it in production, at least after long time stress test. 
