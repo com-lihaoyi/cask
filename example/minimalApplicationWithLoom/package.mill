@@ -1,0 +1,47 @@
+package build.example.minimalApplicationWithLoom
+
+import mill._, scalalib._
+import mill.define.ModuleRef
+
+object app extends Cross[AppModule](build.scalaVersions)
+trait AppModule extends CrossScalaModule{
+
+  private def parseJvmArgs(argsStr: String) = {
+    argsStr.split(" ").filter(_.nonEmpty).toSeq
+  }
+
+  def forkArgs = Task.Input {
+    //TODO not sure why the env passing is not working
+    val envVirtualThread: String = T.env.getOrElse("CASK_VIRTUAL_THREAD", "false")
+    println("envVirtualThread: " + envVirtualThread)
+
+    val systemProps = Seq(s"-Dcask.virtual-threads.enabled=$envVirtualThread")
+
+    val baseArgs = Seq(
+      "--add-opens", "java.base/java.lang=ALL-UNNAMED"
+    )
+
+    val seq = baseArgs ++ systemProps
+    println("final forkArgs: " + seq)
+    seq
+  }
+
+  def zincWorker = ModuleRef(ZincWorkerJava11Latest)
+
+  def moduleDeps = Seq(build.cask(crossScalaVersion))
+
+  def ivyDeps = Agg[Dep](
+  )
+
+  object test extends ScalaTests with TestModule.Utest {
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest::0.8.4",
+      ivy"com.lihaoyi::requests::0.9.0",
+    )
+  }
+}
+
+object ZincWorkerJava11Latest extends ZincWorkerModule with CoursierModule {
+  def jvmId = "temurin:23.0.1"
+  def jvmIndexVersion = "latest.release"
+}

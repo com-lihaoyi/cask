@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         java: [ '11', '17', '21' ]
-    name: Tests for Java ${{ matrix.Java }}
+    name: Tests local for Java ${{ matrix.Java }}
     steps:
       - uses: actions/checkout@v3
       - name: Setup java
@@ -27,14 +27,18 @@ jobs:
       - name: Run tests
         run: |
           set -eux
-          ./mill -ikj1 --disable-ticker __.testLocal
+          if [ "${{ matrix.java }}" == "21" ]; then
+             JAVA_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED -Dcask.virtual-threads.enabled=true' ./mill -ikj1 --disable-ticker __.testLocal
+          else
+            ./mill -ikj1 --disable-ticker __.testLocal
+          fi
 
   test-examples:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         java: [ '11', '17', '21' ]
-    name: Tests for Java ${{ matrix.Java }}
+    name: Tests examples for Java ${{ matrix.Java }}
     steps:
       - uses: actions/checkout@v3
       - name: Setup java
@@ -45,8 +49,13 @@ jobs:
       - name: Run tests
         run: |
           set -eux
-          ./mill __.publishLocal
-          ./mill -ikj1 --disable-ticker testExamples
+            if [ "${{ matrix.java }}" == "21" ]; then
+                ./mill __.publishLocal
+                JAVA_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED -Dcask.virtual-threads.enabled=true' ./mill -ikj1 --disable-ticker testExamples
+            else
+                ./mill __.publishLocal
+                ./mill -ikj1 --disable-ticker testExamples
+            fi
 
   publish-sonatype:
     if: github.repository == 'com-lihaoyi/cask' && contains(github.ref, 'refs/tags/')

@@ -85,6 +85,89 @@ object cask extends Cross[CaskMainModule](scalaVersions) {
   }
 }
 
+trait BenchmarkModule extends CrossScalaModule {
+  def moduleDeps = Seq(cask(crossScalaVersion))
+  def ivyDeps = Agg[Dep](
+  )
+}
+
+object benchmark extends Cross[BenchmarkModule](build.scalaVersions) with RunModule {
+
+  def waitForServer(url: String, maxAttempts: Int = 120): Boolean = {
+    (1 to maxAttempts).exists { attempt =>
+      try {
+        Thread.sleep(3000)
+        println("Checking server... Attempt " + attempt)
+        os.proc("curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", url)
+          .call(check = false)
+          .exitCode == 0
+      } catch {
+        case _: Throwable =>
+          Thread.sleep(3000)
+          false
+      }
+    }
+  }
+
+  def runBenchMark(projectRoot: os.Path, example: String, vt: Boolean) = {
+    def runMillBackground(example: String, vt: Boolean) = {
+      println(s"Running $example with vt: $vt")
+      println("projectRoot: " + projectRoot)
+      os.proc(
+          "mill",
+          s"example.$example.app[$scala213].run")
+        .spawn(
+          cwd = projectRoot,
+          env = Map("CASK_VIRTUAL_THREAD" -> vt.toString),
+          stdout = os.Inherit,
+          stderr = os.Inherit)
+    }
+
+    val duration = "30s"
+    val threads = "4"
+    val connections = "100"
+    val url = "http://localhost:8080/"
+    val serverApp = runMillBackground(example, vt)
+
+    println(s"Waiting for server to start..., vt:$vt")
+    if (!waitForServer(url)) {
+      serverApp.destroy()
+      println("Failed to start server")
+      sys.exit(1)
+    }
+
+    val results = os.proc("wrk",
+      "-t", threads,
+      "-c", connections,
+      "-d", duration,
+      url
+    ).call(stderr = os.Pipe)
+    serverApp.destroyForcibly()
+    Thread.sleep(1000)
+
+    println(s"""\n$example result with ${if (vt) "(virtual threads)" else "(platform threads)"}:""")
+    println(results.out.text())
+  }
+
+  def runBenchmarks() = T.command {
+    val projectRoot = T.workspace
+    if (os.proc("which", "wrk").call(check = false).exitCode != 0) {
+      println("Error: wrk is not installed. Please install wrk first.")
+      sys.exit(1)
+    }
+    for (example <- Seq(
+      "staticFilesWithLoom",
+      "todoDbWithLoom",
+      "minimalApplicationWithLoom")) {
+      println(s"target server started, starting run benchmark with wrk for :$example with VT:false")
+      runBenchMark(projectRoot, example, vt = false)
+      println(s"target server started, starting run benchmark with wrk for :$example with VT:true")
+      runBenchMark(projectRoot, example, vt = true)
+    }
+
+  }
+}
+
 trait LocalModule extends CrossScalaModule{
   override def millSourcePath = super.millSourcePath / "app"
   def moduleDeps = Seq(cask(crossScalaVersion))
@@ -111,13 +194,16 @@ def zippedExamples = T {
     build.example.httpMethods.millSourcePath,
     build.example.minimalApplication.millSourcePath,
     build.example.minimalApplication2.millSourcePath,
+    build.example.minimalApplicationWithLoom.millSourcePath,
     build.example.redirectAbort.millSourcePath,
     build.example.scalatags.millSourcePath,
     build.example.staticFiles.millSourcePath,
+    build.example.staticFilesWithLoom.millSourcePath,
     build.example.staticFiles2.millSourcePath,
     build.example.todo.millSourcePath,
     build.example.todoApi.millSourcePath,
     build.example.todoDb.millSourcePath,
+    build.example.todoDbWithLoom.millSourcePath,
     build.example.twirl.millSourcePath,
     build.example.variableRoutes.millSourcePath,
     build.example.queryParams.millSourcePath,

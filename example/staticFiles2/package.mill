@@ -22,7 +22,7 @@ trait AppModule extends CrossScalaModule{ app =>
 
     // redirect this to the forked `test` to make sure static file serving works
     def testLocal(args: String*) = T.command{
-      test(args:_*)
+      this.test(args:_*)
     }
   }
 }
