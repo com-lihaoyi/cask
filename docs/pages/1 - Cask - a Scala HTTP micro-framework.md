@@ -499,8 +499,19 @@ Cask can support using Virtual Threads to handle the request out of the box, you
 
 [data source](https://github.com/com-lihaoyi/cask/pull/159)
 
-*Minimal Application (minimalApplicationWithLoom)*
-  - Virtual threads show significantly better performance:
-    - ~24x higher throughput (935.74 vs 38.36 requests/sec)
-    - Much better latency (106.11ms vs 1.05s)
-    - Platform threads experienced 1,076 timeout errors while virtual threads had none
+The performance of non-blocking virtual threads varies, depending on whether blocking is a problem
+or not.
+
+* For the `staticFilesWithLoom` and `todoDbWithLoom`, the benchmarks are largely CPU bound,
+  and thus using Virtual Threads results in a minor performance slowdown over using platform threads.
+
+* For `minimalApplicationWithLoom`, which includes a small `Thread.sleep(100)` to simulate
+  blocking, Virtual Threads show significantly better performance:
+  - ~24x higher throughput (935.74 vs 38.36 requests/sec)
+  - Much better latency (106.11ms vs 1.05s)
+  - Platform threads experienced 1,076 timeout errors while virtual threads had none
+
+In general virtual threads are most beneficial in applications which spend a lot of time blocked
+on IO. How much they benefit your own application will need to be benchmarked and measured,
+but they are relatively easy to enable so you can run your own small benchmarks before deciding
+to use them or not.
