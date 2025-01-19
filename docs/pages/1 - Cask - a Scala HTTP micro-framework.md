@@ -473,11 +473,13 @@ Cask can support using Virtual Threads to handle the request out of the box, you
 4. tweak the underlying carrier threads with `-Djdk.virtualThreadScheduler.parallelism`, `jdk.virtualThreadScheduler.maxPoolSize` and `jdk.unparker.maxPoolSize`.
 
 **Advanced Features**:
+
 1. You can change the default scheduler of the carrier threads with `cask.internal.Util.createVirtualThreadExecutor` method, but keep in mind, that's not officially supported by JDK for now.
 2. You can supply your own `Executor` by override the `handlerExecutor()` method in your `cask.Main` object, which will be called only once when the server starts.
 3. You can use `jdk.internal.misc.Blocker`'s `begin` and `end` methods to help the `ForkJoinPool` when needed.
 
 **NOTE**: 
+
 1. If your code is CPU-bound, you should not use virtual threads, because it will not improve the performance, but will increase the overhead.
 2. A common deadlock can happen when both a virtual thread and a platform thread try to load the same class, but there is no carrier thread available to execute the virtual thread, which will lead to a deadlock, make sure `jdk.virtualThreadScheduler.maxPoolSize` is large enough to avoid it.
 3. Virtual thread does some kind of `rescheduling` which may lead to higher latency when the task is actually cpu bound.
