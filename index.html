@@ -1290,8 +1290,22 @@ object MinimalApplicationWithLoom extends cask.MainRoutes {
   <li>add <code>-Dcask.virtual-threads.enabled=true</code> to your JVM options, which is needed to enable the virtual threads.</li>
   <li>tweak the underlying carrier threads with <code>-Djdk.virtualThreadScheduler.parallelism</code>, <code>jdk.virtualThreadScheduler.maxPoolSize</code> and <code>jdk.unparker.maxPoolSize</code>.</li>
 </ol>
-<p><strong>Advanced Features</strong>: 1. You can change the default scheduler of the carrier threads with <code>cask.internal.Util.createVirtualThreadExecutor</code> method, but keep in mind, that's not officially supported by JDK for now. 2. You can supply your own <code>Executor</code> by override the <code>handlerExecutor()</code> method in your <code>cask.Main</code> object, which will be called only once when the server starts. 3. You can use <code>jdk.internal.misc.Blocker</code>'s <code>begin</code> and <code>end</code> methods to help the <code>ForkJoinPool</code> when needed.</p>
-<p><strong>NOTE</strong>: 1. If your code is CPU-bound, you should not use virtual threads, because it will not improve the performance, but will increase the overhead. 2. A common deadlock can happen when both a virtual thread and a platform thread try to load the same class, but there is no carrier thread available to execute the virtual thread, which will lead to a deadlock, make sure <code>jdk.virtualThreadScheduler.maxPoolSize</code> is large enough to avoid it. 3. Virtual thread does some kind of <code>rescheduling</code> which may lead to higher latency when the task is actually cpu bound. 4. OOM is a common issue when you have many virtual threads, you should limit the max in-flight requests to avoid it. 5. There are some known issues which can leads to a deadlock, you should be careful when using it in production, at least after long time stress test. 6. <a href="https://openjdk.org/jeps/491">JEP 491: Synchronize Virtual Threads without Pinning</a> will be shipped in Java 24. 7. Some info from early adaptor <a href="https://craft.faire.com/java-virtual-threads-increasing-search-performance-while-avoiding-deadlocks-f12fa296d521">faire</a></p>
+<p><strong>Advanced Features</strong>:</p>
+<ol>
+  <li>You can change the default scheduler of the carrier threads with <code>cask.internal.Util.createVirtualThreadExecutor</code> method, but keep in mind, that's not officially supported by JDK for now.</li>
+  <li>You can supply your own <code>Executor</code> by override the <code>handlerExecutor()</code> method in your <code>cask.Main</code> object, which will be called only once when the server starts.</li>
+  <li>You can use <code>jdk.internal.misc.Blocker</code>'s <code>begin</code> and <code>end</code> methods to help the <code>ForkJoinPool</code> when needed.</li>
+</ol>
+<p><strong>NOTE</strong>: </p>
+<ol>
+  <li>If your code is CPU-bound, you should not use virtual threads, because it will not improve the performance, but will increase the overhead.</li>
+  <li>A common deadlock can happen when both a virtual thread and a platform thread try to load the same class, but there is no carrier thread available to execute the virtual thread, which will lead to a deadlock, make sure <code>jdk.virtualThreadScheduler.maxPoolSize</code> is large enough to avoid it.</li>
+  <li>Virtual thread does some kind of <code>rescheduling</code> which may lead to higher latency when the task is actually cpu bound.</li>
+  <li>OOM is a common issue when you have many virtual threads, you should limit the max in-flight requests to avoid it.</li>
+  <li>There are some known issues which can leads to a deadlock, you should be careful when using it in production, at least after long time stress test.</li>
+  <li><a href="https://openjdk.org/jeps/491">JEP 491: Synchronize Virtual Threads without Pinning</a> will be shipped in Java 24.</li>
+  <li>Some info from early adaptor <a href="https://craft.faire.com/java-virtual-threads-increasing-search-performance-while-avoiding-deadlocks-f12fa296d521">faire</a></li>
+</ol>
 <p><strong>Some benchmark results</strong>:</p><table class="table table-bordered">
 <thead>
   <tr>
