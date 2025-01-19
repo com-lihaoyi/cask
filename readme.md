@@ -1,4 +1,4 @@
-Cask 0.9.5: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+Cask 0.9.6: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 ===========================================================================================================================================================================
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
@@ -44,6 +44,11 @@ Cask is profiled using the
 courtesy of EJ Technologies
 
 ## Changelog
+
+### 0.9.6
+
+- Support for Java21/Loom Virtual Threads [#161](https://github.com/com-lihaoyi/cask/pull/159), see
+  [Running Cask with Virtual Threads](https://com-lihaoyi.github.io/cask/#running-cask-with-virtual-threads)
 
 ### 0.9.5
 

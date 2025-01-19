@@ -463,7 +463,7 @@ $$$todo
 ## Running Cask with Virtual Threads
 
 
-$$minimalApplicationWithLoom
+$$$minimalApplicationWithLoom
 
 Cask can support using Virtual Threads to handle the request out of the box, you can enable it with the next steps:
 
