@@ -468,9 +468,8 @@ $$$minimalApplicationWithLoom
 Cask can support using Virtual Threads to handle the request out of the box, you can enable it with the next steps:
 
 1. Running cask with Java 21 or later
-2. add `--add-opens java.base/java.lang=ALL-UNNAMED` to your JVM options, which is needed to name the virtual threads.
-3. add `-Dcask.virtual-threads.enabled=true` to your JVM options, which is needed to enable the virtual threads.
-4. tweak the underlying carrier threads with `-Djdk.virtualThreadScheduler.parallelism`, `jdk.virtualThreadScheduler.maxPoolSize` and `jdk.unparker.maxPoolSize`.
+2. add `-Dcask.virtual-threads.enabled=true` to your JVM options, which is needed to enable the virtual threads.
+3. tweak the underlying carrier threads with `-Djdk.virtualThreadScheduler.parallelism`, `jdk.virtualThreadScheduler.maxPoolSize` and `jdk.unparker.maxPoolSize`.
 
 **Advanced Features**:
 

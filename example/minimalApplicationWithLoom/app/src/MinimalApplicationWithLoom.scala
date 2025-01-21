@@ -25,9 +25,8 @@ object MinimalApplicationWithLoom extends cask.MainRoutes {
 
   //TO USE LOOM:
   //1. JDK 21 or later is needed.
-  //2. add VM option: --add-opens java.base/java.lang=ALL-UNNAMED
-  //3. set system property: cask.virtual-threads.enabled=true
-  //4. NOTE: `java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor` is using the shared
+  //2. set system property: cask.virtual-threads.enabled=true
+  //3. NOTE: `java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor` is using the shared
   //   ForkJoinPool in VirtualThread. If you want to use a separate ForkJoinPool, you can create
   //   a new ForkJoinPool instance and pass it to `createVirtualThreadExecutor` method.
 

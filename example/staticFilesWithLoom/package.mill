@@ -22,11 +22,7 @@ trait AppModule extends CrossScalaModule{ app =>
 
     val systemProps = Seq(s"-Dcask.virtual-threads.enabled=$envVirtualThread")
 
-    val baseArgs = Seq(
-      "--add-opens", "java.base/java.lang=ALL-UNNAMED"
-    )
-
-    val seq = baseArgs ++ systemProps
+    val seq = systemProps
     println("final forkArgs: " + seq)
     seq
   }
