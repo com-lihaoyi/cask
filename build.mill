@@ -38,7 +38,8 @@ trait CaskMainModule extends CaskModule {
   def ivyDeps = T{
     Agg(
       ivy"io.undertow:undertow-core:2.3.18.Final",
-      ivy"com.lihaoyi::upickle:4.0.2"
+      ivy"com.lihaoyi::upickle:4.0.2",
+      ivy"com.github.sideeffffect:loom-compatibility:0.2.0",
     ) ++
     Agg.when(!isScala3)(ivy"org.scala-lang:scala-reflect:$crossScalaVersion")
   }
