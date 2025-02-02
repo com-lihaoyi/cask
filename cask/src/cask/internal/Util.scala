@@ -4,9 +4,11 @@ import java.io.{InputStream, PrintWriter, StringWriter}
 import scala.collection.generic.CanBuildFrom
 import scala.collection.mutable
 import java.io.OutputStream
-import java.lang.invoke.{MethodHandles, MethodType}
-import java.util.concurrent.{Executor, ExecutorService, ForkJoinPool, ThreadFactory}
+import java.lang.invoke.{MethodHandle, MethodHandles, MethodType}
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Executor, ExecutorService, ForkJoinPool, ForkJoinWorkerThread, ThreadFactory}
 import scala.annotation.switch
+import scala.concurrent.duration.TimeUnit
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Try
 import scala.util.control.NonFatal
@@ -67,6 +69,49 @@ object Util {
         globalLogger.exception(e)
         throw new UnsupportedOperationException("Failed to create newThreadPerTaskExecutor.", e)
     }
+  }
+
+  /**
+   * A helper class to create the carrier thread for the virtual thread,
+   * Require Java 21 or above.
+   * */
+  private object CarrierThreadFactory extends ForkJoinPool.ForkJoinWorkerThreadFactory {
+    private val counter = new AtomicInteger(0)
+    private val clazz = lookup.findClass("jdk.internal.misc.CarrierThread")
+    private val constructor: MethodHandle = lookup.findConstructor(
+      clazz,
+      MethodType.methodType(classOf[Unit], classOf[ForkJoinPool]))
+
+    override def newThread(pool: ForkJoinPool): ForkJoinWorkerThread = {
+      val carrierThread = constructor.invoke(pool).asInstanceOf[ForkJoinWorkerThread]
+      // Set the name of the carrier thread
+      carrierThread.setName("cask-carrier-thread-" + counter.incrementAndGet())
+      carrierThread
+    }
+  }
+
+  /**
+   * Create a dedicated forkjoin based scheduler for the virtual thread.
+   * NOTE: you can use other threads pool as scheduler too, this method just integrated the `CarrierThreadFactory`
+   * when creating the ForkJoinPool.
+   * */
+  def createForkJoinPoolBasedScheduler(parallelism: Int,
+                                       corePoolSize: Int,
+                                       maximumPoolSize: Int,
+                                       keepAliveTime: Int,
+                                       timeUnit: TimeUnit): Executor = {
+    new ForkJoinPool(
+      parallelism,
+      CarrierThreadFactory,
+      (_: Thread, _: Throwable) => {}, // ignored for carrier thread
+      true, //FIFO
+      corePoolSize,
+      maximumPoolSize,
+      parallelism / 2,
+      (_: ForkJoinPool) => true, //which is needed for virtual thread
+      keepAliveTime,
+      timeUnit
+    )
   }
 
   /**
