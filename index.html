@@ -1295,6 +1295,7 @@ object MinimalApplicationWithLoom extends cask.MainRoutes {
   <li>You can change the default scheduler of the carrier threads with <code>cask.internal.Util.createVirtualThreadExecutor</code> method, but keep in mind, that's not officially supported by JDK for now.</li>
   <li>You can supply your own <code>Executor</code> by override the <code>handlerExecutor()</code> method in your <code>cask.Main</code> object, which will be called only once when the server starts.</li>
   <li>You can use <code>jdk.internal.misc.Blocker</code>'s <code>begin</code> and <code>end</code> methods to help the <code>ForkJoinPool</code> when needed.</li>
+  <li>You can use <code>Util.createVirtualThreadScheduler</code> to create separate <code>ForkJoinPool</code> as scheduler for the virtual threads.</li>
 </ol>
 <p><strong>NOTE</strong>: </p>
 <ol>
