@@ -1,4 +1,4 @@
-Cask 0.9.6: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+Cask 0.9.7: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 ===========================================================================================================================================================================
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
@@ -44,6 +44,10 @@ Cask is profiled using the
 courtesy of EJ Technologies
 
 ## Changelog
+
+### 0.9.7
+
+- Add a helper method to create a dedicated virtual thread scheduler. [#164](https://github.com/com-lihaoyi/cask/pull/164)
 
 ### 0.9.6
 
