@@ -173,7 +173,23 @@ trait LocalModule extends CrossScalaModule{
   def moduleDeps = Seq(cask(crossScalaVersion))
 }
 
+object `loom-compatibility` extends JavaModule with PublishModule {
 
+  override def javacOptions: T[Seq[String]] = super.javacOptions() ++ List("-source", "8", "-target", "8")
+
+  def publishVersion = VcsVersion.vcsState().format()
+
+  def pomSettings = PomSettings(
+    description = artifactName(),
+    organization = "com.lihaoyi",
+    url = "https://github.com/com-lihaoyi/cask",
+    licenses = Seq(License.MIT),
+    versionControl = VersionControl.github("com-lihaoyi", "cask"),
+    developers = Seq(
+      Developer("lihaoyi", "Li Haoyi","https://github.com/lihaoyi")
+    )
+  )
+}
 
 def zippedExamples = T {
   val vcsState = VcsVersion.vcsState()
