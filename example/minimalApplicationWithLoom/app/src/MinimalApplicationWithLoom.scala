@@ -18,16 +18,20 @@ object MinimalApplicationWithLoom extends cask.MainRoutes {
 
   jvmArguments.forEach((arg: String) => println(arg))
 
-  println(Main.VIRTUAL_THREAD_ENABLED + " :" + System.getProperty(Main.VIRTUAL_THREAD_ENABLED))
+  println(
+    Main.VIRTUAL_THREAD_ENABLED + " :" + System.getProperty(
+      Main.VIRTUAL_THREAD_ENABLED
+    )
+  )
 
-  //Use the same underlying executor for both virtual and non-virtual threads
+  // Use the same underlying executor for both virtual and non-virtual threads
   private val executor = Executors.newFixedThreadPool(4)
 
-  //TO USE LOOM:
-  //1. JDK 21 or later is needed.
-  //2. add VM option: --add-opens java.base/java.lang=ALL-UNNAMED
-  //3. set system property: cask.virtual-threads.enabled=true
-  //4. NOTE: `java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor` is using the shared
+  // TO USE LOOM:
+  // 1. JDK 21 or later is needed.
+  // 2. add VM option: --add-opens java.base/java.lang=ALL-UNNAMED
+  // 3. set system property: cask.virtual-threads.enabled=true
+  // 4. NOTE: `java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor` is using the shared
   //   ForkJoinPool in VirtualThread. If you want to use a separate ForkJoinPool, you can create
   //   a new ForkJoinPool instance and pass it to `createVirtualThreadExecutor` method.
 
@@ -35,11 +39,10 @@ object MinimalApplicationWithLoom extends cask.MainRoutes {
     super.handlerExecutor().orElse(Some(executor))
   }
 
-  /**
-   * With curl: curl -X GET http://localhost:8080/
-   * you wil see something like:
-   * Hello World! from thread:VirtualThread[#63,cask-handler-executor-virtual-thread-10]/runnable@ForkJoinPool-1-worker-1%
-   * */
+  /** With curl: curl -X GET http://localhost:8080/ you wil see something like:
+    * Hello World! from
+    * thread:VirtualThread[#63,cask-handler-executor-virtual-thread-10]/runnable@ForkJoinPool-1-worker-1%
+    */
   @cask.get("/")
   def hello() = {
     Thread.sleep(100) // simulate some blocking work
