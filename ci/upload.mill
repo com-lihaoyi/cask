@@ -1,9 +1,7 @@
 package build.ci
 
-import $ivy.`com.lihaoyi::os-lib:0.8.1`
-
 @mainargs.main
-def apply(uploadedFile: os.Path,
+def upload(uploadedFile: os.Path,
           tagName: String,
           uploadName: String,
           authKey: String): String = {

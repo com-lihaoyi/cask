@@ -1,6 +1,10 @@
+/// mvnDeps:
+/// - com.github.lolgab::mill-mima_mill1.0.0-RC1:0.2.0-M1
+/// - "com.lihaoyi::mill-contrib-twirllib:"
+
 package build.example.twirl
 import mill._, scalalib._
-import $ivy.`com.lihaoyi::mill-contrib-twirllib:`
+
 object app extends Cross[AppModule](build.scalaVersions)
 trait AppModule extends CrossScalaModule with mill.twirllib.TwirlModule{
 
@@ -9,17 +13,17 @@ trait AppModule extends CrossScalaModule with mill.twirllib.TwirlModule{
   def twirlScalaVersion = "2.13.15"
   def twirlVersion = "1.6.8"
 
-  def generatedSources = T{ Seq(compileTwirl().classes) }
-  def ivyDeps = Agg[Dep](
-    ivy"com.lihaoyi::scalatags:0.9.1".withDottyCompat(scalaVersion()),
-    ivy"com.typesafe.play::twirl-api:${twirlVersion()}".withDottyCompat(scalaVersion()),
+  def generatedSources = Task { Seq(compileTwirl().classes) }
+  def mvnDeps = Agg[Dep](
+    mvn"com.lihaoyi::scalatags:0.9.1".withDottyCompat(scalaVersion()),
+    mvn"com.typesafe.play::twirl-api:${twirlVersion()}".withDottyCompat(scalaVersion()),
   )
 
   object test extends ScalaTests with TestModule.Utest{
 
-    def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.8.4",
-      ivy"com.lihaoyi::requests::0.9.0",
+    def mvnDeps = Agg(
+      mvn"com.lihaoyi::utest::0.8.4",
+      mvn"com.lihaoyi::requests::0.9.0",
     )
   }
 }
