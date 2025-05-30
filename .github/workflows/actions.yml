@@ -51,7 +51,7 @@ jobs:
           set -eux
             if [ "${{ matrix.java }}" == "21" ]; then
                 ./mill __.publishLocal
-                JAVA_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED -Dcask.virtual-threads.enabled=true' ./mill -ikj1 --disable-ticker testExamples
+                JAVA_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED -Dcask.virtual-threads.enabled=true' ./mill -i -k -j1 --disable-ticker testExamples
             else
                 ./mill __.publishLocal
                 ./mill -i -k -j1 --disable-ticker testExamples
