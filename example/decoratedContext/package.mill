@@ -7,11 +7,11 @@ object app extends ScalaModule{
 
   def moduleDeps = Seq(build.cask(build.scala3))
 
-  def mvnDeps = Agg[Dep](
+  def mvnDeps = Seq[Dep](
   )
   object test extends ScalaTests with TestModule.Utest{
 
-    def mvnDeps = Agg(
+    def mvnDeps = Seq(
       mvn"com.lihaoyi::utest::0.8.4",
       mvn"com.lihaoyi::requests::0.9.0",
     )

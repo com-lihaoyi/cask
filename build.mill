@@ -1,4 +1,3 @@
-//| mill-version: 1.0.0-RC1
 //| mvnDeps:
 //| - com.github.lolgab::mill-mima_mill1.0.0-RC1:0.2.0-M1
 //| - "com.lihaoyi::mill-contrib-twirllib:"
@@ -177,70 +176,73 @@ trait LocalModule extends CrossScalaModule{
 
 
 def zippedExamples = Task {
-  val vcsState = VcsVersion.vcsState()
+  mill.define.BuildCtx.withFilesystemCheckerDisabled {
+    val vcsState = VcsVersion.vcsState()
 
-  val releaseTag = vcsState.lastTag.getOrElse("")
-  val label = vcsState.format()
+    val releaseTag = vcsState.lastTag.getOrElse("")
+    val label = vcsState.format()
 
-  val examples = Seq(
-    build.example.compress.moduleDir,
-    build.example.compress2.moduleDir,
-    build.example.compress3.moduleDir,
-    build.example.cookies.moduleDir,
-    build.example.decorated.moduleDir,
-    build.example.decorated2.moduleDir,
-    build.example.decoratedContext.moduleDir,
-    build.example.endpoints.moduleDir,
-    build.example.formJsonPost.moduleDir,
-    build.example.httpMethods.moduleDir,
-    build.example.minimalApplication.moduleDir,
-    build.example.minimalApplication2.moduleDir,
-    build.example.minimalApplicationWithLoom.moduleDir,
-    build.example.redirectAbort.moduleDir,
-    build.example.scalatags.moduleDir,
-    build.example.staticFiles.moduleDir,
-    build.example.staticFilesWithLoom.moduleDir,
-    build.example.staticFiles2.moduleDir,
-    build.example.todo.moduleDir,
-    build.example.todoApi.moduleDir,
-    build.example.todoDb.moduleDir,
-    build.example.todoDbWithLoom.moduleDir,
-    build.example.twirl.moduleDir,
-    build.example.variableRoutes.moduleDir,
-    build.example.queryParams.moduleDir,
-    build.example.websockets.moduleDir,
-    build.example.websockets2.moduleDir,
-    build.example.websockets3.moduleDir,
-    build.example.websockets4.moduleDir,
-    build.example.multipartFormSubmission.moduleDir,
-  )
-
-  for (example <- examples) yield {
-    val f = Task.ctx().dest
-    val last = example.last + "-" + label
-    os.copy(example, f / last)
-    os.copy(Task.workspace / ".mill-version", f / last / ".mill-version")
-    os.write.over(f / last / "mill", os.read(Task.workspace / "mill"))
-    os.proc("chmod", "+x", f / last / "mill").call(f / last)
-    os.move(f / last / "package.mill", f / last / "build.mill")
-    os.write.over(
-      f / last / "build.mill",
-      os.read(f / last / "build.mill")
-        .replaceAll("package build.*", "package build")
-        .replaceAll("def moduleDeps =.*", "")
-        .replaceAll("app =>", "")
-        .replaceFirst(
-          "object app extends.*\ntrait AppModule extends CrossScalaModule(.*)\\{",
-          s"object app extends ScalaModule $$1\\{\n  def scalaVersion = \"${scala213}\"")
-        .replaceAll("build.scala3", s"\"${scala3}\"")
-        .replaceFirst(
-          "def mvnDeps = Seq\\[Dep\\]\\(",
-          "def mvnDeps = Seq(\n    mvn\"com.lihaoyi::cask:" + releaseTag + "\","
-        )
+    val examples = Seq(
+      build.example.compress.moduleDir,
+      build.example.compress2.moduleDir,
+      build.example.compress3.moduleDir,
+      build.example.cookies.moduleDir,
+      build.example.decorated.moduleDir,
+      build.example.decorated2.moduleDir,
+      build.example.decoratedContext.moduleDir,
+      build.example.endpoints.moduleDir,
+      build.example.formJsonPost.moduleDir,
+      build.example.httpMethods.moduleDir,
+      build.example.minimalApplication.moduleDir,
+      build.example.minimalApplication2.moduleDir,
+      build.example.minimalApplicationWithLoom.moduleDir,
+      build.example.redirectAbort.moduleDir,
+      build.example.scalatags.moduleDir,
+      build.example.staticFiles.moduleDir,
+      build.example.staticFilesWithLoom.moduleDir,
+      build.example.staticFiles2.moduleDir,
+      build.example.todo.moduleDir,
+      build.example.todoApi.moduleDir,
+      build.example.todoDb.moduleDir,
+      build.example.todoDbWithLoom.moduleDir,
+      build.example.twirl.moduleDir,
+      build.example.variableRoutes.moduleDir,
+      build.example.queryParams.moduleDir,
+      build.example.websockets.moduleDir,
+      build.example.websockets2.moduleDir,
+      build.example.websockets3.moduleDir,
+      build.example.websockets4.moduleDir,
+      build.example.multipartFormSubmission.moduleDir,
     )
 
-    os.zip(f / s"$last.zip", Seq(f / last))
-    PathRef(f / s"$last.zip")
+    for (example <- examples) yield {
+      val f = Task.ctx().dest
+      val last = example.last + "-" + label
+      os.copy(example, f / last)
+      os.copy(Task.workspace / ".mill-version", f / last / ".mill-version")
+      os.write.over(f / last / "mill", os.read(Task.workspace / "mill"))
+      os.proc("chmod", "+x", f / last / "mill").call(f / last)
+      os.move(f / last / "package.mill", f / last / "build.mill")
+      os.write.over(
+        f / last / "build.mill",
+        os.read(f / last / "build.mill")
+          .replaceAll("package build.*", "package build")
+          .replaceAll("def moduleDeps =.*", "")
+          .replaceAll("///", "//|")
+          .replaceAll("app =>", "")
+          .replaceFirst(
+            "object app extends.*\ntrait AppModule extends CrossScalaModule(.*)\\{",
+            s"object app extends ScalaModule $$1\\{\n  def scalaVersion = \"${scala213}\"")
+          .replaceAll("build.scala3", s"\"${scala3}\"")
+          .replaceFirst(
+            "def mvnDeps = Seq\\[Dep\\]\\(",
+            "def mvnDeps = Seq(\n    mvn\"com.lihaoyi::cask:" + releaseTag + "\","
+          )
+      )
+
+      os.zip(f / s"$last.zip", Seq(f / last))
+      PathRef(f / s"$last.zip")
+    }
   }
 }
 
@@ -262,8 +264,14 @@ def testExamples() = Task.Command{
   }
 }
 
-def uploadToGithub() = Task.Command{
-  val vcsState = VcsVersion.vcsState()
+def uploadToGithub() = Task.Command {
+  // Separate this out because the Task.Command macro has bugs when
+  // interacting with request-scala's implicit conversions
+  doUploadToGithub(VcsVersion.vcsState(), zippedExamples())
+}
+
+def doUploadToGithub(vcsState: VcsVersion.State,
+                     zippedExamples: Seq[PathRef])(implicit ctx: mill.define.TaskCtx) = {
 
   val authKey = Task.env.apply("AMMONITE_BOT_AUTH_TOKEN")
   val releaseTag = vcsState.lastTag.getOrElse("")
@@ -271,17 +279,12 @@ def uploadToGithub() = Task.Command{
   if (releaseTag == label) {
     requests.post(
       "https://api.github.com/repos/com-lihaoyi/cask/releases",
-      data = ujson.write(
-        ujson.Obj(
-          "tag_name" -> releaseTag,
-          "name" -> releaseTag
-        )
-      ),
+      data = ujson.Obj("tag_name" -> releaseTag, "name" -> releaseTag),
       headers = Seq("Authorization" -> s"token $authKey")
     )
   }
 
-  for(example <- zippedExamples()){
+  for(example <- zippedExamples){
     ci.upload(example.path, releaseTag, example.path.last, authKey)
   }
 }

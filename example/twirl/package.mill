@@ -14,14 +14,14 @@ trait AppModule extends CrossScalaModule with mill.twirllib.TwirlModule{
   def twirlVersion = "1.6.8"
 
   def generatedSources = Task { Seq(compileTwirl().classes) }
-  def mvnDeps = Agg[Dep](
+  def mvnDeps = Seq[Dep](
     mvn"com.lihaoyi::scalatags:0.9.1".withDottyCompat(scalaVersion()),
     mvn"com.typesafe.play::twirl-api:${twirlVersion()}".withDottyCompat(scalaVersion()),
   )
 
   object test extends ScalaTests with TestModule.Utest{
 
-    def mvnDeps = Agg(
+    def mvnDeps = Seq(
       mvn"com.lihaoyi::utest::0.8.4",
       mvn"com.lihaoyi::requests::0.9.0",
     )
