@@ -169,7 +169,7 @@ requests.get(host + &quot;/do-thing&quot;).statusCode ==&gt; 404
 <p>This will need to be re-run when you re-configure your <code>build.sc</code> file, e.g. when adding additional modules or third-party dependencies.</p>
 <p>Cask is just a Scala library, and you can use Cask in any existing Scala project via the following coordinates:</p>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">// Mill
-ivy&quot;com.lihaoyi::cask:0.9.7&quot;
+mvn&quot;com.lihaoyi::cask:0.9.7&quot;
 
 // SBT
 &quot;com.lihaoyi&quot; %% &quot;cask&quot; % &quot;0.9.7&quot;
@@ -532,7 +532,7 @@ object RedirectAbort extends cask.MainRoutes{
   <li><a href="https://github.com/lihaoyi/cask/releases/download/0.9.7/redirectAbort-0.9.7.zip">example project</a></li>
 </ul>
 <p>Cask provides some convenient helpers <code>cask.Redirect</code> and <code>cask.Abort</code> which you can return; these are simple wrappers around <code>cask.Request</code>, and simply set up the relevant headers or status code for you.</p><h2 id="html-rendering" class="Styles-hoverBox">HTML Rendering<a href="#html-rendering" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
-<p>Cask doesn't come bundled with HTML templating functionality, but it makes it really easy to use community-standard libraries like <a href="https://github.com/lihaoyi/scalatags">Scalatags</a> to render your HTML. Simply adding the relevant <code>ivy&quot;com.lihaoyi::scalatags:0.9.1&quot;</code> dependency to your <code>build.sc</code> file is enough to render Scalatags templates:</p>
+<p>Cask doesn't come bundled with HTML templating functionality, but it makes it really easy to use community-standard libraries like <a href="https://github.com/lihaoyi/scalatags">Scalatags</a> to render your HTML. Simply adding the relevant <code>mvn&quot;com.lihaoyi::scalatags:0.9.1&quot;</code> dependency to your <code>build.sc</code> file is enough to render Scalatags templates:</p>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
 import scalatags.Text.all._
 object Scalatags extends cask.MainRoutes{
