@@ -98,7 +98,7 @@ jobs:
 
   generate_docs:
     if: github.repository == 'com-lihaoyi/cask'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       LANG: "en_US.UTF-8"
       LC_MESSAGES: "en_US.UTF-8"
