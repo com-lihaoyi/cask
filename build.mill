@@ -261,6 +261,7 @@ def testExamples() = Task.Command{
       )
     )
     os.proc("./mill", "app.test").call(cwd = base, stdout = os.Inherit)
+    os.proc("./mill", "shutdown").call(cwd = base, stdout = os.Inherit)
   }
 }
 
