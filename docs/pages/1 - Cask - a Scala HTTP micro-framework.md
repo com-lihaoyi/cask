@@ -78,7 +78,7 @@ via the following coordinates:
 
 ```scala
 // Mill
-ivy"com.lihaoyi::cask:0.9.7"
+mvn"com.lihaoyi::cask:0.9.7"
 
 // SBT
 "com.lihaoyi" %% "cask" % "0.9.7"
@@ -237,7 +237,7 @@ the relevant headers or status code for you.
 Cask doesn't come bundled with HTML templating functionality, but it makes it
 really easy to use community-standard libraries like
 [Scalatags](https://github.com/lihaoyi/scalatags) to render your HTML. Simply
-adding the relevant `ivy"com.lihaoyi::scalatags:0.9.1"` dependency to your
+adding the relevant `mvn"com.lihaoyi::scalatags:0.9.1"` dependency to your
 `build.sc` file is enough to render Scalatags templates:
 
 $$$scalatags

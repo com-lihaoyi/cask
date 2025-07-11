@@ -6,13 +6,13 @@ trait AppModule extends CrossScalaModule{
 
   def moduleDeps = Seq(build.cask(crossScalaVersion))
 
-  def ivyDeps = Agg[Dep](
+  def mvnDeps = Seq[Dep](
   )
   object test extends ScalaTests with TestModule.Utest{
 
-    def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.8.4",
-      ivy"com.lihaoyi::requests::0.9.0",
+    def mvnDeps = Seq(
+      mvn"com.lihaoyi::utest::0.8.4",
+      mvn"com.lihaoyi::requests::0.9.0",
     )
     def forkArgs = Seq("--add-opens=java.base/java.net=ALL-UNNAMED")
   }

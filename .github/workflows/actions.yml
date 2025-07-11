@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '11', '17', '21' ]
-    name: Tests local for Java ${{ matrix.Java }}
+        java: [ '11', '21' ]
+    name: Tests for Java ${{ matrix.Java }}
     steps:
       - uses: actions/checkout@v3
       - name: Setup java
@@ -28,16 +28,16 @@ jobs:
         run: |
           set -eux
           if [ "${{ matrix.java }}" == "21" ]; then
-             JAVA_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED -Dcask.virtual-threads.enabled=true' ./mill -ikj1 --disable-ticker __.testLocal
+             JAVA_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED -Dcask.virtual-threads.enabled=true' ./mill -i -k -j1 --disable-ticker __.testForked
           else
-            ./mill -ikj1 --disable-ticker __.testLocal
+            ./mill -i -k -j1 --disable-ticker __.testForked
           fi
 
   test-examples:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '11', '17', '21' ]
+        java: [ '11', '21' ]
     name: Tests examples for Java ${{ matrix.Java }}
     steps:
       - uses: actions/checkout@v3
@@ -51,10 +51,10 @@ jobs:
           set -eux
             if [ "${{ matrix.java }}" == "21" ]; then
                 ./mill __.publishLocal
-                JAVA_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED -Dcask.virtual-threads.enabled=true' ./mill -ikj1 --disable-ticker testExamples
+                JAVA_OPTS='--add-opens java.base/java.lang=ALL-UNNAMED -Dcask.virtual-threads.enabled=true' ./mill -i -k -j1 --disable-ticker testExamples
             else
                 ./mill __.publishLocal
-                ./mill -ikj1 --disable-ticker testExamples
+                ./mill -i -k -j1 --disable-ticker testExamples
             fi
 
   publish-sonatype:
@@ -98,7 +98,7 @@ jobs:
 
   generate_docs:
     if: github.repository == 'com-lihaoyi/cask'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       LANG: "en_US.UTF-8"
       LC_MESSAGES: "en_US.UTF-8"

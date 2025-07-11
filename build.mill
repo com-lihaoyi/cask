@@ -1,13 +1,12 @@
+//| mvnDeps:
+//| - com.github.lolgab::mill-mima_mill1:0.2.0
+//| - "com.lihaoyi::mill-contrib-twirllib:$MILL_VERSION"
+
 package build
 
 import mill._, scalalib._, scalajslib._, publish._
-import mill.scalalib.api.ZincWorkerUtil
-
-import $packages._
-import $file.ci.upload
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.0`
-import $ivy.`com.github.lolgab::mill-mima::0.0.23`
-import de.tobiasroeser.mill.vcs.version.VcsVersion
+import mill.javalib.api.JvmWorkerUtil
+import mill.util.VcsVersion
 
 val scala213 = "2.13.15"
 val scala212 = "2.12.20"
@@ -18,7 +17,7 @@ val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 val scalaVersions = List(scala212, scala213, scala3) ++ communityBuildDottyVersion
 
 trait CaskModule extends CrossScalaModule with PublishModule{
-  def isScala3 = ZincWorkerUtil.isScala3(crossScalaVersion)
+  def isScala3 = JvmWorkerUtil.isScala3(crossScalaVersion)
 
   def publishVersion = VcsVersion.vcsState().format()
 
@@ -35,22 +34,22 @@ trait CaskModule extends CrossScalaModule with PublishModule{
 }
 
 trait CaskMainModule extends CaskModule {
-  def ivyDeps = T{
-    Agg(
-      ivy"io.undertow:undertow-core:2.3.18.Final",
-      ivy"com.lihaoyi::upickle:4.0.2"
+  def mvnDeps = Task {
+    Seq(
+      mvn"io.undertow:undertow-core:2.3.18.Final",
+      mvn"com.lihaoyi::upickle:4.0.2"
     ) ++
-    Agg.when(!isScala3)(ivy"org.scala-lang:scala-reflect:$crossScalaVersion")
+      Option.when(!isScala3)(mvn"org.scala-lang:scala-reflect:$crossScalaVersion")
   }
 
-  def compileIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.15")
-  def scalacOptions = Agg.when(!isScala3)("-P:acyclic:force").toSeq
-  def scalacPluginIvyDeps = Agg.when(!isScala3)(ivy"com.lihaoyi:::acyclic:0.3.15")
+  def compileMvnDeps = Option.when(!isScala3)(mvn"com.lihaoyi:::acyclic:0.3.15").toSeq
+  def scalacOptions = Option.when(!isScala3)("-P:acyclic:force").toSeq
+  def scalacPluginMvnDeps = Option.when(!isScala3)(mvn"com.lihaoyi:::acyclic:0.3.15").toSeq
 
-  object test extends ScalaTests with TestModule.Utest{
-    def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest::0.8.4",
-      ivy"com.lihaoyi::requests::0.9.0"
+  object test extends ScalaTests with TestModule.Utest {
+    def mvnDeps = Seq(
+      mvn"com.lihaoyi::utest::0.8.4",
+      mvn"com.lihaoyi::requests::0.9.0"
     )
   }
   def moduleDeps = Seq(cask.util.jvm(crossScalaVersion))
@@ -59,27 +58,27 @@ trait CaskMainModule extends CaskModule {
 object cask extends Cross[CaskMainModule](scalaVersions) {
   object util extends Module {
     trait UtilModule extends CaskModule with PlatformScalaModule{
-      def ivyDeps = Agg(
-        ivy"com.lihaoyi::sourcecode:0.4.2",
-        ivy"com.lihaoyi::pprint:0.9.0",
-        ivy"com.lihaoyi::geny:1.1.1"
+      def mvnDeps = Seq(
+        mvn"com.lihaoyi::sourcecode:0.4.2",
+        mvn"com.lihaoyi::pprint:0.9.0",
+        mvn"com.lihaoyi::geny:1.1.1"
       )
     }
 
     object jvm extends Cross[UtilJvmModule](scalaVersions)
     trait UtilJvmModule extends UtilModule {
-      def ivyDeps = super.ivyDeps() ++ Agg(
-        ivy"com.lihaoyi::castor::0.3.0",
-        ivy"org.java-websocket:Java-WebSocket:1.5.3"
+      def mvnDeps = super.mvnDeps() ++ Seq(
+        mvn"com.lihaoyi::castor::0.3.0",
+        mvn"org.java-websocket:Java-WebSocket:1.5.3"
       )
     }
 
     object js extends Cross[UtilJsModule](scala213)
     trait UtilJsModule extends UtilModule with ScalaJSModule {
       def scalaJSVersion = scalaJS
-      def ivyDeps = super.ivyDeps() ++ Agg(
-        ivy"com.lihaoyi::castor::0.3.0",
-        ivy"org.scala-js::scalajs-dom::2.4.0"
+      def mvnDeps = super.mvnDeps() ++ Seq(
+        mvn"com.lihaoyi::castor::0.3.0",
+        mvn"org.scala-js::scalajs-dom::2.4.0"
       )
     }
   }
@@ -87,7 +86,7 @@ object cask extends Cross[CaskMainModule](scalaVersions) {
 
 trait BenchmarkModule extends CrossScalaModule {
   def moduleDeps = Seq(cask(crossScalaVersion))
-  def ivyDeps = Agg[Dep](
+  def mvnDeps = Seq[Dep](
   )
 }
 
@@ -149,8 +148,8 @@ object benchmark extends Cross[BenchmarkModule](build.scalaVersions) with RunMod
     println(results.out.text())
   }
 
-  def runBenchmarks() = T.command {
-    val projectRoot = T.workspace
+  def runBenchmarks() = Task.Command {
+    val projectRoot = mill.api.BuildCtx.workspaceRoot
     if (os.proc("which", "wrk").call(check = false).exitCode != 0) {
       println("Error: wrk is not installed. Please install wrk first.")
       sys.exit(1)
@@ -169,119 +168,123 @@ object benchmark extends Cross[BenchmarkModule](build.scalaVersions) with RunMod
 }
 
 trait LocalModule extends CrossScalaModule{
-  override def millSourcePath = super.millSourcePath / "app"
+  override def moduleDir = super.moduleDir / "app"
   def moduleDeps = Seq(cask(crossScalaVersion))
 }
 
 
 
-def zippedExamples = T {
-  val vcsState = VcsVersion.vcsState()
+def zippedExamples = Task {
+  mill.api.BuildCtx.withFilesystemCheckerDisabled {
+    val vcsState = VcsVersion.vcsState()
 
-  val releaseTag = vcsState.lastTag.getOrElse("")
-  val label = vcsState.format()
+    val releaseTag = vcsState.lastTag.getOrElse("")
+    val label = vcsState.format()
 
-  val examples = Seq(
-    build.example.compress.millSourcePath,
-    build.example.compress2.millSourcePath,
-    build.example.compress3.millSourcePath,
-    build.example.cookies.millSourcePath,
-    build.example.decorated.millSourcePath,
-    build.example.decorated2.millSourcePath,
-    build.example.decoratedContext.millSourcePath,
-    build.example.endpoints.millSourcePath,
-    build.example.formJsonPost.millSourcePath,
-    build.example.httpMethods.millSourcePath,
-    build.example.minimalApplication.millSourcePath,
-    build.example.minimalApplication2.millSourcePath,
-    build.example.minimalApplicationWithLoom.millSourcePath,
-    build.example.redirectAbort.millSourcePath,
-    build.example.scalatags.millSourcePath,
-    build.example.staticFiles.millSourcePath,
-    build.example.staticFilesWithLoom.millSourcePath,
-    build.example.staticFiles2.millSourcePath,
-    build.example.todo.millSourcePath,
-    build.example.todoApi.millSourcePath,
-    build.example.todoDb.millSourcePath,
-    build.example.todoDbWithLoom.millSourcePath,
-    build.example.twirl.millSourcePath,
-    build.example.variableRoutes.millSourcePath,
-    build.example.queryParams.millSourcePath,
-    build.example.websockets.millSourcePath,
-    build.example.websockets2.millSourcePath,
-    build.example.websockets3.millSourcePath,
-    build.example.websockets4.millSourcePath,
-    build.example.multipartFormSubmission.millSourcePath,
-  )
-
-  for (example <- examples) yield {
-    val f = T.ctx().dest
-    val last = example.last + "-" + label
-    os.copy(example, f / last)
-    os.copy(T.workspace / ".mill-version", f / last / ".mill-version")
-    os.write.over(f / last / "mill", os.read(T.workspace / "mill"))
-    os.proc("chmod", "+x", f / last / "mill").call(f / last)
-    os.move(f / last / "package.mill", f / last / "build.mill")
-    os.write.over(
-      f / last / "build.mill",
-      os.read(f / last / "build.mill")
-        .replaceAll("package build.*", "package build")
-        .replaceAll("def moduleDeps =.*", "")
-        .replaceAll("app =>", "")
-        .replaceFirst(
-          "object app extends.*\ntrait AppModule extends CrossScalaModule(.*)\\{",
-          s"object app extends ScalaModule $$1\\{\n  def scalaVersion = \"${scala213}\"")
-        .replaceAll("build.scala3", s"\"${scala3}\"")
-        .replaceFirst(
-          "def ivyDeps = Agg\\[Dep\\]\\(",
-          "def ivyDeps = Agg(\n    ivy\"com.lihaoyi::cask:" + releaseTag + "\","
-        )
+    val examples = Seq(
+      build.example.compress.moduleDir,
+      build.example.compress2.moduleDir,
+      build.example.compress3.moduleDir,
+      build.example.cookies.moduleDir,
+      build.example.decorated.moduleDir,
+      build.example.decorated2.moduleDir,
+      build.example.decoratedContext.moduleDir,
+      build.example.endpoints.moduleDir,
+      build.example.formJsonPost.moduleDir,
+      build.example.httpMethods.moduleDir,
+      build.example.minimalApplication.moduleDir,
+      build.example.minimalApplication2.moduleDir,
+      build.example.minimalApplicationWithLoom.moduleDir,
+      build.example.redirectAbort.moduleDir,
+      build.example.scalatags.moduleDir,
+      build.example.staticFiles.moduleDir,
+      build.example.staticFilesWithLoom.moduleDir,
+      build.example.staticFiles2.moduleDir,
+      build.example.todo.moduleDir,
+      build.example.todoApi.moduleDir,
+      build.example.todoDb.moduleDir,
+      build.example.todoDbWithLoom.moduleDir,
+      build.example.twirl.moduleDir,
+      build.example.variableRoutes.moduleDir,
+      build.example.queryParams.moduleDir,
+      build.example.websockets.moduleDir,
+      build.example.websockets2.moduleDir,
+      build.example.websockets3.moduleDir,
+      build.example.websockets4.moduleDir,
+      build.example.multipartFormSubmission.moduleDir,
     )
 
-    os.zip(f / s"$last.zip", Seq(f / last))
-    PathRef(f / s"$last.zip")
+    for (example <- examples) yield {
+      val f = Task.ctx().dest
+      val last = example.last + "-" + label
+      os.copy(example, f / last)
+      os.copy(mill.api.BuildCtx.workspaceRoot / ".mill-version", f / last / ".mill-version")
+      os.write.over(f / last / "mill", os.read(mill.api.BuildCtx.workspaceRoot / "mill"))
+      os.proc("chmod", "+x", f / last / "mill").call(f / last)
+      os.move(f / last / "package.mill", f / last / "build.mill")
+      os.write.over(
+        f / last / "build.mill",
+        os.read(f / last / "build.mill")
+          .replaceAll("package build.*", "package build")
+          .replaceAll("def moduleDeps =.*", "")
+          .replaceAll("///", "//|")
+          .replaceAll("app =>", "")
+          .replaceFirst(
+            "object app extends.*\ntrait AppModule extends CrossScalaModule(.*)\\{",
+            s"object app extends ScalaModule $$1\\{\n  def scalaVersion = \"${scala213}\"")
+          .replaceAll("build.scala3", s"\"${scala3}\"")
+          .replaceFirst(
+            "def mvnDeps = Seq\\[Dep\\]\\(",
+            "def mvnDeps = Seq(\n    mvn\"com.lihaoyi::cask:" + releaseTag + "\","
+          )
+      )
+
+      os.zip(f / s"$last.zip", Seq(f / last))
+      PathRef(f / s"$last.zip")
+    }
   }
 }
 
-def testExamples() = T.command{
+def testExamples() = Task.Command{
 
   for(example <- zippedExamples()){
     println("Testing " + example.path.last)
-    val base = T.dest / example.path.baseName
+    val base = Task.dest / example.path.baseName
     os.unzip(example.path, base)
     os.perms.set(base / "mill", "rwxrwxrwx")
     os.write.over(
       base / "build.mill",
       os.read(base / "build.mill").replaceAll(
-        "ivy\"com.lihaoyi::cask:.*\"",
-        s"""ivy"com.lihaoyi::cask:${VcsVersion.vcsState().format()}""""
+        "mvn\"com.lihaoyi::cask:.*\"",
+        s"""mvn"com.lihaoyi::cask:${VcsVersion.vcsState().format()}""""
       )
     )
     os.proc("./mill", "app.test").call(cwd = base, stdout = os.Inherit)
+    os.proc("./mill", "shutdown").call(cwd = base, stdout = os.Inherit)
   }
 }
 
-def uploadToGithub() = T.command{
-  val vcsState = VcsVersion.vcsState()
+def uploadToGithub() = Task.Command {
+  // Separate this out because the Task.Command macro has bugs when
+  // interacting with request-scala's implicit conversions
+  doUploadToGithub(VcsVersion.vcsState(), zippedExamples())
+}
 
-  val authKey = T.env.apply("AMMONITE_BOT_AUTH_TOKEN")
+def doUploadToGithub(vcsState: VcsVersion.State,
+                     zippedExamples: Seq[PathRef])(implicit ctx: mill.api.TaskCtx) = {
+
+  val authKey = Task.env.apply("AMMONITE_BOT_AUTH_TOKEN")
   val releaseTag = vcsState.lastTag.getOrElse("")
   val label = vcsState.format()
   if (releaseTag == label) {
     requests.post(
       "https://api.github.com/repos/com-lihaoyi/cask/releases",
-      data = ujson.write(
-        ujson.Obj(
-          "tag_name" -> releaseTag,
-          "name" -> releaseTag
-        )
-      ),
+      data = ujson.Obj("tag_name" -> releaseTag, "name" -> releaseTag),
       headers = Seq("Authorization" -> s"token $authKey")
     )
   }
 
-  for(example <- zippedExamples()){
-
-    upload.apply(example.path, releaseTag, example.path.last, authKey)
+  for(example <- zippedExamples){
+    ci.upload(example.path, releaseTag, example.path.last, authKey)
   }
 }
