@@ -1,6 +1,6 @@
 package build.example.todoDbWithLoom
 import mill._, scalalib._
-import mill.define.ModuleRef
+import mill.api.ModuleRef
 
 object app extends Cross[AppModule](build.scala213)
 trait AppModule extends CrossScalaModule{
@@ -25,7 +25,8 @@ trait AppModule extends CrossScalaModule{
     seq
   }
 
-  def jvmWorker = ModuleRef(JvmWorkerJava11Latest)
+  def jvmId = "temurin:23.0.1"
+  def jvmIndexVersion = "latest.release"
 
   def moduleDeps = Seq(build.cask(crossScalaVersion))
 
@@ -42,7 +43,3 @@ trait AppModule extends CrossScalaModule{
   }
 }
 
-object JvmWorkerJava11Latest extends JvmWorkerModule with CoursierModule {
-  def jvmId = "temurin:23.0.1"
-  def jvmIndexVersion = "latest.release"
-}

@@ -1,7 +1,6 @@
 package build.example.staticFilesWithLoom
 import mill._, scalalib._
-import mill.define.ModuleRef
-import upickle.implicits.namedTuples.default.*
+import mill.api.ModuleRef
 
 object app extends Cross[AppModule](build.scalaVersions)
 trait AppModule extends CrossScalaModule{ app =>
@@ -32,7 +31,8 @@ trait AppModule extends CrossScalaModule{ app =>
     seq
   }
 
-  def jvmWorker = ModuleRef(JvmWorkerJava11Latest)
+  def jvmId = "temurin:23.0.1"
+  def jvmIndexVersion = "latest.release"
 
   object test extends ScalaTests with TestModule.Utest{
 
@@ -48,8 +48,3 @@ trait AppModule extends CrossScalaModule{ app =>
   }
 }
 
-
-object JvmWorkerJava11Latest extends JvmWorkerModule with CoursierModule {
-  def jvmId = "temurin:23.0.1"
-  def jvmIndexVersion = "latest.release"
-}

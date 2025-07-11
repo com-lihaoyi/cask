@@ -1,13 +1,12 @@
 //| mvnDeps:
-//| - com.github.lolgab::mill-mima_mill1.0.0-RC1:0.2.0-M1
+//| - com.github.lolgab::mill-mima_mill1:0.2.0
 //| - "com.lihaoyi::mill-contrib-twirllib:$MILL_VERSION"
 
 package build
 
 import mill._, scalalib._, scalajslib._, publish._
-import mill.scalalib.api.JvmWorkerUtil
-import upickle.implicits.namedTuples.default.*
-import mill.main.VcsVersion
+import mill.javalib.api.JvmWorkerUtil
+import mill.util.VcsVersion
 
 val scala213 = "2.13.15"
 val scala212 = "2.12.20"
@@ -150,7 +149,7 @@ object benchmark extends Cross[BenchmarkModule](build.scalaVersions) with RunMod
   }
 
   def runBenchmarks() = Task.Command {
-    val projectRoot = Task.workspace
+    val projectRoot = mill.api.BuildCtx.workspaceRoot
     if (os.proc("which", "wrk").call(check = false).exitCode != 0) {
       println("Error: wrk is not installed. Please install wrk first.")
       sys.exit(1)
@@ -176,7 +175,7 @@ trait LocalModule extends CrossScalaModule{
 
 
 def zippedExamples = Task {
-  mill.define.BuildCtx.withFilesystemCheckerDisabled {
+  mill.api.BuildCtx.withFilesystemCheckerDisabled {
     val vcsState = VcsVersion.vcsState()
 
     val releaseTag = vcsState.lastTag.getOrElse("")
@@ -219,8 +218,8 @@ def zippedExamples = Task {
       val f = Task.ctx().dest
       val last = example.last + "-" + label
       os.copy(example, f / last)
-      os.copy(Task.workspace / ".mill-version", f / last / ".mill-version")
-      os.write.over(f / last / "mill", os.read(Task.workspace / "mill"))
+      os.copy(mill.api.BuildCtx.workspaceRoot / ".mill-version", f / last / ".mill-version")
+      os.write.over(f / last / "mill", os.read(mill.api.BuildCtx.workspaceRoot / "mill"))
       os.proc("chmod", "+x", f / last / "mill").call(f / last)
       os.move(f / last / "package.mill", f / last / "build.mill")
       os.write.over(
@@ -272,7 +271,7 @@ def uploadToGithub() = Task.Command {
 }
 
 def doUploadToGithub(vcsState: VcsVersion.State,
-                     zippedExamples: Seq[PathRef])(implicit ctx: mill.define.TaskCtx) = {
+                     zippedExamples: Seq[PathRef])(implicit ctx: mill.api.TaskCtx) = {
 
   val authKey = Task.env.apply("AMMONITE_BOT_AUTH_TOKEN")
   val releaseTag = vcsState.lastTag.getOrElse("")
