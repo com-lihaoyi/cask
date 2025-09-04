@@ -36,15 +36,15 @@ object FailureTests extends TestSuite {
       }
 
     "tooManyEndpoint" - {
-      utest.compileError("""
+      val msg = utest.compileError("""
         object Decorated extends cask.MainRoutes{
           @cask.get("/hello/:world")
           @cask.get("/hello/:world")
           def hello(world: String)(extra: Int)= world
           initialize()
         }
-      """).msg ==>
-        "You can only apply one Endpoint annotation to a function, not 2 in cask.endpoints.get, cask.endpoints.get"
+      """).msg.replaceAllLiterally("cask.endpoints.get", "cask.get") // com-lihaoyi/cask#171
+      assert(msg == "You can only apply one Endpoint annotation to a function, not 2 in cask.get, cask.get")
     }
   }
 }
