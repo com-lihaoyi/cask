@@ -116,19 +116,16 @@
 }
 </style><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/languages/scala.min.js"></script><script>hljs.initHighlightingOnLoad();</script><meta name="viewport" content="initial-scale = 1.0,maximum-scale = 1.0" /></head><body style="margin: 0px; background-color: #f8f8f8;"><div class="WideStyles-header NarrowStyles-header Styles-headerStyle"><div class="NarrowStyles-headerContent"><h1 style="text-align: center; padding: 30px 30px; margin: 0px;"><a style="color: #f8f8f8; font-weight: bold;" href="" class="Styles-subtleLink NarrowStyles-flexFont"> Cask</a></h1><div class="Styles-headerLinkBox"><div class="WideStyles-tableOfContents" style="color: #f8f8f8;"><div style="padding-left: 40px;" class="NarrowStyles-disappear"><b>Pages</b></div><div style="overflow-y: auto; flex-shrink: 1; min-height: 0px;"><ul style="overflow: hidden; text-align: start; margin-top: 10px; white-space: nowrap; text-overflow: ellipsis; margin-right: 10px;"><li class="WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="index.html">Cask - a Scala HTTP micro-framework</a></li><li class="WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="page/main-customization.html">Main Customization</a></li><li class="WideStyles-marginLeftZero NarrowStyles-floatLeft"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="page/about-cask.html">About Cask</a></li></ul></div></div></div></div><hr class="NarrowStyles-disappear" style="background-color: #f8f8f8; width: 80%;" /><div class="WideStyles-tableOfContents NarrowStyles-disappear" style="color: #f8f8f8;"><div style="padding-left: 40px;" class="NarrowStyles-disappear"><b>Table of Contents</b></div><div style="overflow-y: auto; flex-shrink: 1; min-height: 0px;"><ul style="overflow: hidden; text-align: start; margin-top: 10px; white-space: nowrap; text-overflow: ellipsis; margin-right: 10px;"><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#getting-started">Getting Started</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#minimal-example">Minimal Example</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#variable-routes">Variable Routes</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#query-params">Query Params</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#multi-method-routes">Multi-method Routes</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#receiving-form-encoded-or-json-data">Receiving Form-encoded or JSON data</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#processing-cookies">Processing Cookies</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#serving-static-files">Serving Static Files</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#redirects-or-aborts">Redirects or Aborts</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#html-rendering">HTML Rendering</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#extending-endpoints-with-decorators">Extending Endpoints with Decorators</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#custom-endpoints">Custom Endpoints</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#gzip--deflated-responses">Gzip &amp; Deflated Responses</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#websockets">Websockets</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#todomvc-api-server">TodoMVC Api Server</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#todomvc-database-integration">TodoMVC Database Integration</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#todomvc-full-stack-web">TodoMVC Full Stack Web</a></li><li style="margin-left: 0px;"><a style="color: #f8f8f8;" class="WideStyles-tableOfContentsItem" href="#running-cask-with-virtual-threads">Running Cask with Virtual Threads</a></li></ul></div></div></div><div class="WideStyles-content NarrowStyles-content" style="max-width: 900px;"><h1>Cask - a Scala HTTP micro-framework</h1><div style="margin-bottom: 10px;"><div style="display: flex; flex-direction: row; justify-content: space-between;"><div></div><a href="page/main-customization.html">Main Customization <i class="fa fa-arrow-right" aria-hidden="true"></i></a></div></div><p><a href="https://discord.gg/scala"><div style="text-align: center"><img src="https://img.shields.io/badge/discord-join_chat-61AA8F.svg?logo=discord" alt="Discord Chat" style="max-width: 100%; max-height: 500px" /></div></a> <a href="https://www.patreon.com/lihaoyi"><div style="text-align: center"><img src="https://img.shields.io/badge/patreon-sponsor-ff69b4.svg" alt="Patreon" style="max-width: 100%; max-height: 500px" /></div></a></p>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
-object MinimalApplication extends cask.MainRoutes{
+object MinimalApplication extends cask.MainRoutes:
   @cask.get(&quot;/&quot;)
-  def hello() = {
+  def hello() =
     &quot;Hello World!&quot;
-  }
 
   @cask.post(&quot;/do-thing&quot;)
-  def doThing(request: cask.Request) = {
+  def doThing(request: cask.Request) =
     request.text().reverse
-  }
 
   initialize()
-}
 
 </code></pre>
 <ul>
@@ -177,19 +174,16 @@ mvn&quot;com.lihaoyi::cask:0.11.2&quot;
 <p>The <code>./mill</code> command is just a wrapper around the <a href="http://www.lihaoyi.com/mill/">Mill build tool</a>; the <code>build.sc</code> files you see in all examples are Mill build files, and you can use your own installation of Mill instead of <code>./mill</code> if you wish. All normal Mill commands and functionality works for <code>./mill</code>.</p>
 <p>The following examples will walk you through how to use Cask to accomplish tasks common to anyone writing a web application. Each example comes with a downloadable example project with code and unit tests, which you can use via the same <code>./mill -w app.runBackground</code> or <code>./mill -w app.test</code> workflows we saw above.</p><h2 id="minimal-example" class="Styles-hoverBox">Minimal Example<a href="#minimal-example" class="Styles-hoverLink"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
 <pre style="background-color: #f8f8f8"><code style="white-space:pre; background-color: #f8f8f8" class="scala">package app
-object MinimalApplication extends cask.MainRoutes{
+object MinimalApplication extends cask.MainRoutes:
   @cask.get(&quot;/&quot;)
-  def hello() = {
+  def hello() =
     &quot;Hello World!&quot;
-  }
 
   @cask.post(&quot;/do-thing&quot;)
-  def doThing(request: cask.Request) = {
+  def doThing(request: cask.Request) =
     request.text().reverse
-  }
 
   initialize()
-}
 
 </code></pre>
 <ul>
@@ -979,7 +973,7 @@ object TodoMvcDb extends cask.MainRoutes{
 
   case class Todo[T[_]](id: T[Int], checked: T[Boolean], text: T[String])
   object Todo extends scalasql.Table[Todo]{
-    implicit def todoRW = upickle.default.macroRW[Todo[Sc]]
+    given todoRW: upickle.default.ReadWriter[Todo[Sc]] = upickle.default.macroRW[Todo[Sc]]
   }
 
   sqliteClient.getAutoCommitClientConnection.updateRaw(
