@@ -17,7 +17,7 @@ object ExampleTests extends TestSuite{
   }
 
   val tests = Tests {
-    test("MinimalApplication") - withServer(MinimalApplication) { host =>
+    test("MinimalApplication") - withServer(MinimalApplicationCross) { host =>
       val success = requests.get(host)
 
       success.text() ==> "Hello World!"

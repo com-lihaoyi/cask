@@ -207,6 +207,7 @@ def zippedExamples = Task {
       build.example.formJsonPost.moduleDir,
       build.example.httpMethods.moduleDir,
       build.example.minimalApplication.moduleDir,
+      build.example.minimalApplicationCross.moduleDir,
       build.example.minimalApplication2.moduleDir,
       build.example.minimalApplicationWithLoom.moduleDir,
       build.example.redirectAbort.moduleDir,
