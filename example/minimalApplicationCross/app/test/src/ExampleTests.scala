@@ -1,10 +1,10 @@
 package app
 import io.undertow.Undertow
 
-import utest.*
+import utest._
 
-object ExampleTests extends TestSuite:
-  def withServer[T](example: cask.main.Main)(f: String => T): T =
+object ExampleTests extends TestSuite{
+  def withServer[T](example: cask.main.Main)(f: String => T): T = {
     val server = Undertow.builder
       .addHttpListener(8081, "localhost")
       .setHandler(example.defaultHandler)
@@ -14,9 +14,10 @@ object ExampleTests extends TestSuite:
       try f("http://localhost:8081")
       finally server.stop()
     res
+  }
 
   val tests = Tests {
-    test("MinimalApplication") - withServer(MinimalApplication) { host =>
+    test("MinimalApplication") - withServer(MinimalApplicationCross) { host =>
       val success = requests.get(host)
 
       success.text() ==> "Hello World!"
@@ -29,3 +30,4 @@ object ExampleTests extends TestSuite:
       requests.delete(s"$host/do-thing", check = false).statusCode ==> 405
     }
   }
+}

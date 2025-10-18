@@ -11,6 +11,7 @@ import mill.util.VcsVersion
 val scala213 = "2.13.15"
 val scala212 = "2.12.20"
 val scala3 = "3.3.4"
+val scala3Latest = "3.7.3"
 val scalaJS = "1.17.0"
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
@@ -206,6 +207,7 @@ def zippedExamples = Task {
       build.example.formJsonPost.moduleDir,
       build.example.httpMethods.moduleDir,
       build.example.minimalApplication.moduleDir,
+      build.example.minimalApplicationCross.moduleDir,
       build.example.minimalApplication2.moduleDir,
       build.example.minimalApplicationWithLoom.moduleDir,
       build.example.redirectAbort.moduleDir,
@@ -239,13 +241,13 @@ def zippedExamples = Task {
         f / last / "build.mill",
         os.read(f / last / "build.mill")
           .replaceAll("package build.*", "package build")
-          .replaceAll("def moduleDeps =.*", "")
+          .replaceAll("def moduleDeps =.*\n", "")
           .replaceAll("///", "//|")
           .replaceAll("app =>", "")
           .replaceFirst(
             "object app extends.*\ntrait AppModule extends CrossScalaModule(.*)\\{",
-            s"object app extends ScalaModule $$1\\{\n  def scalaVersion = \"${scala213}\"")
-          .replaceAll("build.scala3", s"\"${scala3}\"")
+            s"object app extends ScalaModule $$1\\{\n  def scalaVersion = \"${scala3Latest}\"")
+          .replaceAll("build.scala3", s"\"${scala3Latest}\"")
           .replaceFirst(
             "def mvnDeps = Seq\\[Dep\\]\\(",
             "def mvnDeps = Seq(\n    mvn\"com.lihaoyi::cask:" + releaseTag + "\","

@@ -31,7 +31,7 @@ object TodoMvcDbWithLoom extends cask.MainRoutes {
 
   case class Todo[T[_]](id: T[Int], checked: T[Boolean], text: T[String])
   object Todo extends scalasql.Table[Todo]{
-    implicit def todoRW = upickle.default.macroRW[Todo[Sc]]
+    given todoRW: upickle.default.ReadWriter[Todo[Sc]] = upickle.default.macroRW[Todo[Sc]]
   }
 
   sqliteClient.getAutoCommitClientConnection.updateRaw(
