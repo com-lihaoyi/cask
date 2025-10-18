@@ -1,4 +1,4 @@
-Cask 0.9.7: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+Cask 0.11.0: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 ===========================================================================================================================================================================
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
@@ -44,6 +44,10 @@ Cask is profiled using the
 courtesy of EJ Technologies
 
 ## Changelog
+
+### 0.11.0
+
+- Update examples to build with Mill 1.x
 
 ### 0.9.7
 
