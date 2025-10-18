@@ -45,8 +45,8 @@ val posts = {
           val g = m.group(1)
           val txt = os.read(os.list(os.pwd/os.up/"example"/g/"app"/"src").head).replace("$", "\\$")
           val downloadLink =
-            s"https://github.com/lihaoyi/cask/releases/download/$releaseTag/$g-$releaseTag.zip"
-
+            s"https://repo1.maven.org/maven2/com/lihaoyi/cask-examples/$releaseTag/cask-examples-$releaseTag-$g.zip"
+          https://repo1.maven.org/maven2/com/lihaoyi/mill-dist/1.0.6/mill-dist-1.0.6-example-javalib-basic-1-simple.zip
           s"""
              |```scala
              |$txt
