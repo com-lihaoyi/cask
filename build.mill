@@ -16,9 +16,8 @@ val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
 val scalaVersions = List(scala212, scala213, scala3) ++ communityBuildDottyVersion
 
-trait CaskModule extends CrossScalaModule with PublishModule{
-  def isScala3 = JvmWorkerUtil.isScala3(crossScalaVersion)
 
+trait CaskModule0 extends PublishModule{
   def publishVersion = VcsVersion.vcsState().format()
 
   def pomSettings = PomSettings(
@@ -31,6 +30,9 @@ trait CaskModule extends CrossScalaModule with PublishModule{
       Developer("lihaoyi", "Li Haoyi","https://github.com/lihaoyi")
     )
   )
+}
+trait CaskModule extends CrossScalaModule with CaskModule0 {
+  def isScala3 = JvmWorkerUtil.isScala3(crossScalaVersion)
 }
 
 trait CaskMainModule extends CaskModule {
@@ -56,9 +58,7 @@ trait CaskMainModule extends CaskModule {
 }
 
 object cask extends Cross[CaskMainModule](scalaVersions) {
-  object examples extends CaskModule {
-    def artifactName = "cask-examples"
-    def crossValue = scala3
+  object examples extends CaskModule0 {
     override def extraPublish: T[Seq[PublishInfo]] = Task {
       for (zip <- zippedExamples()) yield PublishInfo(
         file = zip,
