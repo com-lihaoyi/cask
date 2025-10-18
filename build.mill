@@ -239,12 +239,12 @@ def zippedExamples = Task {
         f / last / "build.mill",
         os.read(f / last / "build.mill")
           .replaceAll("package build.*", "package build")
-          .replaceAll("def moduleDeps =.*", "")
+          .replaceAll("def moduleDeps =.*\n", "")
           .replaceAll("///", "//|")
           .replaceAll("app =>", "")
           .replaceFirst(
             "object app extends.*\ntrait AppModule extends CrossScalaModule(.*)\\{",
-            s"object app extends ScalaModule $$1\\{\n  def scalaVersion = \"${scala213}\"")
+            s"object app extends ScalaModule $$1\\{\n  def scalaVersion = \"${scala3}\"")
           .replaceAll("build.scala3", s"\"${scala3}\"")
           .replaceFirst(
             "def mvnDeps = Seq\\[Dep\\]\\(",
