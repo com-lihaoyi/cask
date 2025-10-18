@@ -1,4 +1,4 @@
-Cask 0.11.2: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
+Cask 0.11.3: a Scala HTTP micro-framework [![Gitter Chat][gitter-badge]][gitter-link] [![Patreon][patreon-badge]][patreon-link]
 ===========================================================================================================================================================================
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
@@ -45,7 +45,7 @@ courtesy of EJ Technologies
 
 ## Changelog
 
-### 0.11.2
+### 0.11.3
 
 - Update examples to build with Mill 1.x
 - Example zips are now hosted on Maven Central rather than Github Releases
