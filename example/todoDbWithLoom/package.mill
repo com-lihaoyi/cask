@@ -2,7 +2,7 @@ package build.example.todoDbWithLoom
 import mill._, scalalib._
 import mill.api.ModuleRef
 
-object app extends Cross[AppModule](build.scala213)
+object app extends Cross[AppModule](build.scala3Latest)
 trait AppModule extends CrossScalaModule{
 
   private def parseJvmArgs(argsStr: String) = {
@@ -28,11 +28,11 @@ trait AppModule extends CrossScalaModule{
   def jvmId = "temurin:23.0.1"
   def jvmIndexVersion = "latest.release"
 
-  def moduleDeps = Seq(build.cask(crossScalaVersion))
+  def moduleDeps = Seq(build.cask(build.scala3))
 
   def mvnDeps = Seq[Dep](
     mvn"org.xerial:sqlite-jdbc:3.42.0.0",
-    mvn"com.lihaoyi::scalasql:0.1.0",
+    mvn"com.lihaoyi::scalasql:0.2.2",
   )
 
   object test extends ScalaTests with TestModule.Utest {
@@ -42,4 +42,3 @@ trait AppModule extends CrossScalaModule{
     )
   }
 }
-

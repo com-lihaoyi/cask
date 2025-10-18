@@ -36,7 +36,7 @@ object ExampleTests extends TestSuite{
       requests.post(s"$host/add", data = "new Task")
 
       // Make sure endpoint failures do not commit their transaction
-      requests.post(s"$host/add", data = "FORCE FAILURE", check = false).statusCode ==> 500
+      requests.post(s"$host/add", data = ("FORCE FAILURE": requests.RequestBlob), check = false).statusCode ==> 500
 
       requests.get(s"$host/list/active").text() ==>
         """[{"id":3,"checked":false,"text":"new Task"}]"""
