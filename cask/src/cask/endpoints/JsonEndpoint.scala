@@ -17,7 +17,7 @@ object JsReader{
 
     def read(ctx: cask.model.Request, label: String, input: ujson.Value): T = {
       val reader = implicitly[upickle.default.Reader[T]]
-      upickle.default.read[T](input)(reader)
+      upickle.default.read[T](input)(using reader)
     }
   }
 
