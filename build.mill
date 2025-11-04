@@ -235,7 +235,7 @@ def zippedExamples = Task {
       val f = Task.ctx().dest
       val last = example.last
       os.copy(example, f / last)
-      os.copy(mill.api.BuildCtx.workspaceRoot / ".mill-version", f / last / ".mill-version")
+      os.write( f / last / ".mill-version", mill.constants.BuildInfo.millVersion)
       os.write.over(f / last / "mill", os.read(mill.api.BuildCtx.workspaceRoot / "mill"))
       os.proc("chmod", "+x", f / last / "mill").call(f / last)
       os.move(f / last / "package.mill", f / last / "build.mill")
