@@ -23,8 +23,6 @@ package cask
  * }
  * }}}
  *
- * ## Type Safety
- *
  * The transactional decorator uses ClassTag to preserve type information at runtime,
  * providing type safety without requiring a compile-time dependency on ScalaSql.
  * The type parameter must be explicitly specified (e.g., [scalasql.core.DbClient])
