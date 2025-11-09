@@ -42,11 +42,21 @@ object ConfigTests extends TestSuite {
     test("Type-safe accessors with different types") {
       // These will work if application.conf exists with proper values
       // Test that methods exist and return correct types
-      val _: Either[cask.Config.ConfigError, String] = cask.Config.getString("any.key")
-      val _: Either[cask.Config.ConfigError, Int] = cask.Config.getInt("any.key")
-      val _: Either[cask.Config.ConfigError, Boolean] = cask.Config.getBoolean("any.key")
-      val _: Either[cask.Config.ConfigError, Long] = cask.Config.getLong("any.key")
-      val _: Either[cask.Config.ConfigError, Double] = cask.Config.getDouble("any.key")
+      locally {
+        val _: Either[cask.Config.ConfigError, String] = cask.Config.getString("any.key")
+      }
+      locally {
+        val _: Either[cask.Config.ConfigError, Int] = cask.Config.getInt("any.key")
+      }
+      locally {
+        val _: Either[cask.Config.ConfigError, Boolean] = cask.Config.getBoolean("any.key")
+      }
+      locally {
+        val _: Either[cask.Config.ConfigError, Long] = cask.Config.getLong("any.key")
+      }
+      locally {
+        val _: Either[cask.Config.ConfigError, Double] = cask.Config.getDouble("any.key")
+      }
     }
 
     test("Environment detection from CASK_ENV") {

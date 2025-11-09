@@ -6,12 +6,6 @@ import scala.util.control.NonFatal
 
 /**
  * Configuration loading and access with functional error handling.
- *
- * Follows Scala best practices:
- * - Either for error handling (no exceptions)
- * - ADTs for error representation
- * - Referential transparency
- * - Type safety with phantom types
  */
 object Config {
 
