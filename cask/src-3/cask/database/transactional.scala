@@ -1,7 +1,9 @@
 package cask.database
 
-import cask.router.RawDecorator
+import cask.model.Response.Raw
+import cask.router.{RawDecorator, Result}
 import cask.model.{Request, Response}
+
 import scala.reflect.ClassTag
 
 /**
@@ -29,7 +31,7 @@ import scala.reflect.ClassTag
  */
 class transactional[T <: AnyRef : ClassTag](using dbClient: T) extends RawDecorator {
 
-  def wrapFunction(ctx: Request, delegate: Delegate) = {
+  def wrapFunction(ctx: Request, delegate: Delegate): Result[Raw] = {
     // Validate type at runtime using ClassTag
     val clientClass = implicitly[ClassTag[T]].runtimeClass
     if (!clientClass.isInstance(dbClient)) {
