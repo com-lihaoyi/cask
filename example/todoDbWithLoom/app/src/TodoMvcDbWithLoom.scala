@@ -1,6 +1,6 @@
 package app
-import scalasql.namedtuples.SimpleTable
-import scalasql.SqliteDialect._
+import scalasql.simple.{*, given}
+import SqliteDialect._
 
 import java.util.concurrent.{ExecutorService, Executors}
 
@@ -9,9 +9,9 @@ object TodoMvcDbWithLoom extends cask.MainRoutes {
   val sqliteDataSource = new org.sqlite.SQLiteDataSource()
   sqliteDataSource.setUrl(s"jdbc:sqlite:$tmpDb/file.db")
 
-  given dbClient: scalasql.DbClient = new scalasql.DbClient.DataSource(
+  given dbClient: scalasql.core.DbClient = new DbClient.DataSource(
     sqliteDataSource,
-    config = new scalasql.Config {}
+    config = new {}
   )
 
   private val executor = Executors.newFixedThreadPool(4)
@@ -38,9 +38,9 @@ object TodoMvcDbWithLoom extends cask.MainRoutes {
       |""".stripMargin
   )
 
-  @cask.transactional
+  @cask.database.transactional[scalasql.core.DbClient]
   @cask.get("/list/:state")
-  def list(state: String)(using ctx: scalasql.DbClient.Txn) = {
+  def list(state: String)(using ctx: scalasql.core.DbApi.Txn) = {
     val filteredTodos = state match {
       case "all" => ctx.run(Todo.select)
       case "active" => ctx.run(Todo.select.filter(!_.checked))
@@ -49,9 +49,9 @@ object TodoMvcDbWithLoom extends cask.MainRoutes {
     upickle.default.write(filteredTodos)
   }
 
-  @cask.transactional
+  @cask.database.transactional[scalasql.core.DbClient]
   @cask.post("/add")
-  def add(request: cask.Request)(using ctx: scalasql.DbClient.Txn) = {
+  def add(request: cask.Request)(using ctx: scalasql.core.DbApi.Txn) = {
     val body = request.text()
     ctx.run(
       Todo
@@ -64,15 +64,15 @@ object TodoMvcDbWithLoom extends cask.MainRoutes {
     if (body == "FORCE FAILURE") throw new Exception("FORCE FAILURE BODY")
   }
 
-  @cask.transactional
+  @cask.database.transactional[scalasql.core.DbClient]
   @cask.post("/toggle/:index")
-  def toggle(index: Int)(using ctx: scalasql.DbClient.Txn) = {
+  def toggle(index: Int)(using ctx: scalasql.core.DbApi.Txn) = {
     ctx.run(Todo.update(_.id === index).set(p => p.checked := !p.checked))
   }
 
-  @cask.transactional
+  @cask.database.transactional[scalasql.core.DbClient]
   @cask.post("/delete/:index")
-  def delete(index: Int)(using ctx: scalasql.DbClient.Txn) = {
+  def delete(index: Int)(using ctx: scalasql.core.DbApi.Txn) = {
     ctx.run(Todo.delete(_.id === index))
   }
 

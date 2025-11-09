@@ -15,7 +15,7 @@ val scala3Latest = "3.7.3"
 val scalaJS = "1.17.0"
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
-val scalaVersions = List(scala212, scala213, scala3) ++ communityBuildDottyVersion
+val scalaVersions = List(scala212, scala213, scala3, scala3Latest) ++ communityBuildDottyVersion
 
 
 trait CaskModule0 extends PublishModule{
