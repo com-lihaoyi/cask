@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
  * Requires Scala 3.7+ and scalasql-namedtuples dependency in your project.
  * Automatically commits on success and rolls back on exceptions or HTTP error responses.
  *
- * The type parameter T preserves the database client type at runtime using ClassTag,
+ * The type parameter `T` preserves the database client type at runtime using ClassTag,
  * providing type safety while avoiding compile-time dependency on ScalaSql.
  *
  * Usage:
