@@ -3,9 +3,18 @@ import scalasql.simple.{*, given}
 import SqliteDialect._
 
 object TodoMvcDb extends cask.MainRoutes {
-  val tmpDb = java.nio.file.Files.createTempDirectory("todo-cask-sqlite")
+  // Database path from config, fallback to temp directory
+  val dbPath = cask.Config.getStringOpt("database.path") match {
+    case Some("temp") | None =>
+      java.nio.file.Files.createTempDirectory("todo-cask-sqlite").toString
+    case Some(path) =>
+      val dir = java.nio.file.Paths.get(path)
+      java.nio.file.Files.createDirectories(dir)
+      path
+  }
+
   val sqliteDataSource = new org.sqlite.SQLiteDataSource()
-  sqliteDataSource.setUrl(s"jdbc:sqlite:$tmpDb/file.db")
+  sqliteDataSource.setUrl(s"jdbc:sqlite:$dbPath/file.db")
 
   given dbClient: scalasql.core.DbClient = new DbClient.DataSource(
     sqliteDataSource,
@@ -18,18 +27,23 @@ object TodoMvcDb extends cask.MainRoutes {
     given todoRW: upickle.default.ReadWriter[Todo] = upickle.default.macroRW[Todo]
   }
 
+  // Initialize database schema
   dbClient.getAutoCommitClientConnection.updateRaw(
     """CREATE TABLE todo (
       |  id INTEGER PRIMARY KEY AUTOINCREMENT,
       |  checked BOOLEAN,
       |  text TEXT
-      |);
-      |
-      |INSERT INTO todo (checked, text) VALUES
-      |(1, 'Get started with Cask'),
-      |(0, 'Profit!');
-      |""".stripMargin
+      |);""".stripMargin
   )
+
+  // Insert initial data if enabled in config
+  if (cask.Config.getBooleanOpt("initial-data.enabled").getOrElse(true)) {
+    dbClient.getAutoCommitClientConnection.updateRaw(
+      """INSERT INTO todo (checked, text) VALUES
+        |(1, 'Get started with Cask'),
+        |(0, 'Profit!');""".stripMargin
+    )
+  }
 
   @cask.database.transactional[scalasql.core.DbClient]
   @cask.get("/list/:state")
