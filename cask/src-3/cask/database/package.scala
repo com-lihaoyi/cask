@@ -22,5 +22,12 @@ package cask
  *   ctx.run(Todo.select)
  * }
  * }}}
+ *
+ * ## Type Safety
+ *
+ * The transactional decorator uses ClassTag to preserve type information at runtime,
+ * providing type safety without requiring a compile-time dependency on ScalaSql.
+ * The type parameter must be explicitly specified (e.g., [scalasql.core.DbClient])
+ * to enable proper implicit resolution and runtime validation.
  */
 package object database {}

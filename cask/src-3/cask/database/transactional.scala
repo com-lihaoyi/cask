@@ -2,12 +2,16 @@ package cask.database
 
 import cask.router.RawDecorator
 import cask.model.{Request, Response}
+import scala.reflect.ClassTag
 
 /**
  * Decorator that wraps route execution in a database transaction.
  *
  * Requires Scala 3.7+ and scalasql-namedtuples dependency in your project.
  * Automatically commits on success and rolls back on exceptions or HTTP error responses.
+ *
+ * The type parameter T preserves the database client type at runtime using ClassTag,
+ * providing type safety while avoiding compile-time dependency on ScalaSql.
  *
  * Usage:
  * {{{
@@ -23,9 +27,17 @@ import cask.model.{Request, Response}
  * }
  * }}}
  */
-class transactional[T <: AnyRef](using dbClient: T) extends RawDecorator {
+class transactional[T <: AnyRef : ClassTag](using dbClient: T) extends RawDecorator {
 
   def wrapFunction(ctx: Request, delegate: Delegate) = {
+    // Validate type at runtime using ClassTag
+    val clientClass = implicitly[ClassTag[T]].runtimeClass
+    if (!clientClass.isInstance(dbClient)) {
+      throw new IllegalArgumentException(
+        s"Type mismatch: expected ${clientClass.getName} but got ${dbClient.getClass.getName}"
+      )
+    }
+
     // Use reflection to call methods on dbClient without importing scalasql
     // This works for both Scala 3.3.4 and 3.7.3
     val client = dbClient.asInstanceOf[Any]
