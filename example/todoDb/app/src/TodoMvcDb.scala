@@ -1,33 +1,24 @@
 package app
-import scalasql.DbApi.Txn
-import scalasql.Sc
+import scalasql.namedtuples.SimpleTable
 import scalasql.SqliteDialect._
 
-object TodoMvcDb extends cask.MainRoutes{
+object TodoMvcDb extends cask.MainRoutes {
   val tmpDb = java.nio.file.Files.createTempDirectory("todo-cask-sqlite")
   val sqliteDataSource = new org.sqlite.SQLiteDataSource()
   sqliteDataSource.setUrl(s"jdbc:sqlite:$tmpDb/file.db")
-  lazy val sqliteClient = new scalasql.DbClient.DataSource(
+
+  given dbClient: scalasql.DbClient = new scalasql.DbClient.DataSource(
     sqliteDataSource,
     config = new scalasql.Config {}
   )
 
-  class transactional extends cask.RawDecorator{
-    def wrapFunction(pctx: cask.Request, delegate: Delegate) = {
-      sqliteClient.transaction { txn =>
-        val res = delegate(pctx, Map("txn" -> txn))
-        if (res.isInstanceOf[cask.router.Result.Error]) txn.rollback()
-        res
-      }
-    }
+  case class Todo(id: Int, checked: Boolean, text: String)
+
+  object Todo extends SimpleTable[Todo] {
+    given todoRW: upickle.default.ReadWriter[Todo] = upickle.default.macroRW[Todo]
   }
 
-  case class Todo[T[_]](id: T[Int], checked: T[Boolean], text: T[String])
-  object Todo extends scalasql.Table[Todo]{
-    given todoRW: upickle.default.ReadWriter[Todo[Sc]] = upickle.default.macroRW[Todo[Sc]]
-  }
-
-  sqliteClient.getAutoCommitClientConnection.updateRaw(
+  dbClient.getAutoCommitClientConnection.updateRaw(
     """CREATE TABLE todo (
       |  id INTEGER PRIMARY KEY AUTOINCREMENT,
       |  checked BOOLEAN,
@@ -40,22 +31,22 @@ object TodoMvcDb extends cask.MainRoutes{
       |""".stripMargin
   )
 
-  @transactional
+  @cask.transactional
   @cask.get("/list/:state")
-  def list(state: String)(txn: Txn) = {
-    val filteredTodos = state match{
-      case "all" => txn.run(Todo.select)
-      case "active" => txn.run(Todo.select.filter(!_.checked))
-      case "completed" => txn.run(Todo.select.filter(_.checked))
+  def list(state: String)(using ctx: scalasql.DbClient.Txn) = {
+    val filteredTodos = state match {
+      case "all" => ctx.run(Todo.select)
+      case "active" => ctx.run(Todo.select.filter(!_.checked))
+      case "completed" => ctx.run(Todo.select.filter(_.checked))
     }
     upickle.default.write(filteredTodos)
   }
 
-  @transactional
+  @cask.transactional
   @cask.post("/add")
-  def add(request: cask.Request)(txn: Txn) = {
+  def add(request: cask.Request)(using ctx: scalasql.DbClient.Txn) = {
     val body = request.text()
-    txn.run(
+    ctx.run(
       Todo
         .insert
         .columns(_.checked := false, _.text := body)
@@ -66,16 +57,16 @@ object TodoMvcDb extends cask.MainRoutes{
     if (body == "FORCE FAILURE") throw new Exception("FORCE FAILURE BODY")
   }
 
-  @transactional
+  @cask.transactional
   @cask.post("/toggle/:index")
-  def toggle(index: Int)(txn: Txn) = {
-    txn.run(Todo.update(_.id === index).set(p => p.checked := !p.checked))
+  def toggle(index: Int)(using ctx: scalasql.DbClient.Txn) = {
+    ctx.run(Todo.update(_.id === index).set(p => p.checked := !p.checked))
   }
 
-  @transactional
+  @cask.transactional
   @cask.post("/delete/:index")
-  def delete(index: Int)(txn: Txn) = {
-    txn.run(Todo.delete(_.id === index))
+  def delete(index: Int)(using ctx: scalasql.DbClient.Txn) = {
+    ctx.run(Todo.delete(_.id === index))
   }
 
   initialize()

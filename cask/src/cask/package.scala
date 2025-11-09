@@ -62,4 +62,7 @@ package object cask {
   // util
   type Logger = util.Logger
   val Logger = util.Logger
+
+  // database (Scala 3.7+ only)
+  type transactional = database.transactional
 }
