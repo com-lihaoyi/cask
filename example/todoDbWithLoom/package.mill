@@ -28,11 +28,11 @@ trait AppModule extends CrossScalaModule{
   def jvmId = "temurin:23.0.1"
   def jvmIndexVersion = "latest.release"
 
-  def moduleDeps = Seq(build.cask(build.scala3))
+  def moduleDeps = Seq(build.cask(build.scala3Latest))
 
   def mvnDeps = Seq[Dep](
     mvn"org.xerial:sqlite-jdbc:3.42.0.0",
-    mvn"com.lihaoyi::scalasql:0.2.2",
+    mvn"com.lihaoyi::scalasql-namedtuples:0.2.3",
   )
 
   object test extends ScalaTests with TestModule.Utest {
