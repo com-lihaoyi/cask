@@ -40,7 +40,8 @@ trait CaskMainModule extends CaskModule {
   def mvnDeps = Task {
     Seq(
       mvn"io.undertow:undertow-core:2.3.18.Final",
-      mvn"com.lihaoyi::upickle:4.0.2"
+      mvn"com.lihaoyi::upickle:4.0.2",
+      mvn"com.typesafe:config:1.4.3"
     ) ++
       Option.when(!isScala3)(mvn"org.scala-lang:scala-reflect:$crossScalaVersion")
   }
