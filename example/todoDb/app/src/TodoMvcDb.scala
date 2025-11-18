@@ -1,30 +1,24 @@
 package app
+import cask.database.transactional
 import scalasql.DbApi.Txn
-import scalasql.Sc
-import scalasql.SqliteDialect._
+import scalasql.core.DbClient
+import scalasql.simple.{*, given}
+import SqliteDialect._
 
-object TodoMvcDb extends cask.MainRoutes{
+object TodoMvcDb extends cask.MainRoutes {
   val tmpDb = java.nio.file.Files.createTempDirectory("todo-cask-sqlite")
   val sqliteDataSource = new org.sqlite.SQLiteDataSource()
   sqliteDataSource.setUrl(s"jdbc:sqlite:$tmpDb/file.db")
-  lazy val sqliteClient = new scalasql.DbClient.DataSource(
+
+  given sqliteClient: DbClient = new DbClient.DataSource(
     sqliteDataSource,
-    config = new scalasql.Config {}
+    config = new {}
   )
 
-  class transactional extends cask.RawDecorator{
-    def wrapFunction(pctx: cask.Request, delegate: Delegate) = {
-      sqliteClient.transaction { txn =>
-        val res = delegate(pctx, Map("txn" -> txn))
-        if (res.isInstanceOf[cask.router.Result.Error]) txn.rollback()
-        res
-      }
-    }
-  }
+  case class Todo(id: Int, checked: Boolean, text: String)
 
-  case class Todo[T[_]](id: T[Int], checked: T[Boolean], text: T[String])
-  object Todo extends scalasql.Table[Todo]{
-    given todoRW: upickle.default.ReadWriter[Todo[Sc]] = upickle.default.macroRW[Todo[Sc]]
+  object Todo extends SimpleTable[Todo] {
+    given todoRW: upickle.default.ReadWriter[Todo] = upickle.default.macroRW[Todo]
   }
 
   sqliteClient.getAutoCommitClientConnection.updateRaw(
@@ -43,7 +37,7 @@ object TodoMvcDb extends cask.MainRoutes{
   @transactional
   @cask.get("/list/:state")
   def list(state: String)(txn: Txn) = {
-    val filteredTodos = state match{
+    val filteredTodos = state match {
       case "all" => txn.run(Todo.select)
       case "active" => txn.run(Todo.select.filter(!_.checked))
       case "completed" => txn.run(Todo.select.filter(_.checked))
