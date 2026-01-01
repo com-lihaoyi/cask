@@ -554,7 +554,8 @@ object Scalatags extends cask.MainRoutes{
 object Twirl extends cask.MainRoutes{
   @cask.get(&quot;/&quot;)
   def hello() = {
-    &quot;&lt;!doctype html&gt;&quot; + html.hello(&quot;Hello World&quot;)
+    val payload = &quot;&lt;!doctype html&gt;&quot; + html.hello(&quot;Hello World&quot;)
+    cask.Response(payload, 200, Seq((&quot;Content-Type&quot;, &quot;text/html&quot;)) )
   }
 
   initialize()
