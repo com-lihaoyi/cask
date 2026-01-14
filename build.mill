@@ -19,6 +19,7 @@ val scalaVersions = List(scala212, scala213, scala3) ++ communityBuildDottyVersi
 
 
 trait CaskModule0 extends PublishModule{
+  def jvmVersion = "11"
   def publishVersion = VcsVersion.vcsState().format()
 
   def pomSettings = PomSettings(
