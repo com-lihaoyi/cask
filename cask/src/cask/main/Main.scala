@@ -6,9 +6,10 @@ import cask.model._
 import cask.router.{Decorator, EndpointMetadata, EntryPoint, Result}
 import cask.util.Logger
 import io.undertow.Undertow
-import io.undertow.server.handlers.BlockingHandler
 import io.undertow.server.{HttpHandler, HttpServerExchange}
+import io.undertow.server.handlers.BlockingHandler
 import io.undertow.util.HttpString
+import org.xnio.Options
 
 import java.util.concurrent.ExecutorService
 
@@ -83,12 +84,28 @@ abstract class Main{
     Main.defaultHandleError(routes, metadata, e, debugMode, req)
   }
 
+  /**
+   * Set server options for the undertow server. By default, no options are set.
+   * */
+  protected def serverOptions : List[(org.xnio.Option[_], Any)] = Nil
+
+  /**
+   * Set server options for the undertow server. By default, no options are set.
+   * */
+  protected def socketOptions : List[(org.xnio.Option[_], Any)] = Nil
+
   def main(args: Array[String]): Unit = {
     if (!verbose) Main.silenceJboss()
-    val server = Undertow.builder
+    val builder = Undertow.builder
       .addHttpListener(port, host)
       .setHandler(defaultHandler)
-      .build
+    serverOptions.foreach {
+      case (option: org.xnio.Option[Any @unchecked], value) => builder.setServerOption(option, value)
+    }
+    socketOptions.foreach {
+      case (option: org.xnio.Option[Any @unchecked], value) => builder.setSocketOption(option, value)
+    }
+    val server = builder.build()
     server.start()
     //register an on exit hook to stop the server
     Runtime.getRuntime.addShutdownHook(new Thread(() => {
